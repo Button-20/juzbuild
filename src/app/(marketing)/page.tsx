@@ -7,20 +7,26 @@ import Hero from "@/components/marketing/hero";
 import Integration from "@/components/marketing/integration";
 import LanguageSupport from "@/components/marketing/lang-support";
 import Pricing from "@/components/marketing/pricing";
+import WaitingList from "@/components/marketing/waiting-list";
+import { isLive } from "@/constants";
 
 const HomePage = () => {
-    return (
-        <Wrapper className="py-20 relative">
-            <Hero />
-            <Companies />
-            <Features />
-            <Analysis />
-            <Integration />
-            <Pricing />
-            <LanguageSupport />
-            <CTA />
-        </Wrapper>
-    )
+  if (!isLive) {
+    return <WaitingList />;
+  }
+
+  return (
+    <Wrapper className="py-20 relative">
+      <Hero />
+      <Companies />
+      <Features />
+      <Analysis />
+      <Integration />
+      <Pricing />
+      <LanguageSupport />
+      <CTA />
+    </Wrapper>
+  );
 };
 
-export default HomePage
+export default HomePage;
