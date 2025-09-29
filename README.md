@@ -1,10 +1,10 @@
-# 🚀 Juzbuild - AI-Powered Project Management & Team Collaboration
+# 🚀 Juzbuild - AI-Powered Real Estate Platform
 
 <img src="https://github.com/user-attachments/assets/df541304-ea1c-4ebe-b6fd-2e093680314f" alt="Juzbuild Thumbnail">
 
 ## 🌟 Introduction
 
-Juzbuild is an intelligent project management platform that transforms how teams work together. Leverage AI to automate workflows, enhance collaboration, and boost productivity. Experience smarter project management today.
+Juzbuild is an AI-powered real estate platform that transforms how property professionals work. Leverage cutting-edge AI capabilities for intelligent automation, predictive analytics, and seamless collaboration tools. Experience the future of real estate management today.
 
 ## 🔗 Live Preview
 
@@ -14,6 +14,15 @@ Check out the live demo of Juzbuild here: [Live Preview](https://juzbuild-app.ve
 
 Take a look at YouTube video by watching the demo: [Watch the Video](https://youtu.be/dfQ_WwWV6g8)
 
+## ✨ Key Features
+
+- **🤖 AI-Powered Automation** – Intelligent tools to streamline real estate workflows
+- **📊 Predictive Analytics** – Data-driven insights for better property decisions
+- **🤝 Seamless Collaboration** – Connect agents, clients, and stakeholders effortlessly
+- **📈 Real-Time Performance Tracking** – Monitor campaigns and property metrics instantly
+- **🎯 Smart Lead Management** – AI-driven lead scoring and nurturing
+- **📧 Automated Communications** – Professional email templates and notifications
+
 ## 💻 Tech Stack
 
 - **Next.js 15** – React framework for production
@@ -22,9 +31,9 @@ Take a look at YouTube video by watching the demo: [Watch the Video](https://you
 - **Framer Motion** – Smooth animations
 - **TypeScript** – Type-safe code
 - **Number Flow** – Smooth number animations
-- **MongoDB** – NoSQL database for data storage
-- **Nodemailer** – Email service for notifications
-- **Handlebars** – Template engine for email templates
+- **MongoDB** – NoSQL database for property data storage
+- **Nodemailer** – Email service for client notifications
+- **Handlebars** – Template engine for professional email templates
 
 ## 🛠️ Installation
 
@@ -47,10 +56,10 @@ Take a look at YouTube video by watching the demo: [Watch the Video](https://you
    ```env
    NEXT_PUBLIC_APP_URL=http://localhost:3000
    MONGODB_URI=your_mongodb_connection_string
-   EMAIL_HOST=your_smtp_host
+   EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
-   EMAIL_USER=your_email@example.com
-   EMAIL_PASS=your_email_password
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASS=your_app_password
    ```
 
 4. Run the development server:
@@ -68,12 +77,12 @@ Take a look at YouTube video by watching the demo: [Watch the Video](https://you
 Create a `.env.local` file in the root directory:
 
 ```env
-NEXT_PUBLIC_APP_URL=your_app_url
-MONGODB_URI=your_mongodb_connection_string
-EMAIL_HOST=your_smtp_host
+NEXT_PUBLIC_APP_URL=your_production_app_url
+MONGODB_URI=your_mongodb_atlas_connection_string
+EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_email_password
+EMAIL_USER=your_business_email@gmail.com
+EMAIL_PASS=your_gmail_app_password
 ```
 
 ## 🚀 Deploy on Vercel
@@ -99,8 +108,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## ☕ Buy Me a Coffee
 
 If you enjoy using this project, consider supporting my work!  
-[Buy Me a Coffee ☕](https://buymeacoffee.com/jasonaddy)
+[Buy Me a Coffee ☕](https://buymeacoffee.com/shreyas29)
 
 ---
 
-Built with ❤️ by [Jason Addy](https://jasonaddy.me)
+Built with ❤️ by [Shreyas Sihasane](https://shreyas-sihasane.vercel.app)
