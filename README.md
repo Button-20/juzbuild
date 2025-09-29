@@ -8,7 +8,7 @@ Juzbuild is an AI-powered real estate platform that transforms how property prof
 
 ## 🔗 Live Preview
 
-Check out the live demo of Juzbuild here: [Live Preview](https://juzbuild-app.vercel.app/)
+Check out the live demo of Juzbuild here: [Live Preview](https://juzbuild.vercel.app/)
 
 ## 🎥 Watch the Preview Video on YouTube
 
@@ -40,7 +40,7 @@ Take a look at YouTube video by watching the demo: [Watch the Video](https://you
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Shreyas-29/vetra.git
+   git clone https://github.com/Button-20/juzbuild.git
    ```
 
 2. Install dependencies:
