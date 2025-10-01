@@ -41,7 +41,7 @@ export const waitlistWelcomeTemplate = `<html lang="en">
       '✓'; color: white; font-size: 12px; font-weight: bold; } .feature-text {
       font-size: 14px; line-height: 1.5; color: #e5e7eb; margin: 0; } /* CTA
       Button */ .cta-button { display: inline-block; background:
-      linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #ffffff;
+      linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #ffffff !important;
       text-decoration: none; padding: 14px 28px; border-radius: 8px;
       font-weight: 600; font-size: 14px; text-align: center; margin: 30px 0;
       box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;
