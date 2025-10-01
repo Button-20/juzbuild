@@ -1,4 +1,4 @@
-<html lang="en">
+export const waitlistWelcomeTemplate = `<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Welcome to Juzbuild Waitlist</title>
@@ -72,7 +72,7 @@
             class="logo-container"
           >
             <img
-              src="{{baseUrl}}/icons/logo.svg"
+              src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png"
               alt="Juzbuild Logo"
               style="height: 40px; width: auto; margin-right: 12px;"
             />
@@ -167,4 +167,4 @@
       </div>
     </div>
   </body>
-</html>
+</html>`;

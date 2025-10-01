@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 
 export const generateWaitlistMetadata = (): Metadata => {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild-app.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
 
   return {
     title:

@@ -9,13 +9,11 @@ if (typeof window === "undefined") {
   const emailServicePromise = Promise.all([
     import("nodemailer"),
     import("handlebars"),
-    import("fs"),
-    import("path"),
-  ]).then(([nodemailerModule, handlebarsModule, fsModule, pathModule]) => {
+    import("./templates"),
+  ]).then(([nodemailerModule, handlebarsModule, templatesModule]) => {
     const nodemailer = nodemailerModule.default;
     const handlebars = handlebarsModule.default;
-    const fs = fsModule.default;
-    const path = pathModule.default;
+    const { emailTemplates } = templatesModule;
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -31,77 +29,23 @@ if (typeof window === "undefined") {
     const templateCache: { [key: string]: any } = {};
 
     /**
-     * Load and compile HBS template with fallback paths for production
+     * Get template with organized module imports and environment variable fallback
      */
     function getTemplate(templateName: string): any {
       if (templateCache[templateName]) {
         return templateCache[templateName];
       }
 
-      // Multiple potential paths for different deployment environments
-      const possiblePaths = [
-        // Development path
-        path.join(process.cwd(), "src/lib/templates", `${templateName}.hbs`),
-        // Public directory (accessible in production)
-        path.join(process.cwd(), "public/templates", `${templateName}.hbs`),
-        // Vercel production paths
-        path.join(
-          process.cwd(),
-          ".next/server/src/lib/templates",
-          `${templateName}.hbs`
-        ),
-        path.join("/var/task", "src/lib/templates", `${templateName}.hbs`),
-        path.join(
-          "/var/task",
-          ".next/server/src/lib/templates",
-          `${templateName}.hbs`
-        ),
-        path.join("/var/task", "public/templates", `${templateName}.hbs`),
-        // Generic build output paths
-        path.join(
-          process.cwd(),
-          "build/src/lib/templates",
-          `${templateName}.hbs`
-        ),
-        path.join(
-          process.cwd(),
-          "dist/src/lib/templates",
-          `${templateName}.hbs`
-        ),
-        path.join(
-          process.cwd(),
-          "build/public/templates",
-          `${templateName}.hbs`
-        ),
-        path.join(
-          process.cwd(),
-          "dist/public/templates",
-          `${templateName}.hbs`
-        ),
-        // Relative to current file
-        path.join(__dirname, "templates", `${templateName}.hbs`),
-        path.join(__dirname, "../templates", `${templateName}.hbs`),
-        path.join(__dirname, "../../public/templates", `${templateName}.hbs`),
-      ];
-
       let templateSource: string | null = null;
-      let usedPath: string | null = null;
 
-      // Try each path until we find the file
-      for (const templatePath of possiblePaths) {
-        try {
-          if (fs.existsSync(templatePath)) {
-            templateSource = fs.readFileSync(templatePath, "utf8");
-            usedPath = templatePath;
-            break;
-          }
-        } catch (error) {
-          // Continue to next path
-          continue;
-        }
+      // First try imported templates
+      if (emailTemplates[templateName as keyof typeof emailTemplates]) {
+        templateSource =
+          emailTemplates[templateName as keyof typeof emailTemplates];
+        console.log(`Using imported template: ${templateName}`);
       }
 
-      // If file-based loading fails, try to get template from environment variable as fallback
+      // Fallback to environment variable
       if (!templateSource) {
         const envTemplateKey = `EMAIL_TEMPLATE_${templateName
           .toUpperCase()
@@ -118,15 +62,16 @@ if (typeof window === "undefined") {
 
       if (!templateSource) {
         throw new Error(
-          `Template "${templateName}.hbs" not found in any of the following paths:\n${possiblePaths.join(
-            "\n"
-          )}\n\nCurrent working directory: ${process.cwd()}\n__dirname: ${__dirname}\n\nYou can also set the template content in environment variable: EMAIL_TEMPLATE_${templateName
+          `Template "${templateName}" not found. Available templates: ${Object.keys(
+            emailTemplates
+          ).join(
+            ", "
+          )}. You can also set environment variable: EMAIL_TEMPLATE_${templateName
             .toUpperCase()
             .replace("-", "_")}`
         );
       }
 
-      console.log(`Successfully loaded template from: ${usedPath}`);
       const template = handlebars.compile(templateSource);
       templateCache[templateName] = template;
       return template;
@@ -169,7 +114,6 @@ if (typeof window === "undefined") {
         {
           email,
           appUrl,
-          baseUrl: appUrl,
           unsubscribeUrl,
         },
         {

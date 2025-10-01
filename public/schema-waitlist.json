@@ -3,13 +3,13 @@
   "@type": "WebPage",
   "name": "Join the Exclusive Waitlist | Juzbuild",
   "description": "Be among the first to experience revolutionary AI-powered tools that will transform how real estate professionals work.",
-  "url": "https://juzbuild-app.vercel.app",
+  "url": "https://juzbuild.com",
   "mainEntity": {
     "@type": "Organization",
     "name": "Juzbuild",
     "description": "AI-Powered Real Estate Platform",
-    "url": "https://juzbuild-app.vercel.app",
-    "logo": "https://juzbuild-app.vercel.app/icons/logo.svg",
+    "url": "https://juzbuild.com",
+    "logo": "https://juzbuild.com/icons/logo.svg",
     "sameAs": [
       "https://twitter.com/juzbuild",
       "https://linkedin.com/company/juzbuild"
@@ -38,13 +38,13 @@
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://juzbuild-app.vercel.app"
+        "item": "https://juzbuild.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Waitlist",
-        "item": "https://juzbuild-app.vercel.app"
+        "item": "https://juzbuild.com"
       }
     ]
   }

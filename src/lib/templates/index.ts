@@ -1,0 +1,19 @@
+import { passwordResetTemplate } from "./password-reset";
+import { waitlistWelcomeTemplate } from "./waitlist-welcome";
+
+// Export all email templates
+export const emailTemplates = {
+  "waitlist-welcome": waitlistWelcomeTemplate,
+  "password-reset": passwordResetTemplate,
+} as const;
+
+// Type for template names
+export type TemplateName = keyof typeof emailTemplates;
+
+// Helper function to get template by name
+export function getEmailTemplate(templateName: TemplateName): string {
+  return emailTemplates[templateName];
+}
+
+// List all available templates
+export const availableTemplates = Object.keys(emailTemplates) as TemplateName[];

@@ -27,19 +27,14 @@ const MarketingLayout = ({ children }: Props) => {
               name: "Join the Exclusive Waitlist | Juzbuild",
               description:
                 "Be among the first to experience revolutionary AI-powered tools that will transform how real estate professionals work.",
-              url:
-                process.env.NEXT_PUBLIC_APP_URL ||
-                "https://juzbuild-app.vercel.app",
+              url: process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com",
               mainEntity: {
                 "@type": "Organization",
                 name: "Juzbuild",
                 description: "AI-Powered Real Estate Platform",
-                url:
-                  process.env.NEXT_PUBLIC_APP_URL ||
-                  "https://juzbuild-app.vercel.app",
+                url: process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com",
                 logo: `${
-                  process.env.NEXT_PUBLIC_APP_URL ||
-                  "https://juzbuild-app.vercel.app"
+                  process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com"
                 }/icons/logo.svg`,
                 contactPoint: {
                   "@type": "ContactPoint",

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare-email-templates": "node scripts/prepare-email-templates.js"
+    "create-template": "node scripts/create-template.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
