@@ -31,21 +31,103 @@ if (typeof window === "undefined") {
     const templateCache: { [key: string]: any } = {};
 
     /**
-     * Load and compile HBS template
+     * Load and compile HBS template with fallback paths for production
      */
     function getTemplate(templateName: string): any {
       if (templateCache[templateName]) {
         return templateCache[templateName];
       }
 
-      const templatePath = path.join(
-        process.env.NODE_ENV !== "production" ? process.cwd() : __dirname,
-        "../../../lib/templates",
-        `${templateName}.hbs`
-      );
-      const templateSource = fs.readFileSync(templatePath, "utf8");
-      const template = handlebars.compile(templateSource);
+      // Multiple potential paths for different deployment environments
+      const possiblePaths = [
+        // Development path
+        path.join(process.cwd(), "src/lib/templates", `${templateName}.hbs`),
+        // Public directory (accessible in production)
+        path.join(process.cwd(), "public/templates", `${templateName}.hbs`),
+        // Vercel production paths
+        path.join(
+          process.cwd(),
+          ".next/server/src/lib/templates",
+          `${templateName}.hbs`
+        ),
+        path.join("/var/task", "src/lib/templates", `${templateName}.hbs`),
+        path.join(
+          "/var/task",
+          ".next/server/src/lib/templates",
+          `${templateName}.hbs`
+        ),
+        path.join("/var/task", "public/templates", `${templateName}.hbs`),
+        // Generic build output paths
+        path.join(
+          process.cwd(),
+          "build/src/lib/templates",
+          `${templateName}.hbs`
+        ),
+        path.join(
+          process.cwd(),
+          "dist/src/lib/templates",
+          `${templateName}.hbs`
+        ),
+        path.join(
+          process.cwd(),
+          "build/public/templates",
+          `${templateName}.hbs`
+        ),
+        path.join(
+          process.cwd(),
+          "dist/public/templates",
+          `${templateName}.hbs`
+        ),
+        // Relative to current file
+        path.join(__dirname, "templates", `${templateName}.hbs`),
+        path.join(__dirname, "../templates", `${templateName}.hbs`),
+        path.join(__dirname, "../../public/templates", `${templateName}.hbs`),
+      ];
 
+      let templateSource: string | null = null;
+      let usedPath: string | null = null;
+
+      // Try each path until we find the file
+      for (const templatePath of possiblePaths) {
+        try {
+          if (fs.existsSync(templatePath)) {
+            templateSource = fs.readFileSync(templatePath, "utf8");
+            usedPath = templatePath;
+            break;
+          }
+        } catch (error) {
+          // Continue to next path
+          continue;
+        }
+      }
+
+      // If file-based loading fails, try to get template from environment variable as fallback
+      if (!templateSource) {
+        const envTemplateKey = `EMAIL_TEMPLATE_${templateName
+          .toUpperCase()
+          .replace("-", "_")}`;
+        const envTemplate = process.env[envTemplateKey];
+
+        if (envTemplate) {
+          templateSource = envTemplate;
+          console.log(
+            `Using template from environment variable: ${envTemplateKey}`
+          );
+        }
+      }
+
+      if (!templateSource) {
+        throw new Error(
+          `Template "${templateName}.hbs" not found in any of the following paths:\n${possiblePaths.join(
+            "\n"
+          )}\n\nCurrent working directory: ${process.cwd()}\n__dirname: ${__dirname}\n\nYou can also set the template content in environment variable: EMAIL_TEMPLATE_${templateName
+            .toUpperCase()
+            .replace("-", "_")}`
+        );
+      }
+
+      console.log(`Successfully loaded template from: ${usedPath}`);
+      const template = handlebars.compile(templateSource);
       templateCache[templateName] = template;
       return template;
     }

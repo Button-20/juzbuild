@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   webpack: (config, context) => {
+    // Copy template files to build output
+    config.module.rules.push({
+      test: /\.hbs$/,
+      type: "asset/resource",
+      generator: {
+        filepath: "templates/[name][ext]",
+      },
+    });
+
     return {
       ...config,
       resolve: {
