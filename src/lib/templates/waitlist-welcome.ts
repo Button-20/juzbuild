@@ -68,7 +68,7 @@ export const waitlistWelcomeTemplate = `<html lang="en">
         <!-- Header -->
         <div class="email-header">
           <div
-            style="display: flex; align-items: center; justify-content: center; position: relative; z-index: 1;"
+            style="display: flex; align-items: center; position: relative; z-index: 1;"
             class="logo-container"
           >
             <img
