@@ -30,7 +30,10 @@ const WaitingList = () => {
         setMessage("🎉 Welcome aboard! You're now on the exclusive waitlist.");
         setEmail("");
       } else {
-        setMessage("Oops! Something went wrong. Please try again.");
+        const data = await res.json();
+        setMessage(
+          data.message || "Oops! Something went wrong. Please try again."
+        );
       }
     } catch (error) {
       setMessage("Oops! Something went wrong. Please try again.");
