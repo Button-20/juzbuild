@@ -38,7 +38,7 @@ const MarketingLayout = ({ children }: Props) => {
                 }/icons/logo.svg`,
                 contactPoint: {
                   "@type": "ContactPoint",
-                  email: "hello@juzbuild-ai.com",
+                  email: "info@juzbuild.com",
                   contactType: "Customer Service",
                 },
               },

@@ -147,9 +147,9 @@ export const waitlistWelcomeTemplate = `<html lang="en">
           <p class="footer-text">
             Questions? We're here to help! Reach out to us at
             <a
-              href="mailto:hello@juzbuild-ai.com"
+              href="mailto:info@juzbuild.com"
               style="color: #3b82f6;"
-            >hello@juzbuild-ai.com</a>
+            >info@juzbuild.com</a>
           </p>
 
           <div class="social-links">
