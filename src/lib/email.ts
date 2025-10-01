@@ -77,7 +77,7 @@ if (typeof window === "undefined") {
 
     return async (email: string): Promise<void> => {
       const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild-ai.vercel.app";
+        process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
       const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
         email
       )}`;

@@ -40,7 +40,7 @@ const WaitingList = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-[80dvh] md:min-h-screen py-10 md:py-20 px-4">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[100dvh] md:min-h-screen py-10 md:py-20 px-4">
       <div className="absolute flex lg:hidden size-32 md:size-40 rounded-full bg-blue-500 blur-[8rem] md:blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
 
       <Container className="hidden lg:flex absolute inset-0 top-0 mb-auto flex-col items-center justify-center w-full min-h-screen -z-10">

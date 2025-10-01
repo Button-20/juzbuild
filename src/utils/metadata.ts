@@ -16,8 +16,8 @@ interface MetadataProps {
 }
 
 export const generateMetadata = ({
-  title = `Juzbuild - AI-Powered Project Management & Team Collaboration`,
-  description = `Juzbuild is an intelligent project management platform that transforms how teams work together. Leverage AI to automate workflows, enhance collaboration, and boost productivity. Experience smarter project management today.`,
+  title = `Juzbuild - AI-Powered Real Estate Platform`,
+  description = `Juzbuild is an AI-powered real estate platform that transforms how property professionals work. Join thousands on our exclusive waitlist for early access to intelligent automation, predictive analytics, and seamless collaboration tools.`,
   icons = [
     {
       rel: "icon",
@@ -32,22 +32,24 @@ export const generateMetadata = ({
   ],
   noIndex = false,
   keywords = [
-    "AI marketing automation",
-    "social media marketing",
-    "content generation",
-    "marketing analytics",
-    "campaign management",
-    "multilingual marketing",
-    "AI copywriting",
-    "marketing workflow",
-    "performance tracking",
-    "digital marketing tools",
+    "AI real estate platform",
+    "property management software",
+    "real estate automation",
+    "property analytics",
+    "real estate CRM",
+    "property lead management",
+    "real estate AI tools",
+    "property collaboration",
+    "real estate workflow",
+    "property professionals",
+    "real estate SaaS",
+    "property management AI",
   ],
   author = process.env.NEXT_PUBLIC_AUTHOR_NAME,
   type = "website",
 }: MetadataProps = {}): Metadata => {
   const metadataBase = new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://vertra-ai.vercel.app"
+    process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com"
   );
 
   return {

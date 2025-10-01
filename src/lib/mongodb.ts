@@ -31,14 +31,14 @@ if (typeof window === "undefined") {
     clientPromise = client.connect();
   }
 
-  getDatabase = async (dbName: string = "real-estate-saas") => {
+  getDatabase = async (dbName: string = "Juzbuild") => {
     const client = await clientPromise;
     return client.db(dbName);
   };
 
   getCollection = async (
     collectionName: string,
-    dbName: string = "real-estate-saas"
+    dbName: string = "Juzbuild"
   ) => {
     const db = await getDatabase(dbName);
     return db.collection(collectionName);
