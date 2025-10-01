@@ -40,7 +40,7 @@ if (typeof window === "undefined") {
 
       const templatePath = path.join(
         process.env.NODE_ENV !== "production" ? process.cwd() : __dirname,
-        "../../lib/templates",
+        "../../../lib/templates",
         `${templateName}.hbs`
       );
       const templateSource = fs.readFileSync(templatePath, "utf8");
