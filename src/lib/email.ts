@@ -39,7 +39,7 @@ if (typeof window === "undefined") {
       }
 
       const templatePath = path.join(
-        process.cwd(),
+        process.env.NODE_ENV !== "production" ? process.cwd() : __dirname,
         "src/lib/templates",
         `${templateName}.hbs`
       );
@@ -76,8 +76,7 @@ if (typeof window === "undefined") {
     }
 
     return async (email: string): Promise<void> => {
-      const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
       const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
         email
       )}`;
