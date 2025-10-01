@@ -93,7 +93,7 @@ if (typeof window === "undefined") {
       const html = template(templateData);
 
       const mailOptions = {
-        from: options.from || process.env.EMAIL_USER,
+        from: options.from || `Juzbuild <${process.env.EMAIL_USER}>`,
         to,
         subject: options.subject,
         html,
