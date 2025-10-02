@@ -77,7 +77,6 @@ const ContactForm = () => {
         );
       }
     } catch (error) {
-      console.error("Contact form error:", error);
       setSubmitMessage(
         "❌ Sorry, something went wrong. Please try again or contact us directly."
       );
@@ -108,7 +107,7 @@ const ContactForm = () => {
   ];
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-screen py-20">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-screen py-20" id="contact">
       {/* Background Effects */}
       <div className="absolute flex lg:hidden size-40 rounded-full bg-blue-500 blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
 

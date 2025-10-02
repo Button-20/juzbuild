@@ -57,7 +57,6 @@ if (typeof window === "undefined") {
       if (emailTemplates[templateName as keyof typeof emailTemplates]) {
         templateSource =
           emailTemplates[templateName as keyof typeof emailTemplates];
-        console.log(`Using imported template: ${templateName}`);
       }
 
       // Fallback to environment variable
@@ -69,9 +68,6 @@ if (typeof window === "undefined") {
 
         if (envTemplate) {
           templateSource = envTemplate;
-          console.log(
-            `Using template from environment variable: ${envTemplateKey}`
-          );
         }
       }
 

@@ -34,15 +34,9 @@ const contactSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("📧 Contact form submission received");
-
     // Parse and validate request body
     const body = await req.json();
     const data = contactSchema.parse(body);
-
-    console.log(
-      `📧 Processing contact from: ${data.email} - Subject: ${data.subject}`
-    );
 
     // Save contact to database
     try {
@@ -59,18 +53,14 @@ export async function POST(req: NextRequest) {
       };
 
       const result = await contactCollection.insertOne(contactRecord);
-      console.log(`✅ Contact saved to database with ID: ${result.insertedId}`);
     } catch (dbError) {
-      console.error("❌ Database error:", dbError);
       // Continue with email sending even if database fails
     }
 
     // Send email notifications
     try {
       await sendContactEmail(data);
-      console.log(`✅ Contact emails sent successfully for: ${data.email}`);
     } catch (emailError) {
-      console.error("❌ Email error:", emailError);
       // Return error if email fails since it's the primary functionality
       return NextResponse.json(
         {
@@ -88,8 +78,6 @@ export async function POST(req: NextRequest) {
       success: true,
     });
   } catch (error) {
-    console.error("❌ Contact form error:", error);
-
     // Handle validation errors
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
