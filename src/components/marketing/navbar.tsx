@@ -35,9 +35,11 @@ const Navbar = () => {
             <Link href="/signup" className="hidden lg:block">
               <Button variant="blue">Get Started</Button>
             </Link>
-            <Link href="/login" className="hidden lg:block">
-              <Button variant="ghost">Login</Button>
-            </Link>
+            {isLive && (
+              <Link href="/login" className="hidden lg:block">
+                <Button variant="ghost">Login</Button>
+              </Link>
+            )}
             <MobileMenu isLive={isLive} />
           </div>
         </div>
