@@ -67,6 +67,8 @@ export default function OnboardingWizard({
     adsConnections: [],
     leadCapturePreference: [],
     preferredContactMethod: [],
+    selectedPlan: "pro", // Default to Pro plan
+    billingCycle: "yearly", // Default to yearly billing
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,8 +141,7 @@ export default function OnboardingWizard({
           newErrors.selectedPlan = "Please select a plan";
         if (!formData.billingCycle)
           newErrors.billingCycle = "Please select a billing cycle";
-        if (!formData.paymentMethod)
-          newErrors.paymentMethod = "Please select a payment method";
+        // Payment method is optional for free trial
         break;
     }
 

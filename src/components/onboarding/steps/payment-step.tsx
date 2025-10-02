@@ -132,6 +132,9 @@ export default function PaymentStep({
             </Card>
           ))}
         </RadioGroup>
+        {errors.selectedPlan && (
+          <p className="text-destructive text-sm">{errors.selectedPlan}</p>
+        )}
       </div>
 
       {/* Billing Cycle */}
@@ -214,6 +217,9 @@ export default function PaymentStep({
             </CardContent>
           </Card>
         </RadioGroup>
+        {errors.billingCycle && (
+          <p className="text-destructive text-sm">{errors.billingCycle}</p>
+        )}
       </div>
 
       {/* Payment Information */}

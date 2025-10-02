@@ -38,8 +38,16 @@ const onboardingSchema = z.object({
 
   // Step 5 - Payment
   selectedPlan: z.enum(["starter", "pro", "agency"]),
-  billingCycle: z.enum(["monthly", "annually"]),
-  paymentMethod: z.enum(["card", "paypal"]),
+  billingCycle: z.enum(["monthly", "yearly"]),
+  agreeToTerms: z.boolean().optional(),
+  paymentMethod: z
+    .object({
+      cardNumber: z.string().optional(),
+      expiryDate: z.string().optional(),
+      cvv: z.string().optional(),
+      cardholderName: z.string().optional(),
+    })
+    .optional(),
 });
 
 export async function POST(req: NextRequest) {
