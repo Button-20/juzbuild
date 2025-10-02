@@ -32,8 +32,11 @@ const Navbar = () => {
           )}
 
           <div className="flex items-center gap-4">
-            <Link href="#" className="hidden lg:block">
+            <Link href="/signup" className="hidden lg:block">
               <Button variant="blue">Get Started</Button>
+            </Link>
+            <Link href="/login" className="hidden lg:block">
+              <Button variant="ghost">Login</Button>
             </Link>
             <MobileMenu isLive={isLive} />
           </div>

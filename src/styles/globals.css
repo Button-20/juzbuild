@@ -82,12 +82,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--foreground)/0.1);
+  background: hsl(var(--foreground) / 0.1);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--background));
+}
+
+@view-transition {
+  navigation: auto;
 }
 
 img {
@@ -125,7 +129,11 @@ img {
   height: 1px;
   width: 100%;
   color: rgb(48, 48, 48);
-  background: radial-gradient(50% 56400% at 50% 100%, rgb(34, 41, 57) 0%, rgba(169, 163, 194, 0) 100%);
+  background: radial-gradient(
+    50% 56400% at 50% 100%,
+    rgb(34, 41, 57) 0%,
+    rgba(169, 163, 194, 0) 100%
+  );
 }
 
 .companies::after {
@@ -142,7 +150,11 @@ img {
 }
 
 .footer::before {
-  background: radial-gradient(50% 56400% at 50% 100%, rgb(34, 44, 57) 0%, rgba(169, 163, 194, 0) 100%);
+  background: radial-gradient(
+    50% 56400% at 50% 100%,
+    rgb(34, 44, 57) 0%,
+    rgba(169, 163, 194, 0) 100%
+  );
   top: 0;
   content: "";
   height: 1px;
