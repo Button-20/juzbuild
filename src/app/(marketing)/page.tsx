@@ -8,6 +8,7 @@ import Integration from "@/components/marketing/integration";
 import LanguageSupport from "@/components/marketing/lang-support";
 import Pricing from "@/components/marketing/pricing";
 import WaitingList from "@/components/marketing/waiting-list";
+import ContactForm from "@/components/marketing/contact-form";
 import { isLive } from "@/constants";
 import { generateWaitlistMetadata } from "@/utils/waitlist-metadata";
 import { Metadata } from "next";
@@ -40,6 +41,7 @@ const HomePage = () => {
       <Pricing />
       <LanguageSupport />
       <CTA />
+      <ContactForm />
     </Wrapper>
   );
 };

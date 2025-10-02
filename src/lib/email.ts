@@ -2,6 +2,21 @@
 // Prevents email services from being bundled in client-side code
 
 let sendWaitlistWelcomeEmail: (email: string) => Promise<void>;
+let sendContactEmail: ({
+  name,
+  email,
+  phone,
+  company,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  subject: string;
+  message: string;
+}) => Promise<void>;
 
 if (typeof window === "undefined") {
   // Server-side: initialize email service
@@ -102,30 +117,127 @@ if (typeof window === "undefined") {
       await transporter.sendMail(mailOptions);
     }
 
-    return async (email: string): Promise<void> => {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
-      const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
-        email
-      )}`;
+    async function sendContactEmailsInternal({
+      name,
+      email,
+      phone,
+      company,
+      subject,
+      message,
+    }: {
+      name: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      subject: string;
+      message: string;
+    }) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+      const currentYear = new Date().getFullYear();
+      const submittedAt = new Date().toLocaleString();
 
+      // Determine if this is a high priority message
+      const prioritySubjects = [
+        "urgent",
+        "emergency",
+        "asap",
+        "immediate",
+        "demo",
+        "partnership",
+      ];
+      const isPriority = prioritySubjects.some(
+        (keyword) =>
+          subject.toLowerCase().includes(keyword) ||
+          message.toLowerCase().includes(keyword)
+      );
+
+      // Send confirmation email to the user
       await sendTemplateEmail(
         email,
-        "waitlist-welcome",
+        "contact-confirmation",
         {
+          name,
           email,
-          appUrl,
-          unsubscribeUrl,
+          phone: phone || "",
+          company: company || "",
+          subject,
+          message,
+          baseUrl,
+          currentYear: currentYear.toString(),
         },
         {
-          subject: "🎉 Welcome to Juzbuild - You're on the Exclusive Waitlist!",
+          subject: `Thank you for contacting Juzbuild - ${subject}`,
         }
       );
+
+      // Send notification email to the admin/team
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+      if (adminEmail) {
+        await sendTemplateEmail(
+          adminEmail,
+          "contact-notification",
+          {
+            name,
+            email,
+            phone: phone || "",
+            company: company || "",
+            subject,
+            message,
+            submittedAt,
+            isPriority,
+          },
+          {
+            subject: `${
+              isPriority ? "🚨 [HIGH PRIORITY] " : ""
+            }New Contact: ${subject}`,
+            from: `Juzbuild Notifications <${process.env.EMAIL_USER}>`,
+          }
+        );
+      }
+    }
+
+    return {
+      sendWaitlistEmail: async (email: string): Promise<void> => {
+        const appUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
+          email
+        )}`;
+
+        await sendTemplateEmail(
+          email,
+          "waitlist-welcome",
+          {
+            email,
+            appUrl,
+            baseUrl: appUrl,
+            unsubscribeUrl,
+          },
+          {
+            subject:
+              "🎉 Welcome to Juzbuild - You're on the Exclusive Waitlist!",
+          }
+        );
+      },
+      sendContactEmails: sendContactEmailsInternal,
     };
   });
 
   sendWaitlistWelcomeEmail = async (email: string): Promise<void> => {
-    const emailFunction = await emailServicePromise;
-    return emailFunction(email);
+    const emailService = await emailServicePromise;
+    return emailService.sendWaitlistEmail(email);
+  };
+
+  sendContactEmail = async (contactData: {
+    name: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    subject: string;
+    message: string;
+  }): Promise<void> => {
+    const emailService = await emailServicePromise;
+    return emailService.sendContactEmails(contactData);
   };
 } else {
   // Client-side: provide error stub
@@ -133,6 +245,11 @@ if (typeof window === "undefined") {
     Promise.reject(
       new Error("Email operations are not available on the client side")
     );
+
+  sendContactEmail = () =>
+    Promise.reject(
+      new Error("Email operations are not available on the client side")
+    );
 }
 
-export { sendWaitlistWelcomeEmail };
+export { sendContactEmail, sendWaitlistWelcomeEmail };

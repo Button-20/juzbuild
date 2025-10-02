@@ -1,3 +1,5 @@
+import { contactConfirmationTemplate } from "./contact-confirmation";
+import { contactNotificationTemplate } from "./contact-notification";
 import { passwordResetTemplate } from "./password-reset";
 import { waitlistWelcomeTemplate } from "./waitlist-welcome";
 
@@ -5,6 +7,8 @@ import { waitlistWelcomeTemplate } from "./waitlist-welcome";
 export const emailTemplates = {
   "waitlist-welcome": waitlistWelcomeTemplate,
   "password-reset": passwordResetTemplate,
+  "contact-confirmation": contactConfirmationTemplate,
+  "contact-notification": contactNotificationTemplate,
 } as const;
 
 // Type for template names
