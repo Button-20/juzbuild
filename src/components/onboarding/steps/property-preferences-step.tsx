@@ -87,6 +87,29 @@ export default function PropertyPreferencesStep({
 
   const selectedCurrency = CURRENCIES.find((c) => c.code === data.currency);
 
+  // Helper functions for comma formatting
+  const formatNumberWithCommas = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
+  const removeCommas = (str: string): string => {
+    return str.replace(/,/g, "");
+  };
+
+  const handlePriceChange = (field: 'minPrice' | 'maxPrice', value: string) => {
+    // Remove all non-digit characters except commas
+    const cleanValue = value.replace(/[^\d,]/g, "");
+    // Remove commas and convert to number
+    const numericValue = removeCommas(cleanValue);
+    const parsedValue = parseInt(numericValue) || 0;
+    updateData({ [field]: parsedValue });
+  };
+
+  const getDisplayValue = (value: number | undefined): string => {
+    if (!value) return "";
+    return formatNumberWithCommas(value);
+  };
+
   return (
     <div className="space-y-8">
       {/* Property Types */}
@@ -140,7 +163,7 @@ export default function PropertyPreferencesStep({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Currency */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-1">
             <Label htmlFor="currency" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Currency *
@@ -174,12 +197,10 @@ export default function PropertyPreferencesStep({
               </span>
               <Input
                 id="minPrice"
-                type="number"
-                placeholder="50000"
-                value={data.minPrice || ""}
-                onChange={(e) =>
-                  updateData({ minPrice: parseInt(e.target.value) || 0 })
-                }
+                type="text"
+                placeholder="50,000"
+                value={getDisplayValue(data.minPrice)}
+                onChange={(e) => handlePriceChange('minPrice', e.target.value)}
                 className={`h-12 pl-8 ${
                   errors.minPrice ? "border-destructive" : ""
                 }`}
@@ -199,12 +220,10 @@ export default function PropertyPreferencesStep({
               </span>
               <Input
                 id="maxPrice"
-                type="number"
-                placeholder="500000"
-                value={data.maxPrice || ""}
-                onChange={(e) =>
-                  updateData({ maxPrice: parseInt(e.target.value) || 0 })
-                }
+                type="text"
+                placeholder="500,000"
+                value={getDisplayValue(data.maxPrice)}
+                onChange={(e) => handlePriceChange('maxPrice', e.target.value)}
                 className={`h-12 pl-8 ${
                   errors.maxPrice ? "border-destructive" : ""
                 }`}

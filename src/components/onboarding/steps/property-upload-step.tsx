@@ -145,27 +145,27 @@ export default function PropertyUploadStep({
           </p>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <div className="bg-muted/30 border border-border rounded-lg p-6">
           <div className="flex items-start gap-4">
-            <Download className="w-6 h-6 text-blue-600 dark:text-blue-400 mt-1" />
+            <Download className="w-6 h-6 text-foreground mt-1" />
             <div className="flex-1">
-              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              <h4 className="font-semibold text-foreground mb-2">
                 Download Template File
               </h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Use our pre-formatted template to ensure your property data
                 uploads correctly. The template includes all required fields and
                 example data.
               </p>
 
               <div className="mb-4">
-                <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                <h5 className="font-medium text-foreground mb-2">
                   Required Fields:
                 </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-blue-700 dark:text-blue-300">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                   {SAMPLE_FIELDS.map((field, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary rounded-full"></div>
                       {field}
                     </div>
                   ))}
@@ -175,7 +175,7 @@ export default function PropertyUploadStep({
               <Button
                 variant="outline"
                 onClick={downloadSampleFile}
-                className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300"
+                className="border-border text-foreground hover:bg-muted/50"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download Template

@@ -39,7 +39,9 @@ const onboardingSchema = z.object({
   adsConnections: z
     .array(z.string())
     .min(1, "Select at least one ads connection"),
-  preferredContactMethod: z.array(z.enum(["Phone", "Email", "WhatsApp"])).min(1, "Select at least one contact method"),
+  preferredContactMethod: z
+    .array(z.enum(["Phone", "Email", "WhatsApp"]))
+    .min(1, "Select at least one contact method"),
 });
 
 export async function POST(req: NextRequest) {

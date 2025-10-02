@@ -267,7 +267,9 @@ export default function MarketingStep({
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {CONTACT_METHODS.map((method) => {
-              const isSelected = data.preferredContactMethod?.includes(method.value as any) || false;
+              const isSelected =
+                data.preferredContactMethod?.includes(method.value as any) ||
+                false;
               const IconComponent = method.icon;
 
               return (
@@ -289,7 +291,8 @@ export default function MarketingStep({
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            Selected: {data.preferredContactMethod?.length || 0} method{data.preferredContactMethod?.length === 1 ? '' : 's'}
+            Selected: {data.preferredContactMethod?.length || 0} method
+            {data.preferredContactMethod?.length === 1 ? "" : "s"}
           </p>
           {errors.preferredContactMethod && (
             <p className="text-destructive text-sm">
