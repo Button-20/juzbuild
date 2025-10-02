@@ -11,19 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { WizardStepProps } from "@/types/onboarding";
-import {
-  Building,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  MapPin,
-  Phone,
-  User,
-} from "lucide-react";
+import { Building, Eye, EyeOff, Lock, Mail, MapPin, User } from "lucide-react";
 import React from "react";
 
-const ROLES = ["Agent", "Agency", "Developer Partner"] as const;
+// Removed ROLES since it's no longer needed in the simplified flow
 
 const COUNTRIES = [
   "United States",
@@ -141,22 +132,6 @@ export default function SignupStep({
               <p className="text-destructive text-sm">{errors.password}</p>
             )}
           </div>
-
-          {/* Phone Number */}
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber" className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              Phone Number
-            </Label>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={data.phoneNumber || ""}
-              onChange={(e) => updateData({ phoneNumber: e.target.value })}
-              className="h-12"
-            />
-          </div>
         </div>
       </div>
 
@@ -169,53 +144,25 @@ export default function SignupStep({
           </p>
         </div>
 
+        {/* Company Name */}
+        <div className="space-y-2">
+          <Label htmlFor="companyName" className="flex items-center gap-2">
+            <Building className="w-4 h-4" />
+            Company/Agency Name *
+          </Label>
+          <Input
+            id="companyName"
+            placeholder="Premier Real Estate Group"
+            value={data.companyName || ""}
+            onChange={(e) => updateData({ companyName: e.target.value })}
+            className={`h-12 ${errors.companyName ? "border-destructive" : ""}`}
+          />
+          {errors.companyName && (
+            <p className="text-destructive text-sm">{errors.companyName}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Role */}
-          <div className="space-y-2">
-            <Label htmlFor="role" className="flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              Role *
-            </Label>
-            <Select
-              value={data.role || ""}
-              onValueChange={(value) => updateData({ role: value as any })}
-            >
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select your role" />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.role && (
-              <p className="text-destructive text-sm">{errors.role}</p>
-            )}
-          </div>
-
-          {/* Company Name */}
-          <div className="space-y-2">
-            <Label htmlFor="companyName" className="flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              Company/Agency Name *
-            </Label>
-            <Input
-              id="companyName"
-              placeholder="ABC Real Estate"
-              value={data.companyName || ""}
-              onChange={(e) => updateData({ companyName: e.target.value })}
-              className={`h-12 ${
-                errors.companyName ? "border-destructive" : ""
-              }`}
-            />
-            {errors.companyName && (
-              <p className="text-destructive text-sm">{errors.companyName}</p>
-            )}
-          </div>
-
           {/* Country */}
           <div className="space-y-2">
             <Label htmlFor="country" className="flex items-center gap-2">

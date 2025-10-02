@@ -1,39 +1,38 @@
 export interface OnboardingData {
-  // Step 1 - Signup
+  // Step 1 - Account Setup
   fullName: string;
   email: string;
   password: string;
-  phoneNumber?: string;
-  role: "Agent" | "Agency" | "Developer Partner";
   companyName: string;
   country: string;
   city: string;
 
-  // Step 2 - Business Info
-  businessName: string;
+  // Step 2 - Business Profile
   logo?: File;
   brandColors: string[];
   tagline: string;
   aboutSection: string;
 
-  // Step 3 - Property Preferences
+  // Step 3 - Website Setup
   propertyTypes: string[];
-  minPrice: number;
-  maxPrice: number;
-  locationCoverage: string[];
-  currency: string;
-
-  // Step 4 - Website Setup
   layoutStyle: "Classic" | "Modern" | "Minimal";
   includedPages: string[];
   leadCapturePreference: ("Contact Form" | "WhatsApp" | "Email Only")[];
 
-  // Step 5 - Marketing & Ads
+  // Step 4 - Marketing Setup
   adsConnections: string[];
   preferredContactMethod: ("Phone" | "Email" | "WhatsApp")[];
 
-  // Step 6 - Property Upload (Optional)
-  propertyFile?: File;
+  // Step 5 - Payment & Launch
+  selectedPlan: "starter" | "pro" | "agency";
+  billingCycle: "monthly" | "yearly";
+  agreeToTerms: boolean;
+  paymentMethod?: {
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+    cardholderName: string;
+  };
 }
 
 export interface WizardStep {

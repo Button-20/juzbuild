@@ -28,13 +28,13 @@ const Pricing = () => {
         <Container>
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-medium !leading-snug mt-6">
-              Find the right plan that suits <br className="hidden lg:block" />{" "}
-              <span className="font-subheading italic">your needs</span>
+              Simple, Transparent Pricing <br className="hidden lg:block" />{" "}
+              <span className="font-subheading italic">for Every Agent</span>
             </h2>
             <p className="text-base md:text-lg text-center text-accent-foreground/80 mt-6">
-              Transform your marketing with AI-powered automation. Create
-              campaigns faster, generate better content, and make smarter
-              decisions in minutes.
+              Choose the perfect plan for your real estate business. Build
+              professional websites, capture leads, and grow your business with
+              our platform.
             </p>
           </div>
         </Container>
@@ -59,7 +59,7 @@ const Pricing = () => {
         </Container>
       </div>
 
-      <div className="grid w-full grid-cols-1 lg:grid-cols-2 pt-8 lg:pt-12 gap-4 lg:gap-6 max-w-4xl mx-auto">
+      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 pt-8 lg:pt-12 gap-4 lg:gap-6 max-w-6xl mx-auto">
         {PLANS.map((plan, idx) => (
           <Container key={idx} delay={0.1 * idx + 0.2}>
             <Plan key={plan.id} plan={plan} billPlan={billPlan} />
@@ -86,6 +86,9 @@ const Plan = ({ plan, billPlan }: { plan: PLAN; billPlan: Plan }) => {
         <h2 className="font-medium text-xl text-foreground pt-5">
           {plan.title}
         </h2>
+        {plan.targetAudience && (
+          <p className="text-sm text-muted-foreground">{plan.targetAudience}</p>
+        )}
         <h3 className="mt-3 text-3xl font-medium md:text-5xl">
           <NumberFlow
             value={
@@ -105,14 +108,21 @@ const Plan = ({ plan, billPlan }: { plan: PLAN; billPlan: Plan }) => {
         <p className="text-sm md:text-base text-muted-foreground mt-2">
           {plan.desc}
         </p>
+        {billPlan === "annually" && (
+          <p className="text-xs text-primary mt-1">
+            Save 2 months • ${plan.monthlyPrice * 12 - plan.annuallyPrice}{" "}
+            yearly savings
+          </p>
+        )}
       </div>
       <div className="flex flex-col items-start w-full px-4 py-2 md:px-8">
         <Button
           size="lg"
-          variant={plan.title === "Mastermind" ? "blue" : "white"}
+          variant={plan.title === "Pro" ? "blue" : "white"}
           className="w-full"
+          asChild
         >
-          {plan.buttonText}
+          <a href={`${plan.link}&billing=${billPlan}`}>{plan.buttonText}</a>
         </Button>
         <div className="h-8 overflow-hidden w-full mx-auto">
           <AnimatePresence mode="wait">

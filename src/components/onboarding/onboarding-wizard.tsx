@@ -14,48 +14,41 @@ import React, { useCallback, useState } from "react";
 
 // Import step components
 import BusinessInfoStep from "./steps/business-info-step";
-import MarketingStep from "./steps/marketing-step";
-import PropertyPreferencesStep from "./steps/property-preferences-step";
-import PropertyUploadStep from "./steps/property-upload-step";
+import MarketingSetupStep from "./steps/marketing-setup-step";
+import PaymentStep from "./steps/payment-step";
 import SignupStep from "./steps/signup-step";
-import WebsiteSetupStep from "./steps/website-setup-step";
+import WebsiteSetupStep from "./steps/website-setup-new-step";
 
 const WIZARD_STEPS: WizardStep[] = [
   {
     id: 1,
-    title: "Create Account",
-    description: "Set up your account and basic information",
+    title: "Account Setup",
+    description: "Create your account and business name",
     component: SignupStep,
   },
   {
     id: 2,
-    title: "Business Information",
+    title: "Business Profile",
     description: "Tell us about your business and brand",
     component: BusinessInfoStep,
   },
   {
     id: 3,
-    title: "Property Preferences",
-    description: "Configure your property types and pricing",
-    component: PropertyPreferencesStep,
-  },
-  {
-    id: 4,
     title: "Website Setup",
-    description: "Customize your website layout and pages",
+    description: "Configure your website layout and features",
     component: WebsiteSetupStep,
   },
   {
-    id: 5,
-    title: "Marketing & Ads",
+    id: 4,
+    title: "Marketing Setup",
     description: "Set up your marketing preferences",
-    component: MarketingStep,
+    component: MarketingSetupStep,
   },
   {
-    id: 6,
-    title: "Property Upload",
-    description: "Upload your existing properties (optional)",
-    component: PropertyUploadStep,
+    id: 5,
+    title: "Choose Plan & Payment",
+    description: "Select your plan and complete payment",
+    component: PaymentStep,
   },
 ];
 
@@ -70,9 +63,10 @@ export default function OnboardingWizard({
   const [formData, setFormData] = useState<Partial<OnboardingData>>({
     brandColors: [],
     propertyTypes: [],
-    locationCoverage: [],
     includedPages: [],
     adsConnections: [],
+    leadCapturePreference: [],
+    preferredContactMethod: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +90,7 @@ export default function OnboardingWizard({
     const newErrors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0: // Signup Step
+      case 0: // Account Setup Step (now includes business name)
         if (!formData.fullName?.trim())
           newErrors.fullName = "Full name is required";
         if (!formData.email?.trim()) newErrors.email = "Email is required";
@@ -106,62 +100,47 @@ export default function OnboardingWizard({
           newErrors.password = "Password is required";
         else if (formData.password.length < 8)
           newErrors.password = "Password must be at least 8 characters";
-        if (!formData.role) newErrors.role = "Role is required";
         if (!formData.companyName?.trim())
-          newErrors.companyName = "Company/Agency name is required";
+          newErrors.companyName = "Business name is required";
         if (!formData.country?.trim())
           newErrors.country = "Country is required";
         if (!formData.city?.trim()) newErrors.city = "City is required";
         break;
 
-      case 1: // Business Info Step
-        if (!formData.businessName?.trim())
-          newErrors.businessName = "Business name is required";
+      case 1: // Business Profile Step (no business name, simplified)
         if (!formData.tagline?.trim())
           newErrors.tagline = "Tagline is required";
         if (!formData.aboutSection?.trim())
           newErrors.aboutSection = "About section is required";
         break;
 
-      case 2: // Property Preferences Step
+      case 2: // Website Setup Step
         if (!formData.propertyTypes?.length)
           newErrors.propertyTypes = "Select at least one property type";
-        if (!formData.minPrice)
-          newErrors.minPrice = "Minimum price is required";
-        if (!formData.maxPrice)
-          newErrors.maxPrice = "Maximum price is required";
-        if (
-          formData.minPrice &&
-          formData.maxPrice &&
-          formData.minPrice >= formData.maxPrice
-        ) {
-          newErrors.maxPrice =
-            "Maximum price must be greater than minimum price";
-        }
-        if (!formData.locationCoverage?.length)
-          newErrors.locationCoverage = "Add at least one location";
-        if (!formData.currency) newErrors.currency = "Currency is required";
-        break;
-
-      case 3: // Website Setup Step
         if (!formData.layoutStyle)
           newErrors.layoutStyle = "Layout style is required";
         if (!formData.includedPages?.length)
           newErrors.includedPages = "Select at least one page";
-        if (!formData.leadCapturePreference)
+        if (!formData.leadCapturePreference?.length)
           newErrors.leadCapturePreference =
-            "Lead capture preference is required";
+            "Select at least one lead capture method";
         break;
 
-      case 4: // Marketing Step
+      case 3: // Marketing Setup Step
         if (!formData.adsConnections?.length)
           newErrors.adsConnections = "Select at least one ads connection";
-        if (!formData.preferredContactMethod)
-          newErrors.preferredContactMethod = "Contact method is required";
+        if (!formData.preferredContactMethod?.length)
+          newErrors.preferredContactMethod =
+            "Select at least one contact method";
         break;
 
-      case 5: // Property Upload Step (optional)
-        // No required fields for this step
+      case 4: // Payment Step
+        if (!formData.selectedPlan)
+          newErrors.selectedPlan = "Please select a plan";
+        if (!formData.billingCycle)
+          newErrors.billingCycle = "Please select a billing cycle";
+        if (!formData.paymentMethod)
+          newErrors.paymentMethod = "Please select a payment method";
         break;
     }
 
@@ -332,9 +311,9 @@ export default function OnboardingWizard({
 
         {/* Main Content with Split Layout */}
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Left Side - Form */}
-            <div className="order-2 lg:order-1">
+            <div className="order-2 lg:order-1 col-span-2">
               <Card className="border-2 border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
                 <CardHeader className="text-center pb-6">
                   <CardTitle className="text-xl md:text-2xl font-bold">

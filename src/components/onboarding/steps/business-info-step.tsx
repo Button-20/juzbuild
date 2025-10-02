@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { WizardStepProps } from "@/types/onboarding";
 import {
   ArrowLeft,
-  Building,
   FileText,
   MessageSquare,
   Palette,
@@ -60,35 +59,6 @@ export default function BusinessInfoStep({
 
   return (
     <div className="space-y-8">
-      {/* Business Name */}
-      <div className="space-y-6">
-        <div className="border-l-4 border-primary pl-4">
-          <h3 className="text-lg font-semibold mb-1">Business Identity</h3>
-          <p className="text-sm text-muted-foreground">
-            Help us understand your brand and business
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="businessName" className="flex items-center gap-2">
-            <Building className="w-4 h-4" />
-            Agency/Business Name *
-          </Label>
-          <Input
-            id="businessName"
-            placeholder="Premier Real Estate Group"
-            value={data.businessName || ""}
-            onChange={(e) => updateData({ businessName: e.target.value })}
-            className={`h-12 ${
-              errors.businessName ? "border-destructive" : ""
-            }`}
-          />
-          {errors.businessName && (
-            <p className="text-destructive text-sm">{errors.businessName}</p>
-          )}
-        </div>
-      </div>
-
       {/* Logo Upload */}
       <div className="space-y-6">
         <div className="border-l-4 border-primary pl-4">

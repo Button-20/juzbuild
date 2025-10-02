@@ -3,45 +3,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const onboardingSchema = z.object({
-  // Step 1 - Signup
+  // Step 1 - Account Setup
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   phoneNumber: z.string().optional(),
-  role: z.enum(["Agent", "Agency", "Developer Partner"]),
-  companyName: z.string().min(2, "Company name is required"),
+  companyName: z.string().min(2, "Business name is required"),
   country: z.string().min(2, "Country is required"),
   city: z.string().min(2, "City is required"),
 
-  // Step 2 - Business Info
-  businessName: z.string().min(2, "Business name is required"),
+  // Step 2 - Business Profile
   brandColors: z.array(z.string()).max(3, "Maximum 3 colors allowed"),
   tagline: z.string().min(2, "Tagline is required"),
   aboutSection: z.string().min(10, "About section is required"),
 
-  // Step 3 - Property Preferences
+  // Step 3 - Website Setup
   propertyTypes: z
     .array(z.string())
     .min(1, "Select at least one property type"),
-  minPrice: z.number().min(0, "Minimum price must be positive"),
-  maxPrice: z.number().min(0, "Maximum price must be positive"),
-  locationCoverage: z.array(z.string()).min(1, "Add at least one location"),
-  currency: z.string().min(2, "Currency is required"),
-
-  // Step 4 - Website Setup
   layoutStyle: z.enum(["Classic", "Modern", "Minimal"]),
   includedPages: z.array(z.string()).min(1, "Select at least one page"),
   leadCapturePreference: z
     .array(z.enum(["Contact Form", "WhatsApp", "Email Only"]))
     .min(1, "Select at least one lead capture method"),
 
-  // Step 5 - Marketing & Ads
+  // Step 4 - Marketing Setup
   adsConnections: z
     .array(z.string())
     .min(1, "Select at least one ads connection"),
   preferredContactMethod: z
     .array(z.enum(["Phone", "Email", "WhatsApp"]))
     .min(1, "Select at least one contact method"),
+
+  // Step 5 - Payment
+  selectedPlan: z.enum(["starter", "pro", "agency"]),
+  billingCycle: z.enum(["monthly", "annually"]),
+  paymentMethod: z.enum(["card", "paypal"]),
 });
 
 export async function POST(req: NextRequest) {
@@ -50,16 +47,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = onboardingSchema.parse(body);
 
-    // Validate price range
-    if (data.minPrice >= data.maxPrice) {
-      return NextResponse.json(
-        {
-          message: "Maximum price must be greater than minimum price",
-          error: "Invalid price range",
-        },
-        { status: 400 }
-      );
-    }
+    // Additional validations can be added here if needed
 
     // Save onboarding data to database
     try {

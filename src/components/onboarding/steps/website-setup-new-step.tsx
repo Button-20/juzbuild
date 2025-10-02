@@ -4,8 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { WizardStepProps } from "@/types/onboarding";
-import { ArrowLeft, FileText, Layout, MessageCircle } from "lucide-react";
+import { ArrowLeft, FileText, Home, Layout, MessageCircle } from "lucide-react";
 import React from "react";
+
+const PROPERTY_TYPES = [
+  "Houses",
+  "Apartments", 
+  "Commercial",
+  "Rentals",
+  "Condos",
+  "Townhouses",
+  "Land",
+  "Luxury Homes",
+];
 
 const LAYOUT_STYLES = [
   {
@@ -15,14 +26,14 @@ const LAYOUT_STYLES = [
     preview: "🏛️",
   },
   {
-    value: "Modern",
+    value: "Modern", 
     name: "Modern",
     description: "Clean, contemporary design with card-based layouts",
     preview: "✨",
   },
   {
     value: "Minimal",
-    name: "Minimal",
+    name: "Minimal", 
     description: "Simple, focused design with plenty of white space",
     preview: "⚡",
   },
@@ -37,7 +48,7 @@ const AVAILABLE_PAGES = [
   },
   {
     id: "listings",
-    name: "Listings",
+    name: "Listings", 
     description: "Browse all available properties",
     required: true,
   },
@@ -50,31 +61,13 @@ const AVAILABLE_PAGES = [
   {
     id: "contact",
     name: "Contact",
-    description: "Contact information and inquiry form",
+    description: "Contact information and inquiry form", 
     required: true,
   },
   {
     id: "blog",
     name: "Blog",
     description: "Real estate tips and market updates",
-    required: false,
-  },
-  {
-    id: "services",
-    name: "Services",
-    description: "List of services you provide",
-    required: false,
-  },
-  {
-    id: "testimonials",
-    name: "Testimonials",
-    description: "Client reviews and success stories",
-    required: false,
-  },
-  {
-    id: "calculator",
-    name: "Mortgage Calculator",
-    description: "Help clients calculate payments",
     required: false,
   },
 ];
@@ -87,15 +80,15 @@ const LEAD_CAPTURE_OPTIONS = [
     icon: "📝",
   },
   {
-    value: "WhatsApp",
+    value: "WhatsApp", 
     name: "WhatsApp",
-    description: "Direct WhatsApp integration for instant messaging",
+    description: "Direct WhatsApp integration",
     icon: "💬",
   },
   {
     value: "Email Only",
     name: "Email Only",
-    description: "Simple email link for inquiries",
+    description: "Simple email link for inquiries", 
     icon: "📧",
   },
 ];
@@ -107,6 +100,19 @@ export default function WebsiteSetupStep({
   onNext,
   onBack,
 }: WizardStepProps) {
+  const handlePropertyTypeToggle = (type: string) => {
+    const currentTypes = data.propertyTypes || [];
+    if (currentTypes.includes(type)) {
+      updateData({
+        propertyTypes: currentTypes.filter((t) => t !== type),
+      });
+    } else {
+      updateData({
+        propertyTypes: [...currentTypes, type],
+      });
+    }
+  };
+
   const handlePageToggle = (pageId: string) => {
     const currentPages = data.includedPages || [];
     const page = AVAILABLE_PAGES.find((p) => p.id === pageId);
@@ -124,15 +130,26 @@ export default function WebsiteSetupStep({
     }
   };
 
+  const handleLeadCaptureToggle = (option: string) => {
+    const currentSelection = data.leadCapturePreference || [];
+    const isSelected = currentSelection.includes(option as any);
+    
+    if (isSelected) {
+      updateData({
+        leadCapturePreference: currentSelection.filter((item) => item !== option),
+      });
+    } else {
+      updateData({
+        leadCapturePreference: [...currentSelection, option as any],
+      });
+    }
+  };
+
   // Ensure required pages are always included
   React.useEffect(() => {
-    const requiredPages = AVAILABLE_PAGES.filter((p) => p.required).map(
-      (p) => p.id
-    );
+    const requiredPages = AVAILABLE_PAGES.filter((p) => p.required).map((p) => p.id);
     const currentPages = data.includedPages || [];
-    const missingRequired = requiredPages.filter(
-      (p) => !currentPages.includes(p)
-    );
+    const missingRequired = requiredPages.filter((p) => !currentPages.includes(p));
 
     if (missingRequired.length > 0) {
       updateData({
@@ -143,6 +160,46 @@ export default function WebsiteSetupStep({
 
   return (
     <div className="space-y-8">
+      {/* Property Types */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">Property Types</h3>
+          <p className="text-sm text-muted-foreground">
+            Select the types of properties you work with
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="flex items-center gap-2">
+            <Home className="w-4 h-4" />
+            Property Types *
+          </Label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {PROPERTY_TYPES.map((type) => {
+              const isSelected = data.propertyTypes?.includes(type);
+              return (
+                <div key={type} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={type}
+                    checked={isSelected}
+                    onCheckedChange={() => handlePropertyTypeToggle(type)}
+                  />
+                  <Label
+                    htmlFor={type}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {type}
+                  </Label>
+                </div>
+              );
+            })}
+          </div>
+          {errors.propertyTypes && (
+            <p className="text-destructive text-sm">{errors.propertyTypes}</p>
+          )}
+        </div>
+      </div>
+
       {/* Layout Style */}
       <div className="space-y-6">
         <div className="border-l-4 border-primary pl-4">
@@ -164,9 +221,7 @@ export default function WebsiteSetupStep({
                 <button
                   key={style.value}
                   type="button"
-                  onClick={() =>
-                    updateData({ layoutStyle: style.value as any })
-                  }
+                  onClick={() => updateData({ layoutStyle: style.value as any })}
                   className={`p-6 border-2 rounded-lg text-left transition-all hover:border-primary/50 ${
                     isSelected ? "border-primary bg-primary/5" : "border-border"
                   }`}
@@ -263,20 +318,12 @@ export default function WebsiteSetupStep({
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {LEAD_CAPTURE_OPTIONS.map((option) => {
-              const isSelected =
-                data.leadCapturePreference?.includes(option.value as any) ||
-                false;
+              const isSelected = data.leadCapturePreference?.includes(option.value as any) || false;
               return (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => {
-                    const currentSelection = data.leadCapturePreference || [];
-                    const newSelection = isSelected
-                      ? currentSelection.filter((item) => item !== option.value)
-                      : [...currentSelection, option.value as any];
-                    updateData({ leadCapturePreference: newSelection });
-                  }}
+                  onClick={() => handleLeadCaptureToggle(option.value)}
                   className={`p-6 border-2 rounded-lg text-left transition-all hover:border-primary/50 ${
                     isSelected ? "border-primary bg-primary/5" : "border-border"
                   }`}
@@ -291,8 +338,7 @@ export default function WebsiteSetupStep({
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            Selected: {data.leadCapturePreference?.length || 0} method
-            {data.leadCapturePreference?.length === 1 ? "" : "s"}
+            Selected: {data.leadCapturePreference?.length || 0} method{data.leadCapturePreference?.length === 1 ? '' : 's'}
           </p>
           {errors.leadCapturePreference && (
             <p className="text-destructive text-sm">
