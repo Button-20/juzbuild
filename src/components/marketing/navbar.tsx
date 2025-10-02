@@ -32,7 +32,7 @@ const Navbar = () => {
           )}
 
           <div className="flex items-center gap-4">
-            <Link href="/signup" className="hidden lg:block">
+            <Link href={isLive ? "/signup" : "#"} className="hidden lg:block">
               <Button variant="blue">Get Started</Button>
             </Link>
             {isLive && (

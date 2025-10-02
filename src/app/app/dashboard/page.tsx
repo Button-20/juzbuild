@@ -1,12 +1,18 @@
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import { DataTable } from "@/components/data-table";
+import WaitingList from "@/components/marketing/waiting-list";
 import { SectionCards } from "@/components/section-cards";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset } from "@/components/ui/sidebar";
+import { isLive } from "@/constants";
 
 import data from "./data.json";
 
 export default function Page() {
+  // Redirect to waitlist if app is not live
+  if (!isLive) {
+    return <WaitingList />;
+  }
   return (
     <SidebarInset>
       <SiteHeader />

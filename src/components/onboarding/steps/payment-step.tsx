@@ -261,10 +261,33 @@ export default function PaymentStep({
               <Input
                 id="cardNumber"
                 placeholder="1234 5678 9012 3456"
+                maxLength={19}
                 value={data.paymentMethod?.cardNumber || ""}
-                onChange={(e) =>
-                  handlePaymentMethodChange("cardNumber", e.target.value)
-                }
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                  value = value.replace(/(\d{4})(?=\d)/g, "$1 "); // Add space every 4 digits
+                  handlePaymentMethodChange("cardNumber", value);
+                }}
+                onKeyDown={(e) => {
+                  // Allow backspace, delete, tab, escape, enter
+                  if (
+                    [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                    // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                    (e.keyCode === 65 && e.ctrlKey === true) ||
+                    (e.keyCode === 67 && e.ctrlKey === true) ||
+                    (e.keyCode === 86 && e.ctrlKey === true) ||
+                    (e.keyCode === 88 && e.ctrlKey === true)
+                  ) {
+                    return;
+                  }
+                  // Ensure that it is a number and stop the keypress
+                  if (
+                    (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+                    (e.keyCode < 96 || e.keyCode > 105)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
                 className={errors.cardNumber ? "border-destructive" : ""}
               />
               {errors.cardNumber && (
@@ -279,10 +302,36 @@ export default function PaymentStep({
                 <Input
                   id="expiryDate"
                   placeholder="MM/YY"
+                  maxLength={5}
                   value={data.paymentMethod?.expiryDate || ""}
-                  onChange={(e) =>
-                    handlePaymentMethodChange("expiryDate", e.target.value)
-                  }
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                    if (value.length >= 2) {
+                      value =
+                        value.substring(0, 2) + "/" + value.substring(2, 4);
+                    }
+                    handlePaymentMethodChange("expiryDate", value);
+                  }}
+                  onKeyDown={(e) => {
+                    // Allow backspace, delete, tab, escape, enter
+                    if (
+                      [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+                      // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+                      (e.keyCode === 65 && e.ctrlKey === true) ||
+                      (e.keyCode === 67 && e.ctrlKey === true) ||
+                      (e.keyCode === 86 && e.ctrlKey === true) ||
+                      (e.keyCode === 88 && e.ctrlKey === true)
+                    ) {
+                      return;
+                    }
+                    // Ensure that it is a number and stop the keypress
+                    if (
+                      (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+                      (e.keyCode < 96 || e.keyCode > 105)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   className={errors.expiryDate ? "border-destructive" : ""}
                 />
                 {errors.expiryDate && (

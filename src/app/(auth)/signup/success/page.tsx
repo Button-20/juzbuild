@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@/components/global/container";
+import WaitingList from "@/components/marketing/waiting-list";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,10 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, Globe, Mail, Settings } from "lucide-react";
+import { isLive } from "@/constants";
+import { ArrowRight, CheckCircle, Globe, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function SignupSuccessPage() {
+  // Redirect to waitlist if app is not live
+  if (!isLive) {
+    return <WaitingList />;
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/50 py-12 px-4">
       <Container className="max-w-4xl mx-auto text-center">
@@ -26,8 +32,9 @@ export default function SignupSuccessPage() {
           Welcome to Juzbuild!
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Your real estate website is being created. We'll have everything ready
-          for you within the next few minutes.
+          Your account has been created successfully! Your AI-powered real
+          estate website is being built and will be ready within the next few
+          minutes.
         </p>
 
         {/* Status Cards */}
@@ -38,12 +45,12 @@ export default function SignupSuccessPage() {
                 <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <CardTitle className="text-green-900 dark:text-green-100">
-                Onboarding Complete
+                Account Created
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-green-700 dark:text-green-300">
-                Your preferences have been saved and your account is set up.
+                Your account and business profile have been successfully set up.
               </CardDescription>
             </CardContent>
           </Card>
@@ -59,7 +66,8 @@ export default function SignupSuccessPage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-blue-700 dark:text-blue-300">
-                We're creating your custom real estate website right now.
+                Your custom real estate website is being built with your
+                selected layout and features.
               </CardDescription>
             </CardContent>
           </Card>
@@ -67,15 +75,16 @@ export default function SignupSuccessPage() {
           <Card className="border-2 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950">
             <CardHeader className="pb-3">
               <div className="w-12 h-12 mx-auto bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-2">
-                <Mail className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-purple-900 dark:text-purple-100">
-                Email Incoming
+                Plan Activated
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-purple-700 dark:text-purple-300">
-                Check your email for login details and next steps.
+                Your subscription is active and marketing tools are being
+                configured.
               </CardDescription>
             </CardContent>
           </Card>
@@ -98,27 +107,29 @@ export default function SignupSuccessPage() {
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <h4 className="font-medium">Creating Your Website</h4>
+                    <h4 className="font-medium">Building Your Website</h4>
                     <p className="text-sm text-muted-foreground">
-                      Building pages based on your preferences and brand colors
+                      Creating your custom real estate website with your
+                      selected layout and property types
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <h4 className="font-medium">Setting Up Your Dashboard</h4>
+                    <h4 className="font-medium">Setting Up Lead Capture</h4>
                     <p className="text-sm text-muted-foreground">
-                      Preparing your property management and analytics tools
+                      Configuring your preferred contact methods and lead
+                      generation forms
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <h4 className="font-medium">Configuring Lead Capture</h4>
+                    <h4 className="font-medium">Activating Your Plan</h4>
                     <p className="text-sm text-muted-foreground">
-                      Setting up your preferred contact methods and forms
+                      Processing your subscription and unlocking all features
                     </p>
                   </div>
                 </div>
@@ -127,18 +138,20 @@ export default function SignupSuccessPage() {
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <h4 className="font-medium">Processing Property Data</h4>
+                    <h4 className="font-medium">Marketing Integration</h4>
                     <p className="text-sm text-muted-foreground">
-                      Importing any property files you uploaded
+                      Setting up your advertising platform connections and
+                      marketing tools
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                   <div>
-                    <h4 className="font-medium">Marketing Setup</h4>
+                    <h4 className="font-medium">Dashboard Preparation</h4>
                     <p className="text-sm text-muted-foreground">
-                      Preparing your advertising platform connections
+                      Creating your analytics dashboard and property management
+                      interface
                     </p>
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+import { isLive } from "@/constants";
 import { getCollection } from "@/lib";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -42,6 +43,17 @@ const onboardingSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Check if the app is live
+  if (!isLive) {
+    return NextResponse.json(
+      {
+        message: "Service temporarily unavailable. Please join our waitlist.",
+        error: "Service not live",
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     // Parse and validate request body
     const body = await req.json();
