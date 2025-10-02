@@ -107,7 +107,7 @@ const ContactForm = () => {
   ];
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-screen py-20" id="contact">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-screen py-20">
       {/* Background Effects */}
       <div className="absolute flex lg:hidden size-40 rounded-full bg-blue-500 blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
 
@@ -136,7 +136,10 @@ const ContactForm = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1
+            id="contact"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          >
             Get in Touch
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
