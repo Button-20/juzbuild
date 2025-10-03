@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextRequest } from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-here";
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  "b225f214f1660e420f7aade6fc133112adec572f30790197a0a3819bebb97f5905ac8f310e06f9d9d3c7ab9bf9231cd57fcbe1f075689a8cea12c0e2e3b23681";
 const JWT_EXPIRES_IN = "7d";
 
 export interface JWTPayload {

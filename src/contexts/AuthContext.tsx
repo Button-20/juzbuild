@@ -12,9 +12,10 @@ import {
 interface User {
   id: string;
   fullName: string;
+  avatar: string;
   email: string;
   companyName: string;
-  selectedPlan: string;
+  selectedPlan: 'starter' | 'pro' | 'agency';
 }
 
 interface AuthContextType {
@@ -92,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data = await response.json();
-      
+
       // Cookie is already set by the server as HTTP-only
       // Just update the user state
       setUser(data.user);
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error("Logout API error:", error);
     }
-    
+
     // Clear user state
     setUser(null);
 

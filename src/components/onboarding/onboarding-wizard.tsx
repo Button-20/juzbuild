@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingData, WizardStep } from "@/types/onboarding";
+import { debounce } from "@/utils/helpers";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useState } from "react";
 
@@ -207,7 +208,7 @@ export default function OnboardingWizard({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Email validation with debouncing
+  // Email validation function
   const validateEmailAsync = useCallback(async (email: string) => {
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
       return;
@@ -249,15 +250,21 @@ export default function OnboardingWizard({
   }, []);
 
   // Debounced email validation
-  React.useEffect(() => {
-    if (currentStep === 0 && formData.email) {
-      const timer = setTimeout(() => {
-        validateEmailAsync(formData.email!);
-      }, 500); // 500ms debounce
+  const debouncedValidateEmail = useCallback(
+    debounce((email: string) => {
+      if (currentStep === 0 && email) {
+        validateEmailAsync(email);
+      }
+    }, 500),
+    [currentStep, validateEmailAsync]
+  );
 
-      return () => clearTimeout(timer);
+  // Trigger debounced email validation when email changes
+  React.useEffect(() => {
+    if (formData.email) {
+      debouncedValidateEmail(formData.email);
     }
-  }, [currentStep, formData.email, validateEmailAsync]);
+  }, [formData.email, debouncedValidateEmail]);
 
   // Validate step when currentStep changes
   React.useEffect(() => {

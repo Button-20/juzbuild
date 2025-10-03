@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
     const usersCollection = await getCollection("users");
 
     // Find user by ID - Convert string ID to ObjectId for MongoDB query
-    const { ObjectId } = require('mongodb');
-    const user = await usersCollection.findOne({ _id: new ObjectId(tokenPayload.userId) });
+    const { ObjectId } = require("mongodb");
+    const user = await usersCollection.findOne({
+      _id: new ObjectId(tokenPayload.userId),
+    });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -26,6 +28,7 @@ export async function GET(request: NextRequest) {
     const userData = {
       id: user._id,
       fullName: user.fullName,
+      avatar: user.avatar || null,
       email: user.email,
       companyName: user.companyName,
       selectedPlan: user.selectedPlan,

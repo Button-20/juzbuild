@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import UserAvatar from "@/components/ui/user-avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, Settings, User } from "lucide-react";
+import Link from "next/link";
 
 export function SiteHeader() {
   const { user, logout } = useAuth();
@@ -32,7 +34,7 @@ export function SiteHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-2 px-2">
-              <User className="w-4 h-4" />
+              <UserAvatar size="sm" />
               <span className="hidden md:inline-block">
                 {user?.fullName || "User"}
               </span>
@@ -47,6 +49,12 @@ export function SiteHeader() {
               </p>
             </div>
             <DropdownMenuSeparator />
+            <Link href="/app/profile">
+              <DropdownMenuItem>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuItem>
               <Settings className="w-4 h-4 mr-2" />
               Settings
