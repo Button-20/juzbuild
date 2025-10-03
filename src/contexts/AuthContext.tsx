@@ -1,7 +1,6 @@
 "use client";
 
 import AuthLoading from "@/components/auth/AuthLoading";
-import Cookies from "js-cookie";
 import {
   createContext,
   ReactNode,
@@ -54,28 +53,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuth = async () => {
     try {
-      const token = Cookies.get("auth-token");
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
+      // Check if auth-token cookie exists (HTTP-only cookies aren't accessible via JS)
+      // So we'll just make the request and let the server read the cookie
       const response = await fetch("/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        method: "GET",
+        credentials: "include", // Important: Include cookies in the request
       });
 
       if (response.ok) {
         const userData = await response.json();
         setUser(userData.user);
       } else {
-        // Invalid token, remove it
-        Cookies.remove("auth-token");
+        // Invalid or missing token
+        setUser(null);
       }
     } catch (error) {
       console.error("Auth check failed:", error);
-      Cookies.remove("auth-token");
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Include cookies in request
         body: JSON.stringify({ email, password }),
       });
 
@@ -97,14 +92,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const data = await response.json();
-
-      // Set token in cookie
-      Cookies.set("auth-token", data.token, {
-        expires: 7, // 7 days
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
-
+      
+      // Cookie is already set by the server as HTTP-only
+      // Just update the user state
       setUser(data.user);
     } catch (error) {
       console.error("Login error:", error);
@@ -112,8 +102,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
-    Cookies.remove("auth-token");
+  const logout = async () => {
+    try {
+      // Call logout API to clear HTTP-only cookie
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout API error:", error);
+    }
+    
+    // Clear user state
     setUser(null);
 
     // Redirect to login page

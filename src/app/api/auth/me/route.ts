@@ -14,8 +14,9 @@ export async function GET(request: NextRequest) {
     // Get users collection
     const usersCollection = await getCollection("users");
 
-    // Find user by ID
-    const user = await usersCollection.findOne({ _id: tokenPayload.userId });
+    // Find user by ID - Convert string ID to ObjectId for MongoDB query
+    const { ObjectId } = require('mongodb');
+    const user = await usersCollection.findOne({ _id: new ObjectId(tokenPayload.userId) });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
