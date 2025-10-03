@@ -3,17 +3,13 @@
 import {
   ArrowUpCircleIcon,
   BarChartIcon,
-  CameraIcon,
   ClipboardListIcon,
   DatabaseIcon,
   FileCodeIcon,
   FileIcon,
-  FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
-  SearchIcon,
   SettingsIcon,
   UsersIcon,
 } from "lucide-react";
@@ -43,109 +39,61 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/app/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: ListIcon,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: BarChartIcon,
-    },
-    {
-      title: "Projects",
-      url: "#",
+      title: "Properties",
+      url: "/app/properties",
       icon: FolderIcon,
     },
     {
-      title: "Team",
-      url: "#",
+      title: "Analytics",
+      url: "/app/analytics",
+      icon: BarChartIcon,
+    },
+    {
+      title: "Leads",
+      url: "/app/leads",
       icon: UsersIcon,
     },
-  ],
-  navClouds: [
     {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileTextIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
+      title: "Website",
+      url: "/app/website",
       icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [
     {
+      title: "Profile",
+      url: "/app/profile",
+      icon: UsersIcon,
+    },
+    {
       title: "Settings",
-      url: "#",
+      url: "/app/settings",
       icon: SettingsIcon,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/app/help",
       icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
     },
   ],
   documents: [
     {
-      name: "Data Library",
-      url: "#",
+      name: "Property Library",
+      url: "/app/library",
       icon: DatabaseIcon,
     },
     {
       name: "Reports",
-      url: "#",
+      url: "/app/reports",
       icon: ClipboardListIcon,
     },
     {
-      name: "Word Assistant",
-      url: "#",
+      name: "Templates",
+      url: "/app/templates",
       icon: FileIcon,
     },
   ],
