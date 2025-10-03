@@ -53,7 +53,7 @@ const WIZARD_STEPS: WizardStep[] = [
 ];
 
 interface OnboardingWizardProps {
-  onComplete?: (data: OnboardingData) => void;
+  onComplete?: (data: OnboardingData, result?: any) => void;
 }
 
 export default function OnboardingWizard({
@@ -72,9 +72,16 @@ export default function OnboardingWizard({
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidatingEmail, setIsValidatingEmail] = useState(false);
+  const [isStepValid, setIsStepValid] = useState(false);
 
   const updateData = useCallback((newData: Partial<OnboardingData>) => {
-    setFormData((prev) => ({ ...prev, ...newData }));
+    setFormData((prev) => {
+      const updated = { ...prev, ...newData };
+      // Validate step after data update
+      setTimeout(() => validateCurrentStepAndUpdateButton(updated), 0);
+      return updated;
+    });
     // Clear errors for updated fields
     const updatedFields = Object.keys(newData);
     setErrors((prev) => {
@@ -87,6 +94,57 @@ export default function OnboardingWizard({
       return newErrors;
     });
   }, []);
+
+  // Validate current step without setting errors (for button state)
+  const validateCurrentStepAndUpdateButton = useCallback(
+    (data = formData) => {
+      let isValid = true;
+
+      switch (currentStep) {
+        case 0: // Account Setup Step
+          isValid = !!(
+            (
+              data.fullName?.trim() &&
+              data.email?.trim() &&
+              /\S+@\S+\.\S+/.test(data.email) &&
+              data.password?.trim() &&
+              data.password.length >= 8 &&
+              data.companyName?.trim() &&
+              data.country?.trim() &&
+              data.city?.trim() &&
+              !errors.email
+            ) // Email should not have validation errors
+          );
+          break;
+
+        case 1: // Business Profile Step
+          isValid = !!(data.tagline?.trim() && data.aboutSection?.trim());
+          break;
+
+        case 2: // Website Setup Step
+          isValid = !!(
+            data.propertyTypes?.length &&
+            data.layoutStyle &&
+            data.includedPages?.length &&
+            data.leadCapturePreference?.length
+          );
+          break;
+
+        case 3: // Marketing Setup Step
+          isValid = !!(
+            data.adsConnections?.length && data.preferredContactMethod?.length
+          );
+          break;
+
+        case 4: // Payment Step
+          isValid = !!(data.selectedPlan && data.billingCycle);
+          break;
+      }
+
+      setIsStepValid(isValid);
+    },
+    [currentStep, formData, errors.email]
+  );
 
   const validateCurrentStep = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -149,8 +207,66 @@ export default function OnboardingWizard({
     return Object.keys(newErrors).length === 0;
   };
 
+  // Email validation with debouncing
+  const validateEmailAsync = useCallback(async (email: string) => {
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      return;
+    }
+
+    setIsValidatingEmail(true);
+    try {
+      const response = await fetch(
+        `/api/check-email?email=${encodeURIComponent(email)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.exists) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "An account with this email already exists",
+        }));
+      } else {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          if (newErrors.email === "An account with this email already exists") {
+            delete newErrors.email;
+          }
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      console.error("Error validating email:", error);
+    } finally {
+      setIsValidatingEmail(false);
+    }
+  }, []);
+
+  // Debounced email validation
+  React.useEffect(() => {
+    if (currentStep === 0 && formData.email) {
+      const timer = setTimeout(() => {
+        validateEmailAsync(formData.email!);
+      }, 500); // 500ms debounce
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, formData.email, validateEmailAsync]);
+
+  // Validate step when currentStep changes
+  React.useEffect(() => {
+    validateCurrentStepAndUpdateButton();
+  }, [currentStep, validateCurrentStepAndUpdateButton]);
+
   const handleNext = async () => {
-    if (!validateCurrentStep()) return;
+    // Use both validation methods for final check
+    if (!validateCurrentStep() || !isStepValid) return;
 
     if (currentStep === WIZARD_STEPS.length - 1) {
       // Final submission
@@ -169,7 +285,7 @@ export default function OnboardingWizard({
         }
 
         const result = await response.json();
-        onComplete?.(formData as OnboardingData);
+        onComplete?.(formData as OnboardingData, result);
       } catch (error) {
         console.error("Error submitting onboarding:", error);
         setErrors({ submit: "Failed to submit. Please try again." });
@@ -343,6 +459,8 @@ export default function OnboardingWizard({
                         isFirst={currentStep === 0}
                         isLast={currentStep === WIZARD_STEPS.length - 1}
                         isSubmitting={isSubmitting}
+                        isStepValid={isStepValid}
+                        isValidatingEmail={isValidatingEmail}
                       />
                     </motion.div>
                   </AnimatePresence>

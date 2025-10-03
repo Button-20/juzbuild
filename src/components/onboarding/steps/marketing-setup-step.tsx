@@ -59,6 +59,7 @@ export default function MarketingSetupStep({
   errors,
   onNext,
   onBack,
+  isStepValid,
 }: WizardStepProps) {
   const handleAdsToggle = (platformId: string) => {
     const currentConnections = data.adsConnections || [];
@@ -241,7 +242,12 @@ export default function MarketingSetupStep({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={onNext} size="lg" className="px-8">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid}
+        >
           Continue to Payment
         </Button>
       </div>

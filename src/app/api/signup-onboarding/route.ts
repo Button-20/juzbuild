@@ -1,5 +1,6 @@
 import { isLive } from "@/constants";
 import { getCollection } from "@/lib";
+import { createSession, hashPassword } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -69,11 +70,52 @@ export async function POST(req: NextRequest) {
 
     // Additional validations can be added here if needed
 
-    // Save onboarding data to database
+    // Check if user already exists
+    const usersCollection = await getCollection("users");
+    const existingUser = await usersCollection.findOne({
+      email: data.email.toLowerCase(),
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        {
+          message: "An account with this email already exists.",
+          error: "User exists",
+        },
+        { status: 409 }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(data.password);
+
+    // Create user account
     try {
+      const userData = {
+        fullName: data.fullName,
+        email: data.email.toLowerCase(),
+        password: hashedPassword,
+        companyName: data.companyName,
+        country: data.country,
+        city: data.city,
+        tagline: data.tagline,
+        aboutSection: data.aboutSection,
+        selectedPlan: data.selectedPlan,
+        billingCycle: data.billingCycle,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isActive: true,
+      };
+
+      const userResult = await usersCollection.insertOne(userData);
+      const userId = userResult.insertedId.toString();
+
+      // Save onboarding data to database
       const onboardingCollection = await getCollection("onboarding");
       const onboardingRecord = {
         ...data,
+        userId: userId,
+        password: hashedPassword, // Store hashed password
         createdAt: new Date(),
         ipAddress:
           req.headers.get("x-forwarded-for") ||
@@ -86,6 +128,12 @@ export async function POST(req: NextRequest) {
 
       const result = await onboardingCollection.insertOne(onboardingRecord);
 
+      // Create session for the new user
+      const newUser = await usersCollection.findOne({
+        _id: userResult.insertedId,
+      });
+      const session = createSession(newUser);
+
       // TODO: Trigger website creation process here
       // This could involve:
       // 1. Creating website structure
@@ -94,17 +142,31 @@ export async function POST(req: NextRequest) {
       // 4. Setting up user account
       // 5. Sending welcome email
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         message:
           "Signup completed successfully! Your website is being created.",
         success: true,
         onboardingId: result.insertedId,
+        userId: userId,
+        token: session.token,
+        user: session.user,
         next_steps: [
           "Your website is being generated",
           "You'll receive an email with login details",
           "Initial setup should complete within 5-10 minutes",
         ],
       });
+
+      // Set HTTP-only cookie
+      response.cookies.set("auth-token", session.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        path: "/",
+      });
+
+      return response;
     } catch (dbError) {
       console.error("Database error:", dbError);
       return NextResponse.json(

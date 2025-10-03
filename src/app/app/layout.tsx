@@ -24,7 +24,7 @@ export default function RootLayout({
       >
         <Toaster richColors theme="dark" position="top-right" />
         <SidebarProvider>
-          <AppSidebar variant="inset" />
+          <AppSidebar variant="sidebar" />
           {children}
         </SidebarProvider>
       </body>

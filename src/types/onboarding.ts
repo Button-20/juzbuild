@@ -51,4 +51,6 @@ export interface WizardStepProps {
   isFirst: boolean;
   isLast: boolean;
   isSubmitting?: boolean;
+  isStepValid?: boolean;
+  isValidatingEmail?: boolean;
 }

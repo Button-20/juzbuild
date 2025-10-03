@@ -9,7 +9,7 @@ import React from "react";
 
 const PROPERTY_TYPES = [
   "Houses",
-  "Apartments", 
+  "Apartments",
   "Commercial",
   "Rentals",
   "Condos",
@@ -26,14 +26,14 @@ const LAYOUT_STYLES = [
     preview: "🏛️",
   },
   {
-    value: "Modern", 
+    value: "Modern",
     name: "Modern",
     description: "Clean, contemporary design with card-based layouts",
     preview: "✨",
   },
   {
     value: "Minimal",
-    name: "Minimal", 
+    name: "Minimal",
     description: "Simple, focused design with plenty of white space",
     preview: "⚡",
   },
@@ -48,7 +48,7 @@ const AVAILABLE_PAGES = [
   },
   {
     id: "listings",
-    name: "Listings", 
+    name: "Listings",
     description: "Browse all available properties",
     required: true,
   },
@@ -61,7 +61,7 @@ const AVAILABLE_PAGES = [
   {
     id: "contact",
     name: "Contact",
-    description: "Contact information and inquiry form", 
+    description: "Contact information and inquiry form",
     required: true,
   },
   {
@@ -80,7 +80,7 @@ const LEAD_CAPTURE_OPTIONS = [
     icon: "📝",
   },
   {
-    value: "WhatsApp", 
+    value: "WhatsApp",
     name: "WhatsApp",
     description: "Direct WhatsApp integration",
     icon: "💬",
@@ -88,7 +88,7 @@ const LEAD_CAPTURE_OPTIONS = [
   {
     value: "Email Only",
     name: "Email Only",
-    description: "Simple email link for inquiries", 
+    description: "Simple email link for inquiries",
     icon: "📧",
   },
 ];
@@ -99,6 +99,7 @@ export default function WebsiteSetupStep({
   errors,
   onNext,
   onBack,
+  isStepValid,
 }: WizardStepProps) {
   const handlePropertyTypeToggle = (type: string) => {
     const currentTypes = data.propertyTypes || [];
@@ -133,10 +134,12 @@ export default function WebsiteSetupStep({
   const handleLeadCaptureToggle = (option: string) => {
     const currentSelection = data.leadCapturePreference || [];
     const isSelected = currentSelection.includes(option as any);
-    
+
     if (isSelected) {
       updateData({
-        leadCapturePreference: currentSelection.filter((item) => item !== option),
+        leadCapturePreference: currentSelection.filter(
+          (item) => item !== option
+        ),
       });
     } else {
       updateData({
@@ -147,9 +150,13 @@ export default function WebsiteSetupStep({
 
   // Ensure required pages are always included
   React.useEffect(() => {
-    const requiredPages = AVAILABLE_PAGES.filter((p) => p.required).map((p) => p.id);
+    const requiredPages = AVAILABLE_PAGES.filter((p) => p.required).map(
+      (p) => p.id
+    );
     const currentPages = data.includedPages || [];
-    const missingRequired = requiredPages.filter((p) => !currentPages.includes(p));
+    const missingRequired = requiredPages.filter(
+      (p) => !currentPages.includes(p)
+    );
 
     if (missingRequired.length > 0) {
       updateData({
@@ -221,7 +228,9 @@ export default function WebsiteSetupStep({
                 <button
                   key={style.value}
                   type="button"
-                  onClick={() => updateData({ layoutStyle: style.value as any })}
+                  onClick={() =>
+                    updateData({ layoutStyle: style.value as any })
+                  }
                   className={`p-6 border-2 rounded-lg text-left transition-all hover:border-primary/50 ${
                     isSelected ? "border-primary bg-primary/5" : "border-border"
                   }`}
@@ -318,7 +327,9 @@ export default function WebsiteSetupStep({
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {LEAD_CAPTURE_OPTIONS.map((option) => {
-              const isSelected = data.leadCapturePreference?.includes(option.value as any) || false;
+              const isSelected =
+                data.leadCapturePreference?.includes(option.value as any) ||
+                false;
               return (
                 <button
                   key={option.value}
@@ -338,7 +349,8 @@ export default function WebsiteSetupStep({
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            Selected: {data.leadCapturePreference?.length || 0} method{data.leadCapturePreference?.length === 1 ? '' : 's'}
+            Selected: {data.leadCapturePreference?.length || 0} method
+            {data.leadCapturePreference?.length === 1 ? "" : "s"}
           </p>
           {errors.leadCapturePreference && (
             <p className="text-destructive text-sm">
@@ -354,7 +366,12 @@ export default function WebsiteSetupStep({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={onNext} size="lg" className="px-8">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid}
+        >
           Continue
         </Button>
       </div>

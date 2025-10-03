@@ -45,6 +45,8 @@ export default function SignupStep({
   errors,
   onNext,
   isFirst,
+  isStepValid,
+  isValidatingEmail,
 }: WizardStepProps) {
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -84,17 +86,30 @@ export default function SignupStep({
               <Mail className="w-4 h-4" />
               Email Address *
             </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              value={data.email || ""}
-              onChange={(e) => updateData({ email: e.target.value })}
-              className={`h-12 ${errors.email ? "border-destructive" : ""}`}
-            />
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={data.email || ""}
+                onChange={(e) => updateData({ email: e.target.value })}
+                className={`h-12 ${errors.email ? "border-destructive" : ""}`}
+              />
+              {isValidatingEmail && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+              )}
+            </div>
             {errors.email && (
               <p className="text-destructive text-sm">{errors.email}</p>
             )}
+            {data.email &&
+              /\S+@\S+\.\S+/.test(data.email) &&
+              !errors.email &&
+              !isValidatingEmail && (
+                <p className="text-green-600 text-sm">✓ Email is available</p>
+              )}
           </div>
 
           {/* Password */}
@@ -212,7 +227,12 @@ export default function SignupStep({
       {/* Navigation */}
       <div className="flex justify-between pt-6 border-t">
         <div></div>
-        <Button onClick={onNext} size="lg" className="px-8">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid || isValidatingEmail}
+        >
           Continue
         </Button>
       </div>

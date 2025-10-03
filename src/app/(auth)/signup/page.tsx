@@ -3,6 +3,7 @@
 import WaitingList from "@/components/marketing/waiting-list";
 import OnboardingWizard from "@/components/onboarding/onboarding-wizard";
 import { isLive } from "@/constants";
+import { useAuth } from "@/contexts/AuthContext";
 import { OnboardingData } from "@/types/onboarding";
 import { useRouter } from "next/navigation";
 
@@ -13,12 +14,20 @@ export default function SignupPage() {
   }
   const router = useRouter();
 
-  const handleOnboardingComplete = (data: OnboardingData) => {
-    // Handle successful onboarding completion
-    console.log("Onboarding completed:", data);
+  const { refreshAuth } = useAuth();
 
-    // Redirect to success page
-    router.push("/signup/success");
+  const handleOnboardingComplete = async (
+    data: OnboardingData,
+    result?: any
+  ) => {
+    // Handle successful onboarding completion
+    console.log("Onboarding completed:", data, result);
+
+    // Refresh auth state to pick up the new user session
+    await refreshAuth();
+
+    // Redirect to dashboard since user is now logged in
+    router.push("/app/dashboard");
   };
 
   return (

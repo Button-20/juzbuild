@@ -2,6 +2,7 @@ import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { base, heading } from "@/constants";
 import { subheading } from "@/constants/fonts";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { cn } from "@/lib";
 import { generateMetadata } from "@/utils";
 
@@ -22,8 +23,10 @@ export default function RootLayout({
           subheading.variable
         )}
       >
-        <Toaster richColors theme="dark" position="top-right" />
-        {children}
+        <AuthProvider>
+          <Toaster richColors theme="dark" position="top-right" />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

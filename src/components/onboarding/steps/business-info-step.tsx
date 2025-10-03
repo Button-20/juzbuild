@@ -34,6 +34,7 @@ export default function BusinessInfoStep({
   onNext,
   onBack,
   isFirst,
+  isStepValid,
 }: WizardStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -205,7 +206,12 @@ export default function BusinessInfoStep({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={onNext} size="lg" className="px-8">
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid}
+        >
           Continue
         </Button>
       </div>

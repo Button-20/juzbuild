@@ -23,6 +23,8 @@ export default function PaymentStep({
   errors,
   onNext,
   onBack,
+  isSubmitting,
+  isStepValid,
 }: WizardStepProps) {
   const selectedPlan =
     PRICING_PLANS.find((plan) => plan.id === data.selectedPlan) ||
@@ -471,8 +473,13 @@ export default function PaymentStep({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button onClick={onNext} size="lg" className="px-8">
-          Start Free Trial
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid || isSubmitting}
+        >
+          {isSubmitting ? "Creating Account..." : "Start Free Trial"}
         </Button>
       </div>
     </div>
