@@ -15,7 +15,8 @@ interface User {
   avatar: string;
   email: string;
   companyName: string;
-  selectedPlan: 'starter' | 'pro' | 'agency';
+  domainName: string;
+  selectedPlan: "starter" | "pro" | "agency";
 }
 
 interface AuthContextType {

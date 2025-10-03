@@ -11,7 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { WizardStepProps } from "@/types/onboarding";
-import { Building, Eye, EyeOff, Lock, Mail, MapPin, User } from "lucide-react";
+import { debounce } from "@/utils/helpers";
+import {
+  Building,
+  Eye,
+  EyeOff,
+  Globe,
+  Lock,
+  Mail,
+  MapPin,
+  User,
+} from "lucide-react";
 import React from "react";
 
 // Removed ROLES since it's no longer needed in the simplified flow
@@ -49,6 +59,62 @@ export default function SignupStep({
   isValidatingEmail,
 }: WizardStepProps) {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isValidatingDomain, setIsValidatingDomain] = React.useState(false);
+  const [domainAvailable, setDomainAvailable] = React.useState<boolean | null>(
+    null
+  );
+
+  // Domain validation function
+  const validateDomainAsync = React.useCallback(async (domain: string) => {
+    if (
+      !domain.trim() ||
+      domain.length < 3 ||
+      !/^[a-zA-Z0-9-]+$/.test(domain)
+    ) {
+      setDomainAvailable(null);
+      return;
+    }
+
+    setIsValidatingDomain(true);
+    try {
+      const response = await fetch(
+        `/api/check-domain?domain=${encodeURIComponent(domain)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json();
+      setDomainAvailable(result.available);
+    } catch (error) {
+      console.error("Error validating domain:", error);
+      setDomainAvailable(null);
+    } finally {
+      setIsValidatingDomain(false);
+    }
+  }, []);
+
+  // Debounced domain validation
+  const debouncedValidateDomain = React.useCallback(
+    debounce((domain: string) => {
+      if (domain) {
+        validateDomainAsync(domain);
+      }
+    }, 500),
+    [validateDomainAsync]
+  );
+
+  // Trigger debounced domain validation when domain changes
+  React.useEffect(() => {
+    if (data.domainName) {
+      debouncedValidateDomain(data.domainName);
+    } else {
+      setDomainAvailable(null);
+    }
+  }, [data.domainName, debouncedValidateDomain]);
 
   return (
     <div className="space-y-8">
@@ -159,22 +225,99 @@ export default function SignupStep({
           </p>
         </div>
 
-        {/* Company Name */}
-        <div className="space-y-2">
-          <Label htmlFor="companyName" className="flex items-center gap-2">
-            <Building className="w-4 h-4" />
-            Company/Agency Name *
-          </Label>
-          <Input
-            id="companyName"
-            placeholder="Premier Real Estate Group"
-            value={data.companyName || ""}
-            onChange={(e) => updateData({ companyName: e.target.value })}
-            className={`h-12 ${errors.companyName ? "border-destructive" : ""}`}
-          />
-          {errors.companyName && (
-            <p className="text-destructive text-sm">{errors.companyName}</p>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Company Name */}
+          <div className="space-y-2">
+            <Label htmlFor="companyName" className="flex items-center gap-2">
+              <Building className="w-4 h-4" />
+              Company/Agency Name *
+            </Label>
+            <Input
+              id="companyName"
+              placeholder="Premier Real Estate Group"
+              value={data.companyName || ""}
+              onChange={(e) => updateData({ companyName: e.target.value })}
+              className={`h-12 ${
+                errors.companyName ? "border-destructive" : ""
+              }`}
+            />
+            {errors.companyName && (
+              <p className="text-destructive text-sm">{errors.companyName}</p>
+            )}
+          </div>
+
+          {/* Domain Name */}
+          <div className="space-y-2">
+            <Label htmlFor="domainName" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Website Domain Name *
+            </Label>
+            <div className="relative">
+              <Input
+                id="domainName"
+                placeholder="premier-realty"
+                value={data.domainName || ""}
+                onChange={(e) => {
+                  // Clean the input to only allow valid domain characters
+                  const cleanValue = e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9-]/g, "");
+                  updateData({ domainName: cleanValue });
+                  setDomainAvailable(null); // Reset validation state
+                }}
+                className={`h-12 pr-32 ${
+                  errors.domainName
+                    ? "border-destructive"
+                    : domainAvailable === false
+                    ? "border-destructive"
+                    : domainAvailable === true
+                    ? "border-green-500"
+                    : ""
+                }`}
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                {isValidatingDomain && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  .juzbuild.com
+                </span>
+              </div>
+            </div>
+            {errors.domainName && (
+              <p className="text-destructive text-sm">{errors.domainName}</p>
+            )}
+            {data.domainName && !errors.domainName && !isValidatingDomain && (
+              <>
+                {domainAvailable === true && (
+                  <p className="text-green-600 text-sm">
+                    ✓{" "}
+                    <span className="font-medium">
+                      {data.domainName}.juzbuild.com
+                    </span>{" "}
+                    is available!
+                  </p>
+                )}
+                {domainAvailable === false && (
+                  <p className="text-destructive text-sm">
+                    ✗{" "}
+                    <span className="font-medium">
+                      {data.domainName}.juzbuild.com
+                    </span>{" "}
+                    is already taken
+                  </p>
+                )}
+                {domainAvailable === null && data.domainName.length >= 3 && (
+                  <p className="text-sm text-muted-foreground">
+                    Your website will be:{" "}
+                    <span className="font-medium text-primary">
+                      {data.domainName}.juzbuild.com
+                    </span>
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

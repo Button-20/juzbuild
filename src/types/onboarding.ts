@@ -4,6 +4,7 @@ export interface OnboardingData {
   email: string;
   password: string;
   companyName: string;
+  domainName: string;
   country: string;
   city: string;
 

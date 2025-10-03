@@ -11,6 +11,13 @@ const onboardingSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   phoneNumber: z.string().optional(),
   companyName: z.string().min(2, "Business name is required"),
+  domainName: z
+    .string()
+    .min(3, "Domain name is required")
+    .regex(
+      /^[a-zA-Z0-9-]+$/,
+      "Domain name can only contain letters, numbers, and hyphens"
+    ),
   country: z.string().min(2, "Country is required"),
   city: z.string().min(2, "City is required"),
 
@@ -96,6 +103,7 @@ export async function POST(req: NextRequest) {
         email: data.email.toLowerCase(),
         password: hashedPassword,
         companyName: data.companyName,
+        domainName: data.domainName.toLowerCase(),
         country: data.country,
         city: data.city,
         tagline: data.tagline,

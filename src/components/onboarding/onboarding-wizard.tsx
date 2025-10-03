@@ -111,10 +111,14 @@ export default function OnboardingWizard({
               data.password?.trim() &&
               data.password.length >= 8 &&
               data.companyName?.trim() &&
+              data.domainName?.trim() &&
+              /^[a-zA-Z0-9-]+$/.test(data.domainName || "") &&
+              data.domainName.length >= 3 &&
               data.country?.trim() &&
               data.city?.trim() &&
-              !errors.email
-            ) // Email should not have validation errors
+              !errors.email &&
+              !errors.domainName
+            ) // Email and domain should not have validation errors
           );
           break;
 
@@ -163,6 +167,13 @@ export default function OnboardingWizard({
           newErrors.password = "Password must be at least 8 characters";
         if (!formData.companyName?.trim())
           newErrors.companyName = "Business name is required";
+        if (!formData.domainName?.trim())
+          newErrors.domainName = "Domain name is required";
+        else if (!/^[a-zA-Z0-9-]+$/.test(formData.domainName))
+          newErrors.domainName =
+            "Domain name can only contain letters, numbers, and hyphens";
+        else if (formData.domainName.length < 3)
+          newErrors.domainName = "Domain name must be at least 3 characters";
         if (!formData.country?.trim())
           newErrors.country = "Country is required";
         if (!formData.city?.trim()) newErrors.city = "City is required";

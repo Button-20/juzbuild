@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       avatar: user.avatar || null,
       email: user.email,
       companyName: user.companyName,
+      domainName: user.domainName,
       selectedPlan: user.selectedPlan,
       country: user.country,
       city: user.city,
