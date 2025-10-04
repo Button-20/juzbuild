@@ -1,5 +1,5 @@
 import { getCollection } from "@/lib";
-import { sendWaitlistWelcomeEmail } from "@/lib/email";
+import { sendWaitlistWelcomeEmail, sendWaitlistNotificationEmail } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -27,8 +27,11 @@ export async function POST(request: NextRequest) {
     // Insert email
     await collection.insertOne({ email, createdAt: new Date() });
 
-    // Send welcome email
+    // Send welcome email to user
     await sendWaitlistWelcomeEmail(email);
+
+    // Send notification email to admin
+    await sendWaitlistNotificationEmail(email);
 
     return NextResponse.json({ message: "Successfully joined waitlist" });
   } catch (error) {

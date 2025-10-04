@@ -2,6 +2,7 @@
 // Prevents email services from being bundled in client-side code
 
 let sendWaitlistWelcomeEmail: (email: string) => Promise<void>;
+let sendWaitlistNotificationEmail: (email: string) => Promise<void>;
 let sendContactEmail: ({
   name,
   email,
@@ -215,6 +216,24 @@ if (typeof window === "undefined") {
           }
         );
       },
+      sendWaitlistNotification: async (userEmail: string): Promise<void> => {
+        const adminEmail = "jasonaddy51@gmail.com";
+        const signupTime = new Date().toLocaleString();
+        
+        await sendTemplateEmail(
+          adminEmail,
+          "waitlist-notification",
+          {
+            userEmail,
+            signupTime,
+            currentYear: new Date().getFullYear().toString(),
+          },
+          {
+            subject: "🎉 New Waitlist Signup - Juzbuild",
+            from: `Juzbuild Notifications <${process.env.EMAIL_USER}>`,
+          }
+        );
+      },
       sendContactEmails: sendContactEmailsInternal,
     };
   });
@@ -222,6 +241,11 @@ if (typeof window === "undefined") {
   sendWaitlistWelcomeEmail = async (email: string): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendWaitlistEmail(email);
+  };
+
+  sendWaitlistNotificationEmail = async (email: string): Promise<void> => {
+    const emailService = await emailServicePromise;
+    return emailService.sendWaitlistNotification(email);
   };
 
   sendContactEmail = async (contactData: {
@@ -242,10 +266,15 @@ if (typeof window === "undefined") {
       new Error("Email operations are not available on the client side")
     );
 
+  sendWaitlistNotificationEmail = () =>
+    Promise.reject(
+      new Error("Email operations are not available on the client side")
+    );
+
   sendContactEmail = () =>
     Promise.reject(
       new Error("Email operations are not available on the client side")
     );
 }
 
-export { sendContactEmail, sendWaitlistWelcomeEmail };
+export { sendContactEmail, sendWaitlistWelcomeEmail, sendWaitlistNotificationEmail };
