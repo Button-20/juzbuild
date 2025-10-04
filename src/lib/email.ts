@@ -219,7 +219,7 @@ if (typeof window === "undefined") {
       sendWaitlistNotification: async (userEmail: string): Promise<void> => {
         const adminEmail = "jasonaddy51@gmail.com";
         const signupTime = new Date().toLocaleString();
-        
+
         await sendTemplateEmail(
           adminEmail,
           "waitlist-notification",
@@ -277,4 +277,8 @@ if (typeof window === "undefined") {
     );
 }
 
-export { sendContactEmail, sendWaitlistWelcomeEmail, sendWaitlistNotificationEmail };
+export {
+  sendContactEmail,
+  sendWaitlistNotificationEmail,
+  sendWaitlistWelcomeEmail,
+};
