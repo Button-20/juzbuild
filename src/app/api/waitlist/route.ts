@@ -1,8 +1,8 @@
-import { getCollection } from "@/lib";
 import {
   sendWaitlistNotificationEmail,
   sendWaitlistWelcomeEmail,
 } from "@/lib/email";
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

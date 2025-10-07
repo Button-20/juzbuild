@@ -1,0 +1,15 @@
+{
+  "name": "finaltest1759848593319",
+  "version": "1.0.0",
+  "description": "Real estate website for Final Test Realty",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  }
+}

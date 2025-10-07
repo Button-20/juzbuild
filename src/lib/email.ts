@@ -3,6 +3,16 @@
 
 let sendWaitlistWelcomeEmail: (email: string) => Promise<void>;
 let sendWaitlistNotificationEmail: (email: string) => Promise<void>;
+let sendWebsiteCreationEmail: (websiteData: {
+  userEmail: string;
+  companyName: string;
+  websiteName: string;
+  domain: string;
+  theme: string;
+  layoutStyle: string;
+  websiteUrl: string;
+  createdAt: string;
+}) => Promise<void>;
 let sendContactEmail: ({
   name,
   email,
@@ -234,6 +244,35 @@ if (typeof window === "undefined") {
           }
         );
       },
+      sendWebsiteCreationEmail: async (websiteData: {
+        userEmail: string;
+        companyName: string;
+        websiteName: string;
+        domain: string;
+        theme: string;
+        layoutStyle: string;
+        websiteUrl: string;
+        createdAt: string;
+      }): Promise<void> => {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const dashboardUrl = `${baseUrl}/dashboard`;
+        const currentYear = new Date().getFullYear();
+
+        await sendTemplateEmail(
+          websiteData.userEmail,
+          "website-creation",
+          {
+            ...websiteData,
+            baseUrl,
+            dashboardUrl,
+            currentYear: currentYear.toString(),
+          },
+          {
+            subject: `🎉 Your Website is Live! - ${websiteData.companyName}`,
+          }
+        );
+      },
       sendContactEmails: sendContactEmailsInternal,
     };
   });
@@ -246,6 +285,20 @@ if (typeof window === "undefined") {
   sendWaitlistNotificationEmail = async (email: string): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendWaitlistNotification(email);
+  };
+
+  sendWebsiteCreationEmail = async (websiteData: {
+    userEmail: string;
+    companyName: string;
+    websiteName: string;
+    domain: string;
+    theme: string;
+    layoutStyle: string;
+    websiteUrl: string;
+    createdAt: string;
+  }): Promise<void> => {
+    const emailService = await emailServicePromise;
+    return emailService.sendWebsiteCreationEmail(websiteData);
   };
 
   sendContactEmail = async (contactData: {
@@ -271,6 +324,11 @@ if (typeof window === "undefined") {
       new Error("Email operations are not available on the client side")
     );
 
+  sendWebsiteCreationEmail = () =>
+    Promise.reject(
+      new Error("Email operations are not available on the client side")
+    );
+
   sendContactEmail = () =>
     Promise.reject(
       new Error("Email operations are not available on the client side")
@@ -281,4 +339,5 @@ export {
   sendContactEmail,
   sendWaitlistNotificationEmail,
   sendWaitlistWelcomeEmail,
+  sendWebsiteCreationEmail,
 };

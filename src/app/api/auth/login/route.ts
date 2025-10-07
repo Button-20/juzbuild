@@ -1,5 +1,5 @@
-import { getCollection } from "@/lib";
 import { createSession, verifyPassword } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

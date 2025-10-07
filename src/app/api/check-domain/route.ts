@@ -1,4 +1,5 @@
-import { getCollection, getNamecheapInstance } from "@/lib";
+import { getCollection } from "@/lib/mongodb";
+import { getNamecheapInstance } from "@/lib/namecheap";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

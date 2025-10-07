@@ -1,5 +1,8 @@
 import { cn } from "./cn";
-import { getCollection, getDatabase } from "./mongodb";
-import { NamecheapAPI, getNamecheapInstance } from "./namecheap";
 
-export { NamecheapAPI, cn, getCollection, getDatabase, getNamecheapInstance };
+// Only export client-safe utilities
+export { cn };
+
+// Server-side utilities should be imported directly from their modules:
+// - getCollection, getDatabase from "./mongodb"
+// - NamecheapAPI, getNamecheapInstance from "./namecheap"

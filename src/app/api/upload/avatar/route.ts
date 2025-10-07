@@ -1,6 +1,6 @@
-import { getCollection } from "@/lib";
 import { getUserFromRequest } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

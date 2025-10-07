@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "title": "Luxury Family Home",
+    "description": "Beautiful 4-bedroom family home in prime location",
+    "price": "$750,000",
+    "bedrooms": 4,
+    "bathrooms": 3,
+    "sqft": 2500,
+    "type": "house",
+    "status": "For Sale",
+    "featured": true,
+    "images": [
+      "/images/property1.jpg"
+    ],
+    "address": "123 Main Street",
+    "city": "Downtown"
+  },
+  {
+    "id": 2,
+    "title": "Modern Downtown Condo",
+    "description": "Contemporary 2-bedroom condo with city views",
+    "price": "$450,000",
+    "bedrooms": 2,
+    "bathrooms": 2,
+    "sqft": 1200,
+    "type": "Condo",
+    "status": "For Sale",
+    "featured": true,
+    "images": [
+      "/images/property2.jpg"
+    ],
+    "address": "456 Downtown Ave",
+    "city": "City Center"
+  },
+  {
+    "id": 3,
+    "title": "Cozy Starter Home",
+    "description": "Perfect first home with garden and garage",
+    "price": "$325,000",
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "sqft": 1800,
+    "type": "House",
+    "status": "For Sale",
+    "featured": false,
+    "images": [
+      "/images/property3.jpg"
+    ],
+    "address": "789 Residential St",
+    "city": "Suburbs"
+  }
+]

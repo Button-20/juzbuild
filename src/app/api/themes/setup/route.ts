@@ -1,4 +1,4 @@
-import { getCollection } from "@/lib";
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 // Sample themes for initial setup

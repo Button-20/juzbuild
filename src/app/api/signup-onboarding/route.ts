@@ -1,6 +1,6 @@
 import { isLive } from "@/constants";
-import { getCollection } from "@/lib";
 import { createSession, hashPassword } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -144,13 +144,54 @@ export async function POST(req: NextRequest) {
       });
       const session = createSession(newUser);
 
-      // TODO: Trigger website creation process here
-      // This could involve:
-      // 1. Creating website structure
-      // 2. Setting up database collections for the user
-      // 3. Generating initial pages
-      // 4. Setting up user account
-      // 5. Sending welcome email
+      // Trigger automated website creation workflow
+      try {
+        console.log(`Triggering website creation for user: ${userId}`);
+
+        // Prepare website creation data
+        const websiteData = {
+          userId: userId,
+          websiteName: data.domainName, // Using domain name as website name
+          userEmail: data.email,
+          fullName: data.fullName,
+          companyName: data.companyName,
+          domainName: data.domainName,
+          brandColors: data.brandColors,
+          tagline: data.tagline,
+          aboutSection: data.aboutSection,
+          selectedTheme: data.selectedTheme,
+          layoutStyle: data.layoutStyle,
+          propertyTypes: data.propertyTypes,
+          includedPages: data.includedPages,
+          preferredContactMethod: data.preferredContactMethod,
+        };
+
+        // Create website in background (fire and forget for better UX)
+        // In production, consider using a queue system for reliability
+        fetch(
+          `${
+            process.env.NEXTAUTH_URL || "http://localhost:3000"
+          }/api/workflow/create-site`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(websiteData),
+          }
+        ).catch((error) => {
+          console.error("Background website creation failed:", error);
+          // In production, this should be logged and potentially retried
+        });
+
+        console.log(`Website creation initiated for: ${data.domainName}`);
+      } catch (workflowError) {
+        console.error(
+          "Failed to trigger website creation workflow:",
+          workflowError
+        );
+        // Don't fail the signup if website creation fails - user can retry later
+      }
 
       const response = NextResponse.json({
         message:
