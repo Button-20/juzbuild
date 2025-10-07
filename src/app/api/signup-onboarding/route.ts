@@ -31,6 +31,7 @@ const onboardingSchema = z.object({
     .array(z.string())
     .min(1, "Select at least one property type"),
   layoutStyle: z.enum(["Classic", "Modern", "Minimal"]),
+  selectedTheme: z.string().min(1, "Please select a theme"),
   includedPages: z.array(z.string()).min(1, "Select at least one page"),
   leadCapturePreference: z
     .array(z.enum(["Contact Form", "WhatsApp", "Email Only"]))
@@ -108,6 +109,7 @@ export async function POST(req: NextRequest) {
         city: data.city,
         tagline: data.tagline,
         aboutSection: data.aboutSection,
+        selectedTheme: data.selectedTheme,
         selectedPlan: data.selectedPlan,
         billingCycle: data.billingCycle,
         createdAt: new Date(),

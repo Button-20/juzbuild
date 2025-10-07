@@ -3,8 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { WizardStepProps } from "@/types/onboarding";
-import { ArrowLeft, FileText, Home, Layout, MessageCircle } from "lucide-react";
+import { WebsiteTheme, WizardStepProps } from "@/types/onboarding";
+import {
+  ArrowLeft,
+  Check,
+  FileText,
+  Home,
+  Layout,
+  MessageCircle,
+  Palette,
+} from "lucide-react";
 import React from "react";
 
 const PROPERTY_TYPES = [
@@ -101,6 +109,32 @@ export default function WebsiteSetupStep({
   onBack,
   isStepValid,
 }: WizardStepProps) {
+  const [themes, setThemes] = React.useState<WebsiteTheme[]>([]);
+  const [loadingThemes, setLoadingThemes] = React.useState(true);
+
+  // Fetch themes on component mount
+  React.useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const response = await fetch("/api/themes");
+        if (response.ok) {
+          const result = await response.json();
+          setThemes(result.themes || []);
+        } else {
+          console.error("Failed to fetch themes");
+          // Set default themes if API fails
+          setThemes([]);
+        }
+      } catch (error) {
+        console.error("Error fetching themes:", error);
+        setThemes([]);
+      } finally {
+        setLoadingThemes(false);
+      }
+    };
+
+    fetchThemes();
+  }, []);
   const handlePropertyTypeToggle = (type: string) => {
     const currentTypes = data.propertyTypes || [];
     if (currentTypes.includes(type)) {
@@ -246,6 +280,175 @@ export default function WebsiteSetupStep({
           </div>
           {errors.layoutStyle && (
             <p className="text-destructive text-sm">{errors.layoutStyle}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Theme Selection */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">Website Theme</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose a professional theme that matches your brand
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <Label className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Select Theme *
+          </Label>
+
+          {loadingThemes ? (
+            <div className="flex items-center justify-center p-8 border-2 border-dashed border-border rounded-lg">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-muted-foreground">
+                Loading themes...
+              </span>
+            </div>
+          ) : themes.length === 0 ? (
+            <div className="p-8 border-2 border-dashed border-border rounded-lg text-center">
+              <Palette className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">No themes available</p>
+              <p className="text-sm text-muted-foreground">
+                Please contact support
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {themes.map((theme) => {
+                const isSelected = data.selectedTheme === theme.id;
+                return (
+                  <div
+                    key={theme.id}
+                    className={`group relative border-2 rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+                      isSelected
+                        ? "border-primary shadow-lg ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => updateData({ selectedTheme: theme.id })}
+                  >
+                    {/* Theme Preview Image */}
+                    <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                      {theme.previewImage ? (
+                        <img
+                          src={theme.previewImage}
+                          alt={`${theme.name} preview`}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            // Fallback to gradient background if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            target.parentElement!.innerHTML = `
+                              <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-${
+                                theme.category === "modern"
+                                  ? "blue"
+                                  : theme.category === "luxury"
+                                  ? "purple"
+                                  : theme.category === "minimal"
+                                  ? "gray"
+                                  : "indigo"
+                              }-100 to-${
+                              theme.category === "modern"
+                                ? "blue"
+                                : theme.category === "luxury"
+                                ? "purple"
+                                : theme.category === "minimal"
+                                ? "gray"
+                                : "indigo"
+                            }-200">
+                                <div class="w-16 h-16 mb-2 opacity-50">
+                                  <svg fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h4v4H7V7zm6 0h4v2h-4V7zm0 4h4v2h-4v-2zm-6 4h10v2H7v-2z"/></svg>
+                                </div>
+                                <div class="text-center">
+                                  <div class="font-medium text-gray-700">${
+                                    theme.name
+                                  }</div>
+                                  <div class="text-sm text-gray-500 capitalize">${
+                                    theme.category
+                                  }</div>
+                                </div>
+                              </div>
+                            `;
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br ${
+                            theme.category === "modern"
+                              ? "from-blue-100 to-blue-200"
+                              : theme.category === "luxury"
+                              ? "from-purple-100 to-purple-200"
+                              : theme.category === "minimal"
+                              ? "from-gray-100 to-gray-200"
+                              : theme.category === "corporate"
+                              ? "from-indigo-100 to-indigo-200"
+                              : "from-emerald-100 to-emerald-200"
+                          }`}
+                        >
+                          <Layout className="w-16 h-16 mb-2 opacity-50" />
+                          <div className="text-center">
+                            <div className="font-medium text-gray-700">
+                              {theme.name}
+                            </div>
+                            <div className="text-sm text-gray-500 capitalize">
+                              {theme.category}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Selected Indicator */}
+                      {isSelected && (
+                        <div className="absolute top-3 right-3 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center">
+                          <Check className="w-4 h-4" />
+                        </div>
+                      )}
+
+                      {/* Category Badge */}
+                      <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 text-white text-xs rounded-full capitalize">
+                        {theme.category}
+                      </div>
+                    </div>
+
+                    {/* Theme Info */}
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-foreground">
+                          {theme.name}
+                        </h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {theme.description}
+                      </p>
+
+                      {/* Features */}
+                      {theme.features && theme.features.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {theme.features.slice(0, 3).map((feature, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-accent text-accent-foreground text-xs rounded-md"
+                            >
+                              {feature}
+                            </span>
+                          ))}
+                          {theme.features.length > 3 && (
+                            <span className="px-2 py-1 bg-accent text-accent-foreground text-xs rounded-md">
+                              +{theme.features.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {errors.selectedTheme && (
+            <p className="text-destructive text-sm">{errors.selectedTheme}</p>
           )}
         </div>
       </div>

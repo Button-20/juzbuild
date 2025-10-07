@@ -1,3 +1,16 @@
+export interface WebsiteTheme {
+  id: string;
+  name: string;
+  description: string;
+  previewImage: string;
+  thumbnailImage: string;
+  category: "modern" | "classic" | "minimal" | "luxury" | "corporate";
+  features: string[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface OnboardingData {
   // Step 1 - Account Setup
   fullName: string;
@@ -17,6 +30,7 @@ export interface OnboardingData {
   // Step 3 - Website Setup
   propertyTypes: string[];
   layoutStyle: "Classic" | "Modern" | "Minimal";
+  selectedTheme: string; // Theme ID selected by user
   includedPages: string[];
   leadCapturePreference: ("Contact Form" | "WhatsApp" | "Email Only")[];
 

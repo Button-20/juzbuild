@@ -130,6 +130,7 @@ export default function OnboardingWizard({
           isValid = !!(
             data.propertyTypes?.length &&
             data.layoutStyle &&
+            data.selectedTheme &&
             data.includedPages?.length &&
             data.leadCapturePreference?.length
           );
@@ -191,6 +192,8 @@ export default function OnboardingWizard({
           newErrors.propertyTypes = "Select at least one property type";
         if (!formData.layoutStyle)
           newErrors.layoutStyle = "Layout style is required";
+        if (!formData.selectedTheme)
+          newErrors.selectedTheme = "Please select a theme";
         if (!formData.includedPages?.length)
           newErrors.includedPages = "Select at least one page";
         if (!formData.leadCapturePreference?.length)
