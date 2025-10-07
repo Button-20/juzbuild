@@ -59,8 +59,6 @@ export async function checkDomainEnhanced(
   return response.json();
 }
 
-
-
 /**
  * Format domain name for display
  */

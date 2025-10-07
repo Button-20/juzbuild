@@ -18,9 +18,10 @@ export async function GET(request: NextRequest) {
     const cleanDomain = domainName.toLowerCase().trim();
 
     // Validate domain format - allow TLDs if external checking is requested
-    if (checkExternal && cleanDomain.includes('.')) {
+    if (checkExternal && cleanDomain.includes(".")) {
       // Full domain validation for external checking
-      const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
+      const domainRegex =
+        /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
       if (!domainRegex.test(cleanDomain)) {
         return NextResponse.json(
           {
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest) {
           {
             exists: false,
             available: false,
-            message: "Domain name can only contain letters, numbers, and hyphens",
+            message:
+              "Domain name can only contain letters, numbers, and hyphens",
           },
           { status: 400 }
         );
@@ -55,7 +57,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      if (cleanDomain.startsWith('-') || cleanDomain.endsWith('-')) {
+      if (cleanDomain.startsWith("-") || cleanDomain.endsWith("-")) {
         return NextResponse.json(
           {
             exists: false,
@@ -82,8 +84,8 @@ export async function GET(request: NextRequest) {
     const existsLocally = !!(existingUser || existingOnboarding);
 
     // Determine if this is an external domain check (has TLD) or local subdomain check
-    const isExternalDomain = cleanDomain.includes('.');
-    
+    const isExternalDomain = cleanDomain.includes(".");
+
     // For local subdomains, check our database
     if (!isExternalDomain) {
       // If domain exists locally, return immediately
@@ -106,9 +108,11 @@ export async function GET(request: NextRequest) {
       try {
         const namecheap = getNamecheapInstance();
         // Use the domain as-is if it has a TLD, otherwise add .com
-        const domainToCheck = isExternalDomain ? cleanDomain : `${cleanDomain}.com`;
+        const domainToCheck = isExternalDomain
+          ? cleanDomain
+          : `${cleanDomain}.com`;
         const result = await namecheap.checkDomain(domainToCheck);
-        
+
         externalResult = {
           domain: result.domain,
           available: result.available,
@@ -118,7 +122,8 @@ export async function GET(request: NextRequest) {
         };
       } catch (error) {
         console.error("Namecheap API error:", error);
-        externalError = error instanceof Error ? error.message : "External API error";
+        externalError =
+          error instanceof Error ? error.message : "External API error";
       }
     }
 
@@ -129,14 +134,20 @@ export async function GET(request: NextRequest) {
         exists: externalResult ? !externalResult.available : false,
         available: externalResult ? externalResult.available : false,
         domain: cleanDomain,
-        message: externalResult 
-          ? (externalResult.available ? "Domain is available for registration" : "Domain is not available")
+        message: externalResult
+          ? externalResult.available
+            ? "Domain is available for registration"
+            : "Domain is not available"
           : "Unable to check external domain availability",
         source: "external",
         external: {
           result: externalResult,
           error: externalError,
-          hasConfiguration: !!(process.env.NAMECHEAP_API_USER && process.env.NAMECHEAP_API_KEY && process.env.NAMECHEAP_USERNAME),
+          hasConfiguration: !!(
+            process.env.NAMECHEAP_API_USER &&
+            process.env.NAMECHEAP_API_KEY &&
+            process.env.NAMECHEAP_USERNAME
+          ),
         },
       });
     } else {
@@ -147,14 +158,19 @@ export async function GET(request: NextRequest) {
         domain: `${cleanDomain}.juzbuild.com`,
         message: "Domain name is available",
         source: "local",
-        external: checkExternal ? {
-          result: externalResult,
-          error: externalError,
-          hasConfiguration: !!(process.env.NAMECHEAP_API_USER && process.env.NAMECHEAP_API_KEY && process.env.NAMECHEAP_USERNAME),
-        } : undefined,
+        external: checkExternal
+          ? {
+              result: externalResult,
+              error: externalError,
+              hasConfiguration: !!(
+                process.env.NAMECHEAP_API_USER &&
+                process.env.NAMECHEAP_API_KEY &&
+                process.env.NAMECHEAP_USERNAME
+              ),
+            }
+          : undefined,
       });
     }
-
   } catch (error) {
     console.error("Error checking domain availability:", error);
     return NextResponse.json(
