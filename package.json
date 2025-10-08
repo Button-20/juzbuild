@@ -54,7 +54,6 @@
     "@types/handlebars": "^4.0.40",
     "@types/nodemailer": "^7.0.1",
     "@vercel/sdk": "^1.13.0",
-    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "bootstrap-icons": "^1.13.1",
     "class-variance-authority": "^0.7.1",

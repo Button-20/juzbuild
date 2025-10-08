@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
-    const { jobId } = params;
-    
+    const { jobId } = await params;
+
     if (!jobId) {
       return NextResponse.json(
         { success: false, error: "Job ID is required" },
@@ -15,37 +14,39 @@ export async function GET(
       );
     }
 
-    const backgroundProcessorUrl = process.env.BACKGROUND_PROCESSOR_URL || 'http://localhost:3001';
-    
-    const response = await axios.get(
+    const backgroundProcessorUrl =
+      process.env.BACKGROUND_PROCESSOR_URL || "http://localhost:3001";
+
+    const response = await fetch(
       `${backgroundProcessorUrl}/job-status/${jobId}`,
       {
+        method: "GET",
         headers: {
-          'x-processor-secret': process.env.BACKGROUND_PROCESSOR_SECRET,
+          "x-processor-secret": process.env.BACKGROUND_PROCESSOR_SECRET || "",
         },
-        timeout: 5000,
+        signal: AbortSignal.timeout(5000),
       }
     );
 
-    return NextResponse.json(response.data);
-    
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Failed to get job status:", error);
-    
-    if (axios.isAxiosError(error) && (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT')) {
+
+    if (error instanceof TypeError && error.message.includes("fetch")) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Background processor unavailable',
+          error: "Background processor unavailable",
         },
         { status: 503 }
       );
     }
-    
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import axios from "axios";
 
 const createSiteSchema = z.object({
   userId: z.string(),
@@ -28,26 +27,30 @@ export async function POST(req: NextRequest) {
 
     // Send to background processor
     try {
-      const backgroundProcessorUrl = process.env.BACKGROUND_PROCESSOR_URL || 'http://localhost:3001';
-      const response = await axios.post(
+      const backgroundProcessorUrl =
+        process.env.BACKGROUND_PROCESSOR_URL || "http://localhost:3001";
+      const response = await fetch(
         `${backgroundProcessorUrl}/process-website-creation`,
-        data,
         {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'x-processor-secret': process.env.BACKGROUND_PROCESSOR_SECRET,
+            "Content-Type": "application/json",
+            "x-processor-secret": process.env.BACKGROUND_PROCESSOR_SECRET || "",
           },
-          timeout: 10000, // 10 second timeout for the initial request
+          body: JSON.stringify(data),
+          signal: AbortSignal.timeout(10000), // 10 second timeout for the initial request
         }
       );
 
-      if (response.data.success) {
+      const responseData = await response.json();
+
+      if (responseData.success) {
         console.log(`Website creation job queued for: ${data.websiteName}`);
-        
+
         return NextResponse.json({
           success: true,
           message: `Website creation started for ${data.websiteName}. You'll receive an email when it's ready.`,
-          jobId: response.data.jobId,
+          jobId: responseData.jobId,
           website: {
             name: data.websiteName,
             domain: `${data.domainName}.juzbuild.com`,
@@ -56,28 +59,32 @@ export async function POST(req: NextRequest) {
           },
         });
       } else {
-        throw new Error(response.data.error || 'Background processor rejected the request');
+        throw new Error(
+          responseData.error || "Background processor rejected the request"
+        );
       }
     } catch (error) {
-      console.error('Failed to queue website creation job:', error);
-      
+      console.error("Failed to queue website creation job:", error);
+
       // If background processor is unavailable, return a meaningful error
-      if (axios.isAxiosError(error) && (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT')) {
+      if (error instanceof TypeError && error.message.includes("fetch")) {
         return NextResponse.json(
           {
             success: false,
-            message: 'Website creation service is temporarily unavailable. Please try again in a few minutes.',
-            error: 'Background processor unavailable',
+            message:
+              "Website creation service is temporarily unavailable. Please try again in a few minutes.",
+            error: "Background processor unavailable",
           },
           { status: 503 }
         );
       }
-      
+
       return NextResponse.json(
         {
           success: false,
-          message: 'Failed to start website creation process. Please try again.',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          message:
+            "Failed to start website creation process. Please try again.",
+          error: error instanceof Error ? error.message : "Unknown error",
         },
         { status: 500 }
       );
