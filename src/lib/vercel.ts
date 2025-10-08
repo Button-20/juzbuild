@@ -61,7 +61,7 @@ class VercelAPI {
         buildCommand: "npm run build",
         devCommand: "npm run dev",
         outputDirectory: ".next",
-        installCommand: "npm install",
+        installCommand: "npm i -f",
       },
     });
 

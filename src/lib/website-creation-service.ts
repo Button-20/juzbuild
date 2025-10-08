@@ -133,6 +133,9 @@ class WebsiteCreationService {
       }
       results["Database Logging"] = loggingResult.data;
 
+      // Step 8: Cleanup temporary template
+      await this.cleanupTemplate(options.websiteName);
+
       return {
         success: true,
         data: {
@@ -297,33 +300,56 @@ class WebsiteCreationService {
   }
 
   /**
-   * Step 2: Generate website template
+   * Step 2: Generate website template based on homely template
    */
   async generateTemplate(
     options: WebsiteCreationOptions
   ): Promise<WorkflowResult> {
     try {
+      const homelyBasePath = path.join(process.cwd(), "templates", "homely");
       const templatePath = path.join(
         process.cwd(),
         "templates",
         options.websiteName
       );
 
-      // Create template directory
-      await fs.mkdir(templatePath, { recursive: true });
+      // Check if homely template exists
+      if (
+        !(await fs
+          .access(homelyBasePath)
+          .then(() => true)
+          .catch(() => false))
+      ) {
+        throw new Error("Homely base template not found");
+      }
 
-      // Generate template files
-      await this.createTemplateStructure(templatePath, options);
+      // Copy homely template to user's template directory
+      await this.copyDirectory(homelyBasePath, templatePath);
+
+      // Remove admin dashboard configuration
+      await this.removeAdminDashboard(templatePath);
+
+      // Configure dynamic database connection
+      await this.configureDynamicDatabase(templatePath, options);
+
+      // Create additional pages based on user selections
+      await this.createUserPages(templatePath, options);
+
+      // Update template configuration and branding
+      await this.customizeTemplate(templatePath, options);
 
       return {
         success: true,
         data: {
           templatePath,
-          structure: "Next.js template with customized branding",
+          structure:
+            "Customized homely template with user-specific configuration",
+          removedAdmin: true,
+          dynamicDatabase: true,
+          customPages: options.includedPages?.length || 0,
         },
       };
     } catch (error) {
-      console.error("Template generation failed:", error);
       return {
         success: false,
         error:
@@ -705,21 +731,6 @@ For support and customization, contact [Juzbuild Support](https://juzbuild.com/s
   }
 
   // Helper methods
-  private generatePageContent(
-    pageName: string,
-    options: WebsiteCreationOptions
-  ): string {
-    const templates: Record<string, string> = {
-      Home: `Welcome to ${options.companyName}! ${options.tagline}`,
-      About: options.aboutSection,
-      Properties: "Browse our latest property listings.",
-      Contact: `Get in touch with ${options.companyName} for all your real estate needs.`,
-      Services: `${options.companyName} offers comprehensive real estate services.`,
-    };
-
-    return templates[pageName] || `Welcome to our ${pageName} page.`;
-  }
-
   private async createTemplateStructure(
     templatePath: string,
     options: WebsiteCreationOptions
@@ -1409,6 +1420,472 @@ This file was created to trigger automatic deployment on Vercel.
       });
     } catch (error) {
       // Silently handle deployment trigger errors
+    }
+  }
+
+  /**
+   * Copy directory recursively
+   */
+  private async copyDirectory(src: string, dest: string): Promise<void> {
+    await fs.mkdir(dest, { recursive: true });
+    const entries = await fs.readdir(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+
+      if (entry.isDirectory()) {
+        await this.copyDirectory(srcPath, destPath);
+      } else {
+        await fs.copyFile(srcPath, destPath);
+      }
+    }
+  }
+
+  /**
+   * Remove admin dashboard files and configurations
+   */
+  private async removeAdminDashboard(templatePath: string): Promise<void> {
+    const adminPath = path.join(templatePath, "src", "app", "admin");
+
+    // Remove admin directory if it exists
+    try {
+      await fs.rm(adminPath, { recursive: true, force: true });
+    } catch (error) {
+      // Admin directory might not exist, continue
+    }
+
+    // Remove conflicting route directories that might cause parallel page issues
+    const conflictingRoutes = [
+      path.join(templatePath, "src", "app", "(site)", "properties"),
+      path.join(templatePath, "src", "app", "(site)", "about"),
+      path.join(templatePath, "src", "app", "(site)", "contact"),
+      path.join(templatePath, "src", "app", "(site)", "services"),
+    ];
+
+    for (const routePath of conflictingRoutes) {
+      try {
+        await fs.rm(routePath, { recursive: true, force: true });
+      } catch (error) {
+        // Route might not exist, continue
+      }
+    }
+
+    // Remove the entire (site) route group if it exists to avoid conflicts
+    const siteRoutePath = path.join(templatePath, "src", "app", "(site)");
+    try {
+      await fs.rm(siteRoutePath, { recursive: true, force: true });
+    } catch (error) {
+      // Site route group might not exist
+    }
+
+    // Fix layout.tsx syntax issues
+    const layoutPath = path.join(templatePath, "src", "app", "layout.tsx");
+    try {
+      let layoutContent = await fs.readFile(layoutPath, "utf-8");
+
+      // Remove admin-related imports and routes
+      layoutContent = layoutContent.replace(/import.*admin.*\n/gi, "");
+      layoutContent = layoutContent.replace(/\/admin.*\n/gi, "");
+
+      // Fix broken title syntax - remove "Generated by create next app" if it's malformed
+      layoutContent = layoutContent.replace(
+        /title:\s*"([^"]*)"[^",\n]*Generated[^",\n]*"/g,
+        'title: "$1"'
+      );
+
+      // Ensure proper comma after title
+      layoutContent = layoutContent.replace(
+        /title:\s*"([^"]*)"(?!\s*[,}])/g,
+        'title: "$1",'
+      );
+
+      await fs.writeFile(layoutPath, layoutContent);
+    } catch (error) {
+      // Layout file might not exist or have different structure
+    }
+  }
+
+  /**
+   * Configure dynamic database connection for the user's database
+   */
+  private async configureDynamicDatabase(
+    templatePath: string,
+    options: WebsiteCreationOptions
+  ): Promise<void> {
+    const dbName = `juzbuild_${options.websiteName}`;
+    const connectionString = `${process.env.MONGODB_URI}/${dbName}`;
+
+    // Update database configuration files
+    const configFiles = [
+      "src/lib/mongodb.ts",
+      "src/lib/database.ts",
+      "src/config/database.ts",
+    ];
+
+    for (const configFile of configFiles) {
+      const configPath = path.join(templatePath, configFile);
+      try {
+        let content = await fs.readFile(configPath, "utf-8");
+
+        // Replace database connection with user-specific database
+        content = content.replace(/mongodb:\/\/[^"']+/g, connectionString);
+
+        // Replace database name references
+        content = content.replace(
+          /database\s*=\s*client\.db\(['"]\w+['"]\)/g,
+          `database = client.db("${dbName}")`
+        );
+
+        await fs.writeFile(configPath, content);
+      } catch (error) {
+        // File might not exist, continue with next file
+      }
+    }
+
+    // Create environment file with database configuration
+    const envPath = path.join(templatePath, ".env.local");
+    const envContent = `
+MONGODB_URI=${connectionString}
+DATABASE_NAME=${dbName}
+NEXT_PUBLIC_SITE_NAME=${options.companyName || options.websiteName}
+NEXT_PUBLIC_SITE_URL=https://${options.websiteName}.vercel.app
+`;
+
+    await fs.writeFile(envPath, envContent.trim());
+  }
+
+  /**
+   * Create additional pages based on user's page selections
+   */
+  private async createUserPages(
+    templatePath: string,
+    options: WebsiteCreationOptions
+  ): Promise<void> {
+    const pagesDir = path.join(templatePath, "src", "app");
+    const includedPages = options.includedPages || [
+      "Home",
+      "Properties",
+      "About",
+      "Contact",
+    ];
+
+    for (const page of includedPages) {
+      const pageName = page.toLowerCase().replace(/\s+/g, "-");
+
+      if (pageName === "home") continue; // Home is the root page
+
+      const pageDir = path.join(pagesDir, pageName);
+
+      // Check if page already exists (from homely template) and remove it first
+      try {
+        const existingPageFile = path.join(pageDir, "page.tsx");
+        if (
+          await fs
+            .access(existingPageFile)
+            .then(() => true)
+            .catch(() => false)
+        ) {
+          await fs.rm(pageDir, { recursive: true, force: true });
+        }
+      } catch (error) {
+        // Page doesn't exist, which is fine
+      }
+
+      // Create fresh page directory and file
+      await fs.mkdir(pageDir, { recursive: true });
+
+      const pageContent = this.generatePageContent(page, options);
+      const pageFile = path.join(pageDir, "page.tsx");
+
+      await fs.writeFile(pageFile, pageContent);
+    }
+  }
+
+  /**
+   * Generate content for a specific page
+   */
+  private generatePageContent(
+    pageName: string,
+    options: WebsiteCreationOptions
+  ): string {
+    const componentName = pageName.replace(/\s+/g, "");
+    const companyName = options.companyName || options.websiteName;
+
+    switch (pageName.toLowerCase()) {
+      case "about":
+        return `
+import React from 'react';
+
+export default function AboutPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">About ${companyName}</h1>
+      <div className="prose max-w-none">
+        <p className="text-lg mb-6">
+          ${
+            options.aboutSection ||
+            `Welcome to ${companyName}, your trusted partner in real estate.`
+          }
+        </p>
+        <p className="mb-4">
+          Our team is dedicated to helping you find the perfect property that meets your needs and budget.
+          With years of experience in the real estate market, we provide expert guidance throughout
+          your property journey.
+        </p>
+        <h2 className="text-2xl font-semibold mt-8 mb-4">Our Services</h2>
+        <ul className="list-disc pl-6">
+          <li>Property Sales</li>
+          <li>Property Rentals</li>
+          <li>Property Management</li>
+          <li>Investment Consultation</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+`;
+
+      case "contact":
+        return `
+import React from 'react';
+
+export default function ContactPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">Contact ${companyName}</h1>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Get in Touch</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold">Email</h3>
+              <p>${
+                options.userEmail || "info@" + options.websiteName + ".com"
+              }</p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Phone</h3>
+              <p>${
+                options.preferredContactMethod?.includes("phone")
+                  ? "+1 (555) 123-4567"
+                  : "Available upon request"
+              }</p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Address</h3>
+              <p>123 Real Estate Street<br />Property City, PC 12345</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Contact Form</h2>
+          <form className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Name</label>
+              <input type="text" className="w-full border rounded-md px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input type="email" className="w-full border rounded-md px-3 py-2" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Message</label>
+              <textarea rows={4} className="w-full border rounded-md px-3 py-2"></textarea>
+            </div>
+            <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+
+      case "services":
+        return `
+import React from 'react';
+
+export default function ServicesPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">Our Services</h1>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-3">Property Sales</h3>
+          <p>Expert assistance in buying and selling properties with market insights and professional guidance.</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-3">Property Rentals</h3>
+          <p>Find the perfect rental property or manage your rental investments with our comprehensive services.</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold mb-3">Property Management</h3>
+          <p>Complete property management solutions for landlords and property investors.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+`;
+
+      default:
+        return `
+import React from 'react';
+
+export default function ${componentName}Page() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">${pageName}</h1>
+      <div className="prose max-w-none">
+        <p>Welcome to the ${pageName.toLowerCase()} page of ${companyName}.</p>
+        <p>This page is ready for your custom content.</p>
+      </div>
+    </div>
+  );
+}
+`;
+    }
+  }
+
+  /**
+   * Customize template with user's branding and configuration
+   */
+  private async customizeTemplate(
+    templatePath: string,
+    options: WebsiteCreationOptions
+  ): Promise<void> {
+    // Update package.json with user's project name
+    const packageJsonPath = path.join(templatePath, "package.json");
+    try {
+      const packageJson = JSON.parse(
+        await fs.readFile(packageJsonPath, "utf-8")
+      );
+      packageJson.name = options.websiteName;
+      packageJson.description = `${
+        options.companyName || options.websiteName
+      } - Real Estate Website`;
+
+      await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    } catch (error) {
+      // Package.json might not exist or be malformed
+    }
+
+    // Update site configuration with user's branding
+    const configFiles = [
+      "src/config/site.ts",
+      "src/lib/config.ts",
+      "next.config.js",
+      "next.config.ts",
+    ];
+
+    for (const configFile of configFiles) {
+      const configPath = path.join(templatePath, configFile);
+      try {
+        let content = await fs.readFile(configPath, "utf-8");
+
+        // Replace site name and branding
+        content = content.replace(
+          /site.*name.*:.*"[^"]+"/gi,
+          `siteName: "${options.companyName || options.websiteName}"`
+        );
+        content = content.replace(
+          /title.*:.*"[^"]+"/gi,
+          `title: "${options.companyName || options.websiteName}"`
+        );
+        content = content.replace(
+          /description.*:.*"[^"]+"/gi,
+          `description: "${
+            options.tagline || "Professional Real Estate Services"
+          }"`
+        );
+
+        // Replace color scheme if provided
+        if (options.brandColors && options.brandColors.length > 0) {
+          content = content.replace(
+            /primary.*:.*"[^"]+"/gi,
+            `primary: "${options.brandColors[0]}"`
+          );
+        }
+
+        await fs.writeFile(configPath, content);
+      } catch (error) {
+        // File might not exist
+      }
+    }
+
+    // Update main layout with user's branding
+    const layoutPath = path.join(templatePath, "src", "app", "layout.tsx");
+    try {
+      let layoutContent = await fs.readFile(layoutPath, "utf-8");
+
+      // Fix common syntax issues in layout.tsx first
+      // Remove any malformed title strings with "Generated by" text
+      layoutContent = layoutContent.replace(
+        /title:\s*"([^"]*)"[^",\n]*Generated[^",\n]*"/g,
+        'title: "$1"'
+      );
+
+      // Ensure proper metadata structure
+      layoutContent = layoutContent.replace(
+        /title:\s*"([^"]*)"(?!\s*[,}\n])/g,
+        'title: "$1",'
+      );
+
+      // Update metadata with user's information
+      layoutContent = layoutContent.replace(
+        /(title:\s*)"[^"]*"/g,
+        `$1"${options.companyName || options.websiteName}"`
+      );
+      layoutContent = layoutContent.replace(
+        /(description:\s*)"[^"]*"/g,
+        `$1"${options.tagline || "Professional Real Estate Services"}"`
+      );
+
+      // Fix any trailing commas or syntax issues
+      layoutContent = layoutContent.replace(/,(\s*})/g, "$1");
+
+      await fs.writeFile(layoutPath, layoutContent);
+    } catch (error) {
+      // Layout might have different structure, create a minimal one
+      const minimalLayout = `import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: '${options.companyName || options.websiteName}',
+  description: '${options.tagline || "Professional Real Estate Services"}',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  )
+}
+`;
+      await fs.writeFile(layoutPath, minimalLayout);
+    }
+  }
+
+  /**
+   * Clean up temporary template after successful deployment
+   */
+  async cleanupTemplate(websiteName: string): Promise<void> {
+    const templatePath = path.join(process.cwd(), "templates", websiteName);
+    try {
+      await fs.rm(templatePath, { recursive: true, force: true });
+    } catch (error) {
+      // Template directory might not exist or already cleaned up
     }
   }
 }
