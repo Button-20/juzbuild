@@ -102,47 +102,104 @@ export default function OnboardingWizard({
       let isValid = true;
 
       switch (currentStep) {
-        case 0: // Account Setup Step
+        case 0: // Account Setup Step - All fields are required
           isValid = !!(
+            // Personal Information
             (
               data.fullName?.trim() &&
               data.email?.trim() &&
               /\S+@\S+\.\S+/.test(data.email) &&
               data.password?.trim() &&
               data.password.length >= 8 &&
+              // Business Information
               data.companyName?.trim() &&
               data.domainName?.trim() &&
               /^[a-zA-Z0-9-]+$/.test(data.domainName || "") &&
               data.domainName.length >= 3 &&
+              // Location Information
               data.country?.trim() &&
               data.city?.trim() &&
+              // No validation errors
               !errors.email &&
-              !errors.domainName
-            ) // Email and domain should not have validation errors
+              !errors.domainName &&
+              !errors.fullName &&
+              !errors.password &&
+              !errors.companyName &&
+              !errors.country &&
+              !errors.city
+            )
           );
           break;
 
-        case 1: // Business Profile Step
-          isValid = !!(data.tagline?.trim() && data.aboutSection?.trim());
+        case 1: // Business Profile Step - Tagline and About section required
+          isValid = !!(
+            data.tagline?.trim() &&
+            data.tagline.trim().length >= 2 &&
+            data.aboutSection?.trim() &&
+            data.aboutSection.trim().length >= 10 &&
+            !errors.tagline &&
+            !errors.aboutSection
+          );
           break;
 
-        case 2: // Website Setup Step
+        case 2: // Website Setup Step - All fields are required
           isValid = !!(
             data.propertyTypes?.length &&
+            data.propertyTypes.length > 0 &&
             data.selectedTheme &&
+            data.selectedTheme.trim() &&
             data.includedPages?.length &&
-            data.leadCapturePreference?.length
+            data.includedPages.length > 0 &&
+            data.leadCapturePreference?.length &&
+            data.leadCapturePreference.length > 0 &&
+            !errors.propertyTypes &&
+            !errors.selectedTheme &&
+            !errors.includedPages &&
+            !errors.leadCapturePreference
           );
           break;
 
-        case 3: // Marketing Setup Step
+        case 3: // Marketing Setup Step - Only preferred contact method is required
           isValid = !!(
-            data.adsConnections?.length && data.preferredContactMethod?.length
+            // adsConnections is optional (marked as such in UI)
+            (
+              data.preferredContactMethod?.length &&
+              data.preferredContactMethod.length > 0 &&
+              !errors.preferredContactMethod
+            )
           );
           break;
 
-        case 4: // Payment Step
-          isValid = !!(data.selectedPlan && data.billingCycle);
+        case 4: // Payment Step - Plan and billing cycle required, payment info optional for trial
+          isValid = !!(
+            data.selectedPlan &&
+            data.selectedPlan.trim() &&
+            data.billingCycle &&
+            data.billingCycle.trim() &&
+            !errors.selectedPlan &&
+            !errors.billingCycle
+          );
+          // Payment details are optional for free trial, but if provided, must be complete
+          if (
+            data.paymentMethod &&
+            (data.paymentMethod.cardNumber ||
+              data.paymentMethod.expiryDate ||
+              data.paymentMethod.cvv ||
+              data.paymentMethod.cardholderName)
+          ) {
+            isValid =
+              isValid &&
+              !!(
+                data.paymentMethod.cardNumber?.trim() &&
+                data.paymentMethod.expiryDate?.trim() &&
+                data.paymentMethod.cvv?.trim() &&
+                data.paymentMethod.cardholderName?.trim() &&
+                !errors.cardNumber &&
+                !errors.expiryDate &&
+                !errors.cvv &&
+                !errors.cardholderName
+              );
+          }
           break;
       }
 
@@ -155,63 +212,115 @@ export default function OnboardingWizard({
     const newErrors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0: // Account Setup Step (now includes business name)
+      case 0: // Account Setup Step - All fields are required
+        // Personal Information
         if (!formData.fullName?.trim())
           newErrors.fullName = "Full name is required";
+        else if (formData.fullName.trim().length < 2)
+          newErrors.fullName = "Full name must be at least 2 characters";
+
         if (!formData.email?.trim()) newErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(formData.email))
           newErrors.email = "Email is invalid";
+
         if (!formData.password?.trim())
           newErrors.password = "Password is required";
         else if (formData.password.length < 8)
           newErrors.password = "Password must be at least 8 characters";
+
+        // Business Information
         if (!formData.companyName?.trim())
-          newErrors.companyName = "Business name is required";
+          newErrors.companyName = "Company/Agency name is required";
+        else if (formData.companyName.trim().length < 2)
+          newErrors.companyName = "Company name must be at least 2 characters";
+
         if (!formData.domainName?.trim())
-          newErrors.domainName = "Domain name is required";
+          newErrors.domainName = "Website domain name is required";
         else if (!/^[a-zA-Z0-9-]+$/.test(formData.domainName))
           newErrors.domainName =
             "Domain name can only contain letters, numbers, and hyphens";
         else if (formData.domainName.length < 3)
           newErrors.domainName = "Domain name must be at least 3 characters";
+
+        // Location Information
         if (!formData.country?.trim())
           newErrors.country = "Country is required";
         if (!formData.city?.trim()) newErrors.city = "City is required";
+        else if (formData.city.trim().length < 2)
+          newErrors.city = "City must be at least 2 characters";
         break;
 
-      case 1: // Business Profile Step (no business name, simplified)
+      case 1: // Business Profile Step - Tagline and About section required
         if (!formData.tagline?.trim())
-          newErrors.tagline = "Tagline is required";
+          newErrors.tagline = "Tagline/Slogan is required";
+        else if (formData.tagline.trim().length < 2)
+          newErrors.tagline = "Tagline must be at least 2 characters";
+
         if (!formData.aboutSection?.trim())
-          newErrors.aboutSection = "About section is required";
+          newErrors.aboutSection = "About your business is required";
+        else if (formData.aboutSection.trim().length < 10)
+          newErrors.aboutSection =
+            "About section must be at least 10 characters";
         break;
 
-      case 2: // Website Setup Step
+      case 2: // Website Setup Step - All fields are required
         if (!formData.propertyTypes?.length)
           newErrors.propertyTypes = "Select at least one property type";
+
         if (!formData.selectedTheme)
           newErrors.selectedTheme = "Please select a theme";
+
         if (!formData.includedPages?.length)
           newErrors.includedPages = "Select at least one page";
+
         if (!formData.leadCapturePreference?.length)
           newErrors.leadCapturePreference =
             "Select at least one lead capture method";
         break;
 
-      case 3: // Marketing Setup Step
-        if (!formData.adsConnections?.length)
-          newErrors.adsConnections = "Select at least one ads connection";
+      case 3: // Marketing Setup Step - Only preferred contact method is required
+        // adsConnections is optional (marked as optional in UI)
         if (!formData.preferredContactMethod?.length)
           newErrors.preferredContactMethod =
-            "Select at least one contact method";
+            "Select at least one preferred contact method";
         break;
 
-      case 4: // Payment Step
+      case 4: // Payment Step - Plan and billing required, payment details optional but if provided must be complete
         if (!formData.selectedPlan)
           newErrors.selectedPlan = "Please select a plan";
         if (!formData.billingCycle)
           newErrors.billingCycle = "Please select a billing cycle";
-        // Payment method is optional for free trial
+
+        // Payment method validation - if any payment field is filled, all must be filled
+        if (
+          formData.paymentMethod &&
+          (formData.paymentMethod.cardNumber ||
+            formData.paymentMethod.expiryDate ||
+            formData.paymentMethod.cvv ||
+            formData.paymentMethod.cardholderName)
+        ) {
+          if (!formData.paymentMethod.cardholderName?.trim())
+            newErrors.cardholderName = "Cardholder name is required";
+
+          if (!formData.paymentMethod.cardNumber?.trim())
+            newErrors.cardNumber = "Card number is required";
+          else if (
+            formData.paymentMethod.cardNumber.replace(/\s/g, "").length < 13
+          )
+            newErrors.cardNumber = "Card number is invalid";
+
+          if (!formData.paymentMethod.expiryDate?.trim())
+            newErrors.expiryDate = "Expiry date is required";
+          else if (
+            !/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.paymentMethod.expiryDate)
+          )
+            newErrors.expiryDate = "Expiry date must be in MM/YY format";
+
+          if (!formData.paymentMethod.cvv?.trim())
+            newErrors.cvv = "CVC is required";
+          else if (!/^\d{3,4}$/.test(formData.paymentMethod.cvv))
+            newErrors.cvv = "CVC must be 3 or 4 digits";
+        }
         break;
     }
 
@@ -277,10 +386,10 @@ export default function OnboardingWizard({
     }
   }, [formData.email, debouncedValidateEmail]);
 
-  // Validate step when currentStep changes
+  // Validate step when currentStep or formData changes
   React.useEffect(() => {
     validateCurrentStepAndUpdateButton();
-  }, [currentStep, validateCurrentStepAndUpdateButton]);
+  }, [currentStep, formData, validateCurrentStepAndUpdateButton]);
 
   const handleNext = async () => {
     // Use both validation methods for final check
@@ -311,17 +420,29 @@ export default function OnboardingWizard({
         setIsSubmitting(false);
       }
     } else {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev) => Math.min(prev + 1, WIZARD_STEPS.length - 1));
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+      setCurrentStep((prev) => Math.max(prev - 1, 0));
     }
   };
 
-  const currentStepData = WIZARD_STEPS[currentStep];
+  // Safety check - ensure currentStep is within valid bounds
+  React.useEffect(() => {
+    if (currentStep < 0 || currentStep >= WIZARD_STEPS.length) {
+      console.warn(
+        `Invalid step index: ${currentStep}. Valid range: 0-${
+          WIZARD_STEPS.length - 1
+        }. Resetting to step 0.`
+      );
+      setCurrentStep(0);
+    }
+  }, [currentStep]);
+
+  const currentStepData = WIZARD_STEPS[currentStep] || WIZARD_STEPS[0];
   const StepComponent = currentStepData.component;
   const progressPercentage = ((currentStep + 1) / WIZARD_STEPS.length) * 100;
 

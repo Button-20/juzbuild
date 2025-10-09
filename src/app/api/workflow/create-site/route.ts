@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           jobId: responseData.jobId,
           website: {
             name: data.websiteName,
-            domain: `${data.domainName}.juzbuild.com`,
+            domain: `${data.domainName}.onjuzbuild.com`,
             status: "building",
             createdAt: new Date().toISOString(),
           },

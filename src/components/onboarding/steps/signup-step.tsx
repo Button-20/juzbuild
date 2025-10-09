@@ -280,7 +280,7 @@ export default function SignupStep({
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 )}
                 <span className="text-sm text-muted-foreground">
-                  .juzbuild.com
+                  .onjuzbuild.com
                 </span>
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function SignupStep({
                   <p className="text-green-600 text-sm">
                     ✓{" "}
                     <span className="font-medium">
-                      {data.domainName}.juzbuild.com
+                      {data.domainName}.onjuzbuild.com
                     </span>{" "}
                     is available!
                   </p>
@@ -302,7 +302,7 @@ export default function SignupStep({
                   <p className="text-destructive text-sm">
                     ✗{" "}
                     <span className="font-medium">
-                      {data.domainName}.juzbuild.com
+                      {data.domainName}.onjuzbuild.com
                     </span>{" "}
                     is already taken
                   </p>
@@ -311,7 +311,7 @@ export default function SignupStep({
                   <p className="text-sm text-muted-foreground">
                     Your website will be:{" "}
                     <span className="font-medium text-primary">
-                      {data.domainName}.juzbuild.com
+                      {data.domainName}.onjuzbuild.com
                     </span>
                   </p>
                 )}

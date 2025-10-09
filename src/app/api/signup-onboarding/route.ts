@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
       const session = createSession(newUser);
 
       // Trigger automated website creation workflow
+      let websiteJobId = null; // Declare jobId in wider scope
       try {
         console.log(`Triggering website creation for user: ${userId}`);
 
@@ -164,25 +165,37 @@ export async function POST(req: NextRequest) {
           preferredContactMethod: data.preferredContactMethod,
         };
 
-        // Create website in background (fire and forget for better UX)
-        // In production, consider using a queue system for reliability
-        fetch(
-          `${
-            process.env.NEXTAUTH_URL || "http://localhost:3000"
-          }/api/workflow/create-site`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(websiteData),
-          }
-        ).catch((error) => {
-          console.error("Background website creation failed:", error);
-          // In production, this should be logged and potentially retried
-        });
+        // Create website and get jobId for tracking
+        try {
+          const websiteResponse = await fetch(
+            `${
+              process.env.NEXTAUTH_URL || "http://localhost:3000"
+            }/api/workflow/create-site`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(websiteData),
+            }
+          );
 
-        console.log(`Website creation initiated for: ${data.domainName}`);
+          if (websiteResponse.ok) {
+            const websiteResult = await websiteResponse.json();
+            websiteJobId = websiteResult.jobId;
+            console.log(
+              `Website creation initiated for: ${data.domainName} with jobId: ${websiteJobId}`
+            );
+          } else {
+            console.error(
+              "Website creation request failed:",
+              await websiteResponse.text()
+            );
+          }
+        } catch (error) {
+          console.error("Background website creation failed:", error);
+          // Don't fail the signup if website creation fails - user can retry later
+        }
       } catch (workflowError) {
         console.error(
           "Failed to trigger website creation workflow:",
@@ -199,6 +212,12 @@ export async function POST(req: NextRequest) {
         userId: userId,
         token: session.token,
         user: session.user,
+        jobId: websiteJobId, // Include jobId for deployment tracking
+        websiteData: {
+          domainName: data.domainName,
+          companyName: data.companyName,
+          selectedTheme: data.selectedTheme,
+        },
         next_steps: [
           "Your website is being generated",
           "You'll receive an email with login details",

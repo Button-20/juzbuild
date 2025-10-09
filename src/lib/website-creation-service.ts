@@ -140,7 +140,7 @@ class WebsiteCreationService {
         success: true,
         data: {
           websiteName: options.websiteName,
-          domain: `${options.domainName}.juzbuild.com`,
+          domain: `${options.domainName}.onjuzbuild.com`,
           status: "active",
           results,
         },

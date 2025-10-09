@@ -69,7 +69,7 @@ export function formatDomainName(
   const cleanDomain = domain.toLowerCase().trim();
 
   if (includeSubdomain && !cleanDomain.includes(".")) {
-    return `${cleanDomain}.juzbuild.com`;
+    return `${cleanDomain}.onjuzbuild.com`;
   }
 
   return cleanDomain;

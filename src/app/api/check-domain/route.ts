@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           exists: true,
           available: false,
-          domain: `${cleanDomain}.juzbuild.com`,
+          domain: `${cleanDomain}.onjuzbuild.com`,
           message: "This domain name is already taken",
           source: "local",
         });
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         exists: false,
         available: true,
-        domain: `${cleanDomain}.juzbuild.com`,
+        domain: `${cleanDomain}.onjuzbuild.com`,
         message: "Domain name is available",
         source: "local",
         external: checkExternal

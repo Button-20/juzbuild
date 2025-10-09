@@ -26,8 +26,16 @@ export default function SignupPage() {
     // Refresh auth state to pick up the new user session
     await refreshAuth();
 
-    // Redirect to dashboard since user is now logged in
-    router.push("/app/dashboard");
+    // Redirect to deployment page with job tracking
+    const queryParams = new URLSearchParams();
+    if (result?.jobId) queryParams.set("jobId", result.jobId);
+    if (data.domainName) queryParams.set("domainName", data.domainName);
+    if (data.companyName) queryParams.set("websiteName", data.companyName);
+
+    const deploymentUrl = `/signup/deployment${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    router.push(deploymentUrl);
   };
 
   return (
