@@ -421,12 +421,16 @@ export default function OnboardingWizard({
       }
     } else {
       setCurrentStep((prev) => Math.min(prev + 1, WIZARD_STEPS.length - 1));
+      // Scroll to top of the page when moving to next step
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep((prev) => Math.max(prev - 1, 0));
+      // Scroll to top of the page when going back
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
