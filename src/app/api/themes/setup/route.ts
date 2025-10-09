@@ -4,85 +4,17 @@ import { NextRequest, NextResponse } from "next/server";
 // Sample themes for initial setup
 const sampleThemes = [
   {
-    name: "Modern Estate",
+    name: "Homely",
     description:
-      "Clean, contemporary design perfect for luxury real estate with large property showcases and elegant typography.",
-    previewImage: "/themes/modern-estate-preview.jpg",
-    thumbnailImage: "/themes/modern-estate-thumb.jpg",
-    category: "modern",
-    features: [
-      "Property Gallery",
-      "Virtual Tours",
-      "Advanced Search",
-      "Mobile Optimized",
-    ],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    name: "Classic Realty",
-    description:
-      "Traditional real estate theme with professional layout, perfect for established agencies and corporate brands.",
-    previewImage: "/themes/classic-realty-preview.jpg",
-    thumbnailImage: "/themes/classic-realty-thumb.jpg",
+      "Warm and inviting theme perfect for residential real estate agents focusing on homes and family-friendly properties.",
+    previewImage: "/themes/homely.png",
+    thumbnailImage: "/themes/homely.png",
     category: "classic",
     features: [
-      "Agent Profiles",
-      "Neighborhood Info",
-      "Mortgage Calculator",
-      "Contact Forms",
-    ],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    name: "Minimal Properties",
-    description:
-      "Clean, minimalist design that puts your properties front and center with distraction-free browsing.",
-    previewImage: "/themes/minimal-properties-preview.jpg",
-    thumbnailImage: "/themes/minimal-properties-thumb.jpg",
-    category: "minimal",
-    features: [
-      "Clean Layout",
-      "Fast Loading",
-      "Property Focus",
-      "Simple Navigation",
-    ],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    name: "Luxury Estates",
-    description:
-      "Premium theme designed for high-end properties with sophisticated design and premium features.",
-    previewImage: "/themes/luxury-estates-preview.jpg",
-    thumbnailImage: "/themes/luxury-estates-thumb.jpg",
-    category: "luxury",
-    features: [
-      "Premium Gallery",
-      "Video Backgrounds",
-      "Exclusive Listings",
-      "Concierge Contact",
-    ],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    name: "Corporate Plus",
-    description:
-      "Professional corporate theme ideal for large real estate firms and commercial property specialists.",
-    previewImage: "/themes/corporate-plus-preview.jpg",
-    thumbnailImage: "/themes/corporate-plus-thumb.jpg",
-    category: "corporate",
-    features: [
-      "Team Directory",
-      "Office Locations",
-      "Investment Tools",
-      "Market Reports",
+      "Family-Friendly Design",
+      "Neighborhood Focus",
+      "Home Showcases",
+      "Community Feel",
     ],
     isActive: true,
     createdAt: new Date(),
@@ -95,21 +27,16 @@ export async function POST(request: NextRequest) {
     // This is for admin setup - in production, add authentication
     const themesCollection = await getCollection("themes");
 
-    // Check if themes already exist
-    const existingThemes = await themesCollection.countDocuments();
+    // Clear existing themes first
+    await themesCollection.deleteMany({});
 
-    if (existingThemes > 0) {
-      return NextResponse.json({
-        message: "Themes already exist in database",
-        count: existingThemes,
-      });
-    }
-
-    // Insert sample themes
+    // Insert sample themes (now only Homely)
     const result = await themesCollection.insertMany(sampleThemes);
 
     return NextResponse.json({
-      message: "Sample themes created successfully",
+      message: `Sample themes created successfully (${
+        sampleThemes.length
+      } theme${sampleThemes.length > 1 ? "s" : ""})`,
       insertedCount: result.insertedCount,
       themes: result.insertedIds,
     });

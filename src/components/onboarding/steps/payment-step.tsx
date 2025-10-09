@@ -44,6 +44,14 @@ export default function PaymentStep({
   };
 
   const handlePaymentMethodChange = (field: string, value: string) => {
+    // Apply field-specific validation and limits
+    let processedValue = value;
+
+    if (field === "cvv") {
+      // Limit CVC to 4 digits maximum and only allow numbers
+      processedValue = value.replace(/\D/g, "").slice(0, 4);
+    }
+
     updateData({
       paymentMethod: {
         cardNumber: "",
@@ -51,7 +59,7 @@ export default function PaymentStep({
         cvv: "",
         cardholderName: "",
         ...data.paymentMethod,
-        [field]: value,
+        [field]: processedValue,
       },
     });
   };
@@ -360,6 +368,9 @@ export default function PaymentStep({
                     handlePaymentMethodChange("cvv", e.target.value)
                   }
                   className={errors.cvv ? "border-destructive" : ""}
+                  maxLength={4}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                 />
                 {errors.cvv && (
                   <p className="text-destructive text-sm">{errors.cvv}</p>

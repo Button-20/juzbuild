@@ -29,7 +29,6 @@ export interface OnboardingData {
 
   // Step 3 - Website Setup
   propertyTypes: string[];
-  layoutStyle: "Classic" | "Modern" | "Minimal";
   selectedTheme: string; // Theme ID selected by user
   includedPages: string[];
   leadCapturePreference: ("Contact Form" | "WhatsApp" | "Email Only")[];

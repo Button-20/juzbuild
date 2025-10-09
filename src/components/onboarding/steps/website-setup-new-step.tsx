@@ -26,27 +26,6 @@ const PROPERTY_TYPES = [
   "Luxury Homes",
 ];
 
-const LAYOUT_STYLES = [
-  {
-    value: "Classic",
-    name: "Classic",
-    description: "Traditional real estate layout with sidebar navigation",
-    preview: "🏛️",
-  },
-  {
-    value: "Modern",
-    name: "Modern",
-    description: "Clean, contemporary design with card-based layouts",
-    preview: "✨",
-  },
-  {
-    value: "Minimal",
-    name: "Minimal",
-    description: "Simple, focused design with plenty of white space",
-    preview: "⚡",
-  },
-];
-
 const AVAILABLE_PAGES = [
   {
     id: "home",
@@ -237,49 +216,6 @@ export default function WebsiteSetupStep({
           </div>
           {errors.propertyTypes && (
             <p className="text-destructive text-sm">{errors.propertyTypes}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Layout Style */}
-      <div className="space-y-6">
-        <div className="border-l-4 border-primary pl-4">
-          <h3 className="text-lg font-semibold mb-1">Website Layout</h3>
-          <p className="text-sm text-muted-foreground">
-            Choose the layout style that best fits your brand
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2">
-            <Layout className="w-4 h-4" />
-            Layout Style *
-          </Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {LAYOUT_STYLES.map((style) => {
-              const isSelected = data.layoutStyle === style.value;
-              return (
-                <button
-                  key={style.value}
-                  type="button"
-                  onClick={() =>
-                    updateData({ layoutStyle: style.value as any })
-                  }
-                  className={`p-6 border-2 rounded-lg text-left transition-all hover:border-primary/50 ${
-                    isSelected ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{style.preview}</div>
-                  <h4 className="font-semibold mb-1">{style.name}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {style.description}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-          {errors.layoutStyle && (
-            <p className="text-destructive text-sm">{errors.layoutStyle}</p>
           )}
         </div>
       </div>

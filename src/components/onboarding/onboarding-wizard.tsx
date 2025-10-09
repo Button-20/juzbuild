@@ -129,7 +129,6 @@ export default function OnboardingWizard({
         case 2: // Website Setup Step
           isValid = !!(
             data.propertyTypes?.length &&
-            data.layoutStyle &&
             data.selectedTheme &&
             data.includedPages?.length &&
             data.leadCapturePreference?.length
@@ -190,8 +189,6 @@ export default function OnboardingWizard({
       case 2: // Website Setup Step
         if (!formData.propertyTypes?.length)
           newErrors.propertyTypes = "Select at least one property type";
-        if (!formData.layoutStyle)
-          newErrors.layoutStyle = "Layout style is required";
         if (!formData.selectedTheme)
           newErrors.selectedTheme = "Please select a theme";
         if (!formData.includedPages?.length)

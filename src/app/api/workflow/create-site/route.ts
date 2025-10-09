@@ -12,7 +12,6 @@ const createSiteSchema = z.object({
   tagline: z.string().min(2),
   aboutSection: z.string().min(10),
   selectedTheme: z.string(),
-  layoutStyle: z.string(),
   propertyTypes: z.array(z.string()).min(1),
   includedPages: z.array(z.string()).min(1),
   preferredContactMethod: z.array(z.string()).min(1),
