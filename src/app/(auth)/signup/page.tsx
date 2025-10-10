@@ -2,13 +2,13 @@
 
 import WaitingList from "@/components/marketing/waiting-list";
 import OnboardingWizard from "@/components/onboarding/onboarding-wizard";
+import { Card, CardContent } from "@/components/ui/card";
 import { isLive } from "@/constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { OnboardingData } from "@/types/onboarding";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function SignupPage() {
   // Redirect to waitlist if app is not live
@@ -34,7 +34,9 @@ export default function SignupPage() {
           <CardContent className="flex items-center justify-center p-8">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground">Checking authentication...</p>
+              <p className="text-muted-foreground">
+                Checking authentication...
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -50,7 +52,9 @@ export default function SignupPage() {
           <CardContent className="flex items-center justify-center p-8">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground">Redirecting to dashboard...</p>
+              <p className="text-muted-foreground">
+                Redirecting to dashboard...
+              </p>
             </div>
           </CardContent>
         </Card>

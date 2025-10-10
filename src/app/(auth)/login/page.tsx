@@ -58,7 +58,9 @@ export default function LoginPage() {
           <CardContent className="flex items-center justify-center p-8">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground">Checking authentication...</p>
+              <p className="text-muted-foreground">
+                Checking authentication...
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -74,7 +76,9 @@ export default function LoginPage() {
           <CardContent className="flex items-center justify-center p-8">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground">Redirecting to dashboard...</p>
+              <p className="text-muted-foreground">
+                Redirecting to dashboard...
+              </p>
             </div>
           </CardContent>
         </Card>
