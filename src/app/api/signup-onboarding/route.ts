@@ -4,10 +4,11 @@ import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const onboardingSchema = z.object({
+// User profile schema - fields that get stored in users collection
+const userProfileSchema = z.object({
   // Step 1 - Account Setup
   fullName: z.string().min(2, "Full name is required"),
-  email: z.string().email("Valid email is required"),
+  email: z.string().email("Valid email is required").toLowerCase(),
   password: z.string().min(8, "Password must be at least 8 characters"),
   phoneNumber: z.string().optional(),
   companyName: z.string().min(2, "Business name is required"),
@@ -22,15 +23,26 @@ const onboardingSchema = z.object({
   city: z.string().min(2, "City is required"),
 
   // Step 2 - Business Profile
-  brandColors: z.array(z.string()).max(3, "Maximum 3 colors allowed"),
   tagline: z.string().min(2, "Tagline is required"),
   aboutSection: z.string().min(10, "About section is required"),
+
+  // Step 3 - Website Setup
+  selectedTheme: z.string().min(1, "Please select a theme"),
+
+  // Step 5 - Payment
+  selectedPlan: z.enum(["starter", "pro", "agency"]),
+  billingCycle: z.enum(["monthly", "yearly"]),
+});
+
+// Onboarding-specific schema - fields that get stored in onboarding collection
+const onboardingSpecificSchema = z.object({
+  // Step 2 - Business Profile
+  brandColors: z.array(z.string()).max(3, "Maximum 3 colors allowed"),
 
   // Step 3 - Website Setup
   propertyTypes: z
     .array(z.string())
     .min(1, "Select at least one property type"),
-  selectedTheme: z.string().min(1, "Please select a theme"),
   includedPages: z.array(z.string()).min(1, "Select at least one page"),
   leadCapturePreference: z
     .array(z.enum(["Contact Form", "WhatsApp", "Email Only"]))
@@ -44,9 +56,7 @@ const onboardingSchema = z.object({
     .array(z.enum(["Phone", "Email", "WhatsApp"]))
     .min(1, "Select at least one contact method"),
 
-  // Step 5 - Payment
-  selectedPlan: z.enum(["starter", "pro", "agency"]),
-  billingCycle: z.enum(["monthly", "yearly"]),
+  // Step 5 - Payment & Legal
   agreeToTerms: z.boolean().optional(),
   paymentMethod: z
     .object({
@@ -57,6 +67,9 @@ const onboardingSchema = z.object({
     })
     .optional(),
 });
+
+// Complete onboarding schema combining both
+const onboardingSchema = userProfileSchema.merge(onboardingSpecificSchema);
 
 export async function POST(req: NextRequest) {
   // Check if the app is live
@@ -96,12 +109,13 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(data.password);
 
-    // Create user account
+    // Create user account with only user profile data
     try {
       const userData = {
         fullName: data.fullName,
         email: data.email.toLowerCase(),
         password: hashedPassword,
+        phoneNumber: data.phoneNumber,
         companyName: data.companyName,
         domainName: data.domainName.toLowerCase(),
         country: data.country,
@@ -119,12 +133,20 @@ export async function POST(req: NextRequest) {
       const userResult = await usersCollection.insertOne(userData);
       const userId = userResult.insertedId.toString();
 
-      // Save onboarding data to database
+      // Save onboarding-specific data to database (not user profile data which is already in users collection)
       const onboardingCollection = await getCollection("onboarding");
       const onboardingRecord = {
-        ...data,
         userId: userId,
-        password: hashedPassword, // Store hashed password
+        // Only onboarding-specific fields (not duplicated in users collection)
+        brandColors: data.brandColors,
+        propertyTypes: data.propertyTypes,
+        includedPages: data.includedPages,
+        leadCapturePreference: data.leadCapturePreference,
+        adsConnections: data.adsConnections,
+        preferredContactMethod: data.preferredContactMethod,
+        agreeToTerms: data.agreeToTerms,
+        paymentMethod: data.paymentMethod,
+        // Onboarding metadata
         createdAt: new Date(),
         ipAddress:
           req.headers.get("x-forwarded-for") ||
@@ -132,7 +154,6 @@ export async function POST(req: NextRequest) {
           "unknown",
         userAgent: req.headers.get("user-agent") || "unknown",
         status: "completed",
-        websiteStatus: "pending", // Will be updated when website is created
       };
 
       const result = await onboardingCollection.insertOne(onboardingRecord);
@@ -235,8 +256,34 @@ export async function POST(req: NextRequest) {
       });
 
       return response;
-    } catch (dbError) {
+    } catch (dbError: any) {
       console.error("Database error:", dbError);
+
+      // Handle MongoDB duplicate key error (unique constraint violation)
+      if (dbError.code === 11000) {
+        // Check if it's an email duplicate
+        if (dbError.message && dbError.message.includes("email")) {
+          return NextResponse.json(
+            {
+              message: "An account with this email already exists.",
+              error: "Duplicate email",
+              field: "email",
+            },
+            { status: 409 }
+          );
+        }
+
+        // Handle other duplicate key errors
+        return NextResponse.json(
+          {
+            message:
+              "This information is already in use. Please try different values.",
+            error: "Duplicate data",
+          },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
         {
           message: "Failed to save signup data. Please try again.",

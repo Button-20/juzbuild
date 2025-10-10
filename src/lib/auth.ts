@@ -21,14 +21,18 @@ export interface User {
   email: string;
   password: string;
   companyName: string;
+  domainName: string;
   country: string;
   city: string;
   tagline?: string;
   aboutSection?: string;
+  selectedTheme?: string;
   selectedPlan: string;
   billingCycle: string;
+  phoneNumber?: string;
   createdAt: Date;
   updatedAt: Date;
+  isActive?: boolean;
 }
 
 // Hash password

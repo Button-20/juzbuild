@@ -11,35 +11,39 @@ export interface WebsiteTheme {
   updatedAt: Date;
 }
 
-export interface OnboardingData {
-  // Step 1 - Account Setup
+// User profile data that gets stored in the users collection
+export interface UserProfileData {
   fullName: string;
   email: string;
   password: string;
+  phoneNumber?: string;
   companyName: string;
   domainName: string;
   country: string;
   city: string;
-
-  // Step 2 - Business Profile
-  logo?: File;
-  brandColors: string[];
   tagline: string;
   aboutSection: string;
-
-  // Step 3 - Website Setup
-  propertyTypes: string[];
   selectedTheme: string; // Theme ID selected by user
+  selectedPlan: "starter" | "pro" | "agency";
+  billingCycle: "monthly" | "yearly";
+}
+
+// Onboarding-specific data that is stored separately in onboarding collection
+export interface OnboardingSpecificData {
+  // Business branding (used for website creation)
+  logo?: File;
+  brandColors: string[];
+
+  // Website setup preferences (used for website generation)
+  propertyTypes: string[];
   includedPages: string[];
   leadCapturePreference: ("Contact Form" | "WhatsApp" | "Email Only")[];
 
-  // Step 4 - Marketing Setup
+  // Marketing setup (used for integrations)
   adsConnections: string[];
   preferredContactMethod: ("Phone" | "Email" | "WhatsApp")[];
 
-  // Step 5 - Payment & Launch
-  selectedPlan: "starter" | "pro" | "agency";
-  billingCycle: "monthly" | "yearly";
+  // Payment and legal (onboarding workflow only)
   agreeToTerms: boolean;
   paymentMethod?: {
     cardNumber: string;
@@ -48,6 +52,11 @@ export interface OnboardingData {
     cardholderName: string;
   };
 }
+
+// Complete onboarding data (combines user profile + onboarding-specific data)
+export interface OnboardingData
+  extends UserProfileData,
+    OnboardingSpecificData {}
 
 export interface WizardStep {
   id: number;

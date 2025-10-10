@@ -16,7 +16,14 @@ interface User {
   email: string;
   companyName: string;
   domainName: string;
+  country: string;
+  city: string;
+  tagline?: string;
+  aboutSection?: string;
+  selectedTheme?: string;
   selectedPlan: "starter" | "pro" | "agency";
+  billingCycle: string;
+  phoneNumber?: string;
 }
 
 interface AuthContextType {
