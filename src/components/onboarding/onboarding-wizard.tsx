@@ -401,11 +401,11 @@ export default function OnboardingWizard({
     try {
       // Try scrolling the window first
       window.scrollTo({ top: 0, behavior: "smooth" });
-      
+
       // Also try scrolling document elements as fallback
       document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
       document.body.scrollTo({ top: 0, behavior: "smooth" });
-      
+
       // Force immediate scroll if smooth scroll doesn't work
       setTimeout(() => {
         if (window.scrollY > 100) {
