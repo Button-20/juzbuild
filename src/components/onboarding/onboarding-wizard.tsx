@@ -391,6 +391,38 @@ export default function OnboardingWizard({
     validateCurrentStepAndUpdateButton();
   }, [currentStep, formData, validateCurrentStepAndUpdateButton]);
 
+  // Scroll to top when step changes (additional safeguard)
+  React.useEffect(() => {
+    scrollToTop();
+  }, [currentStep]);
+
+  const scrollToTop = () => {
+    // Multiple scroll approaches for better compatibility
+    try {
+      // Try scrolling the window first
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      
+      // Also try scrolling document elements as fallback
+      document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
+      document.body.scrollTo({ top: 0, behavior: "smooth" });
+      
+      // Force immediate scroll if smooth scroll doesn't work
+      setTimeout(() => {
+        if (window.scrollY > 100) {
+          window.scrollTo(0, 0);
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
+      }, 100);
+    } catch (error) {
+      // Fallback to immediate scroll
+      console.warn("Smooth scroll failed, using immediate scroll:", error);
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  };
+
   const handleNext = async () => {
     // Use both validation methods for final check
     if (!validateCurrentStep() || !isStepValid) return;
@@ -422,7 +454,7 @@ export default function OnboardingWizard({
     } else {
       setCurrentStep((prev) => Math.min(prev + 1, WIZARD_STEPS.length - 1));
       // Scroll to top of the page when moving to next step
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollToTop();
     }
   };
 
@@ -430,7 +462,7 @@ export default function OnboardingWizard({
     if (currentStep > 0) {
       setCurrentStep((prev) => Math.max(prev - 1, 0));
       // Scroll to top of the page when going back
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollToTop();
     }
   };
 
