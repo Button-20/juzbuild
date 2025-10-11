@@ -19,8 +19,6 @@ export async function GET(req: NextRequest) {
     }
 
     const userId = decoded.userId;
-    console.log("[Sites API] Fetching sites for userId:", userId);
-    console.log("[Sites API] userId type:", typeof userId);
 
     // Get user's sites
     const sitesCollection = await getCollection("sites");
@@ -28,14 +26,6 @@ export async function GET(req: NextRequest) {
       .find({ userId })
       .sort({ createdAt: -1 })
       .toArray();
-
-    console.log("[Sites API] Found", userSites.length, "sites");
-    if (userSites.length > 0) {
-      console.log(
-        "[Sites API] First site:",
-        JSON.stringify(userSites[0], null, 2)
-      );
-    }
 
     // Get themes for display names
     const themesCollection = await getCollection("themes");
