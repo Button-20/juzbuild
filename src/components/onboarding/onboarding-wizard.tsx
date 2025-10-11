@@ -55,11 +55,19 @@ const WIZARD_STEPS: WizardStep[] = [
 
 interface OnboardingWizardProps {
   onComplete?: (data: OnboardingData, result?: any) => void;
+  isExistingUser?: boolean; // Flag to indicate if user is already logged in
 }
 
 export default function OnboardingWizard({
   onComplete,
+  isExistingUser = false,
 }: OnboardingWizardProps) {
+  // Filter steps based on user type - skip signup step for existing users
+  const activeSteps = isExistingUser
+    ? WIZARD_STEPS.filter((step) => step.id !== 1) // Remove signup step
+    : WIZARD_STEPS;
+
+  // If existing user, start at first step (Business Profile, formerly step 2)
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Partial<OnboardingData>>({
     brandColors: [],
@@ -427,7 +435,7 @@ export default function OnboardingWizard({
     // Use both validation methods for final check
     if (!validateCurrentStep() || !isStepValid) return;
 
-    if (currentStep === WIZARD_STEPS.length - 1) {
+    if (currentStep === activeSteps.length - 1) {
       // Final submission
       setIsSubmitting(true);
       try {
@@ -478,9 +486,9 @@ export default function OnboardingWizard({
     }
   }, [currentStep]);
 
-  const currentStepData = WIZARD_STEPS[currentStep] || WIZARD_STEPS[0];
+  const currentStepData = activeSteps[currentStep] || activeSteps[0];
   const StepComponent = currentStepData.component;
-  const progressPercentage = ((currentStep + 1) / WIZARD_STEPS.length) * 100;
+  const progressPercentage = ((currentStep + 1) / activeSteps.length) * 100;
 
   const getStepIllustration = (stepIndex: number) => {
     const illustrations = [
@@ -551,6 +559,122 @@ export default function OnboardingWizard({
 
   const currentIllustration = getStepIllustration(currentStep);
 
+  // If existing user, render a simplified layout without full-screen wrapper
+  if (isExistingUser) {
+    return (
+      <div className="w-full">
+        {/* Progress Bar */}
+        <div className="mb-6 max-w-2xl mx-auto">
+          <div className="flex justify-between text-sm text-muted-foreground mb-2">
+            <span>
+              Step {currentStep + 1} of {activeSteps.length}
+            </span>
+            <span>{Math.round(progressPercentage)}% Complete</span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+        </div>
+
+        {/* Step Indicators */}
+        <div className="flex justify-center items-center space-x-2 mb-8">
+          {activeSteps.map((step, index) => (
+            <React.Fragment key={step.id}>
+              <div
+                className={`flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs font-medium transition-colors ${
+                  index < currentStep
+                    ? "bg-primary text-primary-foreground"
+                    : index === currentStep
+                    ? "bg-primary/20 text-primary border-2 border-primary"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {index + 1}
+              </div>
+              {index < activeSteps.length - 1 && (
+                <div
+                  className={`w-4 md:w-8 h-0.5 transition-colors ${
+                    index < currentStep ? "bg-primary" : "bg-muted"
+                  }`}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* Left Side - Form */}
+            <div className="order-2 lg:order-1 col-span-2">
+              <Card className="border-2 border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
+                <CardHeader className="text-center pb-6">
+                  <CardTitle className="text-xl md:text-2xl font-bold">
+                    {currentStepData.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm md:text-base">
+                    {currentStepData.description}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <StepComponent
+                        data={formData}
+                        updateData={updateData}
+                        errors={errors}
+                        onNext={handleNext}
+                        onBack={handleBack}
+                        isFirst={currentStep === 0}
+                        isLast={currentStep === activeSteps.length - 1}
+                        isSubmitting={isSubmitting}
+                        isStepValid={isStepValid}
+                        isValidatingEmail={isValidatingEmail}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Side - Illustration */}
+            <div className="order-1 lg:order-2">
+              <Card className="sticky top-6 border-2 border-primary/20 shadow-xl bg-gradient-to-br from-primary/5 to-primary/10">
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <span className="text-6xl">
+                      {currentIllustration.emoji}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-center">
+                    {currentIllustration.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4 text-center">
+                    {currentIllustration.description}
+                  </p>
+                  <ul className="space-y-2">
+                    {currentIllustration.features.map((feature, index) => (
+                      <li key={index} className="flex items-start text-sm">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Original full-screen layout for new signups
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/50">
       <div className="container mx-auto px-4 py-6">
@@ -567,7 +691,7 @@ export default function OnboardingWizard({
           <div className="max-w-2xl mx-auto mb-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-2">
               <span>
-                Step {currentStep + 1} of {WIZARD_STEPS.length}
+                Step {currentStep + 1} of {activeSteps.length}
               </span>
               <span>{Math.round(progressPercentage)}% Complete</span>
             </div>
@@ -576,7 +700,7 @@ export default function OnboardingWizard({
 
           {/* Step Indicators */}
           <div className="flex justify-center items-center space-x-2 mt-4">
-            {WIZARD_STEPS.map((step, index) => (
+            {activeSteps.map((step, index) => (
               <React.Fragment key={step.id}>
                 <div
                   className={`flex items-center justify-center w-6 h-6 md:w-8 md:h-8 rounded-full text-xs font-medium transition-colors ${
@@ -589,7 +713,7 @@ export default function OnboardingWizard({
                 >
                   {index + 1}
                 </div>
-                {index < WIZARD_STEPS.length - 1 && (
+                {index < activeSteps.length - 1 && (
                   <div
                     className={`w-4 md:w-8 h-0.5 transition-colors ${
                       index < currentStep ? "bg-primary" : "bg-muted"
@@ -632,7 +756,7 @@ export default function OnboardingWizard({
                         onNext={handleNext}
                         onBack={handleBack}
                         isFirst={currentStep === 0}
-                        isLast={currentStep === WIZARD_STEPS.length - 1}
+                        isLast={currentStep === activeSteps.length - 1}
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}

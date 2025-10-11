@@ -29,7 +29,7 @@ export function WebsiteSwitcher() {
   };
 
   const handleCreateNew = () => {
-    router.push("/onboarding");
+    router.push("/app/onboarding");
   };
 
   if (loading) {
@@ -63,41 +63,43 @@ export function WebsiteSwitcher() {
   return (
     <div className="flex flex-col gap-2 px-2 pb-2">
       <div className="flex items-center gap-2">
-        <Select
-          value={selectedWebsiteId || ""}
-          onValueChange={handleWebsiteChange}
-        >
-          <SelectTrigger className="flex-1">
-            <SelectValue>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <span className="truncate">
-                  {selectedWebsite?.companyName ||
-                    selectedWebsite?.websiteName ||
-                    "Select Website"}
-                </span>
-              </div>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {websites.map((website) => (
-              <SelectItem key={website.id} value={website.id}>
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">{website.companyName}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {website.domain}
+        <div className="flex-1 min-w-0">
+          <Select
+            value={selectedWebsiteId || ""}
+            onValueChange={handleWebsiteChange}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {selectedWebsite?.companyName ||
+                      selectedWebsite?.websiteName ||
+                      "Select Website"}
                   </span>
                 </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {websites.map((website) => (
+                <SelectItem key={website.id} value={website.id}>
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">{website.companyName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {website.domain}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Button
           variant="ghost"
           size="icon"
           onClick={handleCreateNew}
-          className="flex-shrink-0"
+          className="flex-shrink-0 h-9 w-9"
           title="Create new website"
         >
           <Plus className="h-4 w-4" />
