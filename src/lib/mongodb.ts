@@ -38,26 +38,27 @@ if (typeof window === "undefined") {
   getDatabase = async (dbName: string = "Juzbuild") => {
     const client = await clientPromise;
     const db = client.db(dbName);
-    
+
     // Initialize database indexes on first connection (with race condition protection)
     if (!isInitialized && !initializationPromise) {
-      initializationPromise = initializeDatabase(db).then(() => {
-        isInitialized = true;
-        console.log("✅ Database initialization completed");
-      }).catch((error) => {
-        console.warn("⚠️ Database initialization failed:", error);
-        initializationPromise = null; // Allow retry on next connection
-        // Don't throw error to avoid breaking the app
-      });
+      initializationPromise = initializeDatabase(db)
+        .then(() => {
+          isInitialized = true;
+        })
+        .catch((error) => {
+          initializationPromise = null; // Allow retry on next connection
+          // Don't throw error to avoid breaking the app
+        });
     }
-    
+
     // Wait for initialization if it's in progress
     if (initializationPromise && !isInitialized) {
       await initializationPromise;
     }
-    
+
     return db;
-  };  getCollection = async (
+  };
+  getCollection = async (
     collectionName: string,
     dbName: string = "Juzbuild"
   ) => {
@@ -82,17 +83,12 @@ if (typeof window === "undefined") {
  */
 async function initializeDatabase(db: any): Promise<void> {
   try {
-    console.log("Initializing database indexes...");
-
     // Initialize collections sequentially to avoid conflicts
     await initializeUsersCollection(db);
     await initializePropertiesCollection(db);
     await initializePropertyTypesCollection(db);
     await initializeOnboardingCollection(db);
-
-    console.log("Database initialization completed successfully");
   } catch (error) {
-    console.error("Database initialization failed:", error);
     throw error;
   }
 }
@@ -113,7 +109,6 @@ async function initializeUsersCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created unique index on users.email");
 
     // Create index on domainName for faster lookups
     await usersCollection.createIndex(
@@ -123,7 +118,6 @@ async function initializeUsersCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on users.domainName");
 
     // Create compound index on email and isActive for authentication queries
     await usersCollection.createIndex(
@@ -133,7 +127,6 @@ async function initializeUsersCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created compound index on users.email and users.isActive");
 
     // Create index on createdAt for sorting
     await usersCollection.createIndex(
@@ -143,13 +136,9 @@ async function initializeUsersCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on users.createdAt");
   } catch (error: any) {
     // Handle duplicate key errors gracefully (indexes already exist)
-    if (error.code === 11000) {
-      console.log("ℹ️ Users collection indexes already exist");
-    } else {
-      console.error("Error creating users indexes:", error);
+    if (error.code !== 11000) {
       throw error;
     }
   }
@@ -170,7 +159,6 @@ async function initializePropertiesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created compound index on properties.userId and properties.domain");
 
     // Create index on slug for fast property lookups
     await propertiesCollection.createIndex(
@@ -180,7 +168,6 @@ async function initializePropertiesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created compound index on properties.slug and properties.domain");
 
     // Create index on status and isActive for filtering
     await propertiesCollection.createIndex(
@@ -190,7 +177,6 @@ async function initializePropertiesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created compound index on properties.status and properties.isActive");
 
     // Create text index for search functionality
     await propertiesCollection.createIndex(
@@ -204,7 +190,6 @@ async function initializePropertiesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created text search index on properties");
 
     // Create index on createdAt for sorting
     await propertiesCollection.createIndex(
@@ -214,12 +199,8 @@ async function initializePropertiesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on properties.createdAt");
   } catch (error: any) {
-    if (error.code === 11000) {
-      console.log("ℹ️ Properties collection indexes already exist");
-    } else {
-      console.error("Error creating properties indexes:", error);
+    if (error.code !== 11000) {
       throw error;
     }
   }
@@ -241,7 +222,6 @@ async function initializePropertyTypesCollection(db: any): Promise<void> {
         sparse: true, // Allow null userId for global types
       }
     );
-    console.log("✅ Created compound index on propertyTypes.slug and propertyTypes.userId");
 
     // Create index on isActive for filtering
     await propertyTypesCollection.createIndex(
@@ -251,12 +231,8 @@ async function initializePropertyTypesCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on propertyTypes.isActive");
   } catch (error: any) {
-    if (error.code === 11000) {
-      console.log("ℹ️ Property types collection indexes already exist");
-    } else {
-      console.error("Error creating property types indexes:", error);
+    if (error.code !== 11000) {
       throw error;
     }
   }
@@ -277,7 +253,6 @@ async function initializeOnboardingCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on onboarding.userId");
 
     // Create index on status for filtering
     await onboardingCollection.createIndex(
@@ -287,7 +262,6 @@ async function initializeOnboardingCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on onboarding.status");
 
     // Create index on createdAt for sorting and cleanup
     await onboardingCollection.createIndex(
@@ -297,15 +271,52 @@ async function initializeOnboardingCollection(db: any): Promise<void> {
         background: true,
       }
     );
-    console.log("✅ Created index on onboarding.createdAt");
   } catch (error: any) {
-    if (error.code === 11000) {
-      console.log("ℹ️ Onboarding collection indexes already exist");
-    } else {
-      console.error("Error creating onboarding indexes:", error);
+    if (error.code !== 11000) {
       throw error;
     }
   }
+}
+
+/**
+ * Get user's website database name from their domain
+ */
+export async function getUserDatabaseName(
+  userId: string
+): Promise<string | null> {
+  try {
+    const usersCollection = await getCollection("users");
+    const user = await usersCollection.findOne({ _id: userId });
+
+    if (user && user.domainName) {
+      // Convert domain to database name format
+      const websiteName = user.domainName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+      return `juzbuild_${websiteName}`;
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Get collection from user's specific database
+ */
+export async function getUserCollection(
+  collectionName: string,
+  userId: string
+): Promise<any> {
+  const userDatabaseName = await getUserDatabaseName(userId);
+
+  if (!userDatabaseName) {
+    // Fallback to main database if user doesn't have a specific database yet
+    return await getCollection(collectionName);
+  }
+
+  return await getCollection(collectionName, userDatabaseName);
 }
 
 export { getCollection, getDatabase };

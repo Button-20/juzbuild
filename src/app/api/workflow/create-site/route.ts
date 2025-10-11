@@ -8,6 +8,7 @@ const createSiteSchema = z.object({
   fullName: z.string().min(2),
   companyName: z.string().min(2),
   domainName: z.string().min(3),
+  logoUrl: z.string().url().optional(),
   brandColors: z.array(z.string()).max(3),
   tagline: z.string().min(2),
   aboutSection: z.string().min(10),

@@ -31,7 +31,7 @@ export interface UserProfileData {
 // Onboarding-specific data that is stored separately in onboarding collection
 export interface OnboardingSpecificData {
   // Business branding (used for website creation)
-  logo?: File;
+  logoUrl?: string; // Cloudinary URL for uploaded logo
   brandColors: string[];
 
   // Website setup preferences (used for website generation)

@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OnboardingData } from "@/types/onboarding";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function SignupPage() {
   // Redirect to waitlist if app is not live
@@ -16,15 +16,16 @@ export default function SignupPage() {
     return <WaitingList />;
   }
   const router = useRouter();
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
 
   const { refreshAuth, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Auto-redirect authenticated users to dashboard
+  // Auto-redirect authenticated users to dashboard (but not during onboarding completion)
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (!authLoading && isAuthenticated && !isOnboardingComplete) {
       router.push("/app/dashboard");
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, isOnboardingComplete]);
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -66,6 +67,9 @@ export default function SignupPage() {
     data: OnboardingData,
     result?: any
   ) => {
+    // Set flag to prevent auto-redirect to dashboard
+    setIsOnboardingComplete(true);
+
     // Handle successful onboarding completion
     console.log("Onboarding completed:", data, result);
 
@@ -75,12 +79,24 @@ export default function SignupPage() {
     // Redirect to deployment page with job tracking
     const queryParams = new URLSearchParams();
     if (result?.jobId) queryParams.set("jobId", result.jobId);
-    if (data.domainName) queryParams.set("domainName", data.domainName);
-    if (data.companyName) queryParams.set("websiteName", data.companyName);
+    if (result?.websiteData?.domainName || data.domainName) {
+      queryParams.set(
+        "domainName",
+        result?.websiteData?.domainName || data.domainName
+      );
+    }
+    if (result?.websiteData?.companyName || data.companyName) {
+      queryParams.set(
+        "websiteName",
+        result?.websiteData?.companyName || data.companyName
+      );
+    }
 
     const deploymentUrl = `/signup/deployment${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
+
+    console.log("Redirecting to deployment page:", deploymentUrl);
     router.push(deploymentUrl);
   };
 

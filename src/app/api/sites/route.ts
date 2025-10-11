@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
     }
 
     const userId = decoded.userId;
+    console.log("[Sites API] Fetching sites for userId:", userId);
+    console.log("[Sites API] userId type:", typeof userId);
 
     // Get user's sites
     const sitesCollection = await getCollection("sites");
@@ -27,14 +29,29 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 })
       .toArray();
 
+    console.log("[Sites API] Found", userSites.length, "sites");
+    if (userSites.length > 0) {
+      console.log(
+        "[Sites API] First site:",
+        JSON.stringify(userSites[0], null, 2)
+      );
+    }
+
+    // Get themes for display names
+    const themesCollection = await getCollection("themes");
+    const themes = await themesCollection.find({}).toArray();
+    const themeMap = new Map(
+      themes.map((theme: any) => [theme._id.toString(), theme.name])
+    );
+
     // Transform the data for frontend consumption
     const sites = userSites.map((site: any) => ({
       id: site._id.toString(),
-      websiteName: site.websiteName,
+      websiteName: site.websiteName || site.websitename || site.companyName, // Handle both camelCase and lowercase
       companyName: site.companyName,
       domain: site.domain,
       status: site.status,
-      theme: site.theme,
+      theme: themeMap.get(site.theme) || site.theme, // Get theme name from map
       layoutStyle: site.layoutStyle,
       repoUrl: site.repoUrl,
       templatePath: site.templatePath,

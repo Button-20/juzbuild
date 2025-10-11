@@ -37,6 +37,7 @@ const userProfileSchema = z.object({
 // Onboarding-specific schema - fields that get stored in onboarding collection
 const onboardingSpecificSchema = z.object({
   // Step 2 - Business Profile
+  logoUrl: z.string().optional(), // Cloudinary URL for uploaded logo
   brandColors: z.array(z.string()).max(3, "Maximum 3 colors allowed"),
 
   // Step 3 - Website Setup
@@ -138,6 +139,7 @@ export async function POST(req: NextRequest) {
       const onboardingRecord = {
         userId: userId,
         // Only onboarding-specific fields (not duplicated in users collection)
+        logoUrl: data.logoUrl,
         brandColors: data.brandColors,
         propertyTypes: data.propertyTypes,
         includedPages: data.includedPages,
@@ -177,6 +179,7 @@ export async function POST(req: NextRequest) {
           fullName: data.fullName,
           companyName: data.companyName,
           domainName: data.domainName,
+          logoUrl: data.logoUrl,
           brandColors: data.brandColors,
           tagline: data.tagline,
           aboutSection: data.aboutSection,

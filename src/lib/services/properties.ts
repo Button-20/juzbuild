@@ -1,4 +1,4 @@
-import { getCollection } from "@/lib/mongodb";
+import { getCollection, getUserCollection } from "@/lib/mongodb";
 import {
   CreatePropertyRequest,
   CreatePropertyTypeRequest,
@@ -21,7 +21,7 @@ export class PropertyService {
     userId: string,
     domain: string
   ): Promise<Property> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = await getUserCollection(this.COLLECTION, userId);
 
     const propertyData = {
       ...data,
@@ -51,7 +51,10 @@ export class PropertyService {
   static async findAll(
     filters: PropertyFilter
   ): Promise<{ properties: Property[]; total: number }> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = await getUserCollection(
+      this.COLLECTION,
+      filters.userId!
+    );
 
     const query: any = { isActive: true };
 
@@ -99,7 +102,9 @@ export class PropertyService {
    * Find property by ID
    */
   static async findById(id: string, userId?: string): Promise<Property | null> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const query: any = { _id: new ObjectId(id), isActive: true };
     if (userId) query.userId = userId;
@@ -114,9 +119,12 @@ export class PropertyService {
    */
   static async findBySlug(
     slug: string,
-    domain?: string
+    domain?: string,
+    userId?: string
   ): Promise<Property | null> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const query: any = { slug, isActive: true };
     if (domain) query.domain = domain;
@@ -134,7 +142,7 @@ export class PropertyService {
     data: UpdatePropertyRequest,
     userId: string
   ): Promise<Property | null> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = await getUserCollection(this.COLLECTION, userId);
 
     const { _id: _, ...dataWithoutId } = data;
     const updateData = {
@@ -155,7 +163,7 @@ export class PropertyService {
    * Soft delete property (set isActive to false)
    */
   static async delete(id: string, userId: string): Promise<boolean> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = await getUserCollection(this.COLLECTION, userId);
 
     const result = await collection.updateOne(
       { _id: new ObjectId(id), userId },
@@ -174,7 +182,7 @@ export class PropertyService {
    * Get property statistics for dashboard
    */
   static async getStats(userId: string, domain: string) {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = await getUserCollection(this.COLLECTION, userId);
 
     const pipeline = [
       { $match: { userId, domain, isActive: true } },
@@ -253,7 +261,9 @@ export class PropertyTypeService {
     userId?: string,
     domain?: string
   ): Promise<PropertyType> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const propertyTypeData = {
       ...data,
@@ -284,7 +294,9 @@ export class PropertyTypeService {
     userId?: string,
     domain?: string
   ): Promise<PropertyType[]> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const query: any = { isActive: true };
 
@@ -307,8 +319,13 @@ export class PropertyTypeService {
   /**
    * Find property type by ID
    */
-  static async findById(id: string): Promise<PropertyType | null> {
-    const collection = await getCollection(this.COLLECTION);
+  static async findById(
+    id: string,
+    userId?: string
+  ): Promise<PropertyType | null> {
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const propertyType = await collection.findOne({
       _id: new ObjectId(id),
@@ -321,8 +338,13 @@ export class PropertyTypeService {
   /**
    * Find property type by slug
    */
-  static async findBySlug(slug: string): Promise<PropertyType | null> {
-    const collection = await getCollection(this.COLLECTION);
+  static async findBySlug(
+    slug: string,
+    userId?: string
+  ): Promise<PropertyType | null> {
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const propertyType = await collection.findOne({
       slug,
@@ -340,7 +362,9 @@ export class PropertyTypeService {
     data: UpdatePropertyTypeRequest,
     userId?: string
   ): Promise<PropertyType | null> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const { _id: _, ...dataWithoutId } = data;
     const updateData = {
@@ -364,7 +388,9 @@ export class PropertyTypeService {
    * Soft delete property type
    */
   static async delete(id: string, userId?: string): Promise<boolean> {
-    const collection = await getCollection(this.COLLECTION);
+    const collection = userId
+      ? await getUserCollection(this.COLLECTION, userId)
+      : await getCollection(this.COLLECTION);
 
     const query: any = { _id: new ObjectId(id) };
     if (userId) query.userId = userId;

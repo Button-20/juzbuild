@@ -12,7 +12,7 @@ import {
   Palette,
   Upload,
 } from "lucide-react";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 const PRESET_COLORS = [
   "#3B82F6", // Blue
@@ -37,11 +37,39 @@ export default function BusinessInfoStep({
   isStepValid,
 }: WizardStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      updateData({ logo: file });
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // Create FormData for the API call
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      // Upload to Cloudinary via our API
+      const response = await fetch("/api/upload/logo", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update the data with the Cloudinary URL
+        updateData({ logoUrl: result.logoUrl });
+      } else {
+        setUploadError(result.error || "Upload failed");
+      }
+    } catch (error: any) {
+      setUploadError("Upload failed: " + error.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -75,18 +103,23 @@ export default function BusinessInfoStep({
             Logo Upload (Optional)
           </Label>
           <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-            {data.logo ? (
+            {data.logoUrl ? (
               <div className="space-y-2">
-                <div className="w-16 h-16 mx-auto bg-muted rounded-lg flex items-center justify-center">
-                  <FileText className="w-8 h-8 text-muted-foreground" />
+                <div className="w-16 h-16 mx-auto bg-muted rounded-lg overflow-hidden">
+                  <img
+                    src={data.logoUrl}
+                    alt="Brand Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <p className="text-sm font-medium">{data.logo.name}</p>
+                <p className="text-sm font-medium">Logo uploaded</p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
                 >
-                  Change Logo
+                  {isUploading ? "Uploading..." : "Change Logo"}
                 </Button>
               </div>
             ) : (
@@ -101,8 +134,9 @@ export default function BusinessInfoStep({
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
                 >
-                  Choose File
+                  {isUploading ? "Uploading..." : "Choose File"}
                 </Button>
               </div>
             )}
@@ -114,6 +148,9 @@ export default function BusinessInfoStep({
               className="hidden"
             />
           </div>
+          {uploadError && (
+            <p className="text-sm text-red-600 mt-2">{uploadError}</p>
+          )}
         </div>
 
         {/* Brand Colors */}

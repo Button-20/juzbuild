@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { base, heading } from "@/constants";
 import { subheading } from "@/constants/fonts";
+import { WebsiteProvider } from "@/contexts/website-context";
 import { cn } from "@/lib";
 import React from "react";
 
@@ -23,10 +24,12 @@ export default function RootLayout({
         )}
       >
         <Toaster richColors theme="dark" position="top-right" />
-        <SidebarProvider>
-          <AppSidebar variant="inset" />
-          {children}
-        </SidebarProvider>
+        <WebsiteProvider>
+          <SidebarProvider>
+            <AppSidebar variant="inset" />
+            {children}
+          </SidebarProvider>
+        </WebsiteProvider>
       </body>
     </html>
   );
