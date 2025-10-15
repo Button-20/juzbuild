@@ -415,18 +415,24 @@ export default function PropertiesPage() {
                         <TableCell>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{property.name}</span>
+                              <span className="font-medium">
+                                {property.name}
+                              </span>
                               <div className="flex gap-1">
                                 {property.isFeatured && (
                                   <Badge variant="success" className="text-xs">
                                     Featured
                                   </Badge>
                                 )}
-                                {property.createdAt && isRecentlyAdded(property.createdAt) && (
-                                  <Badge variant="warning" className="text-xs">
-                                    New
-                                  </Badge>
-                                )}
+                                {property.createdAt &&
+                                  isRecentlyAdded(property.createdAt) && (
+                                    <Badge
+                                      variant="warning"
+                                      className="text-xs"
+                                    >
+                                      New
+                                    </Badge>
+                                  )}
                               </div>
                             </div>
                             <div className="text-sm text-muted-foreground flex items-center">
