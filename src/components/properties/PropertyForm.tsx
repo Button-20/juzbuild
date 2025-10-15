@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ImageUpload } from "./ImageUpload";
 import {
   Form,
   FormControl,
@@ -43,6 +42,7 @@ import {
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { ImageUpload } from "./ImageUpload";
 
 // Form schema (excluding server-side fields)
 const propertyFormSchema = propertySchema.omit({
@@ -195,8 +195,6 @@ export function PropertyForm({
       currentFeatures.filter((_, i) => i !== index)
     );
   };
-
-
 
   return (
     <Form {...form}>

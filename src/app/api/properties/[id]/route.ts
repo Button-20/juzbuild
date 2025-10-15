@@ -47,7 +47,11 @@ export async function GET(
     }
 
     // Get the property
-    const property = await PropertyService.findById(propertyId, userId, websiteDatabaseName);
+    const property = await PropertyService.findById(
+      propertyId,
+      userId,
+      websiteDatabaseName
+    );
 
     if (!property) {
       return NextResponse.json(

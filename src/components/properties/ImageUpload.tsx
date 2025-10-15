@@ -1,13 +1,13 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ImageIcon, UploadIcon, XIcon, PlusIcon } from "lucide-react";
-import { useState, useRef } from "react";
+import { ImageIcon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
 import Image from "next/image";
+import { useRef, useState } from "react";
 
 interface PropertyImage {
   src: string;
@@ -142,12 +142,12 @@ export function ImageUpload({
   // Remove image
   const removeImage = (index: number) => {
     const updatedImages = images.filter((_, i) => i !== index);
-    
+
     // If we removed the main image, set the first remaining image as main
     if (images[index]?.isMain && updatedImages.length > 0) {
       updatedImages[0] = { ...updatedImages[0], isMain: true };
     }
-    
+
     onImagesChange(updatedImages);
   };
 
@@ -190,7 +190,8 @@ export function ImageUpload({
             />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Upload up to {maxImages} images. Max 5MB each. Supports JPG, PNG, WebP.
+            Upload up to {maxImages} images. Max 5MB each. Supports JPG, PNG,
+            WebP.
           </p>
         </div>
 
@@ -239,7 +240,7 @@ export function ImageUpload({
                   }}
                 />
               </div>
-              
+
               {/* Overlay Controls */}
               <div className="absolute top-1 right-1 flex gap-1">
                 {image.isMain && (
@@ -257,7 +258,7 @@ export function ImageUpload({
                   <XIcon className="h-3 w-3" />
                 </Button>
               </div>
-              
+
               {/* Set as Main Button */}
               {!image.isMain && (
                 <Button
@@ -270,7 +271,7 @@ export function ImageUpload({
                   Set as Main
                 </Button>
               )}
-              
+
               {/* Alt Text Display */}
               {image.alt && (
                 <p className="text-xs text-muted-foreground mt-1 truncate">

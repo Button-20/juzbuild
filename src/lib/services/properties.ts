@@ -115,8 +115,8 @@ export class PropertyService {
    * Find property by ID
    */
   static async findById(
-    id: string, 
-    userId?: string, 
+    id: string,
+    userId?: string,
     websiteDatabaseName?: string
   ): Promise<Property | null> {
     let collection;
@@ -168,7 +168,7 @@ export class PropertyService {
     userId: string,
     websiteDatabaseName?: string
   ): Promise<Property | null> {
-    const collection = websiteDatabaseName 
+    const collection = websiteDatabaseName
       ? await getCollection(this.COLLECTION, websiteDatabaseName)
       : await getUserCollection(this.COLLECTION, userId);
 
@@ -180,7 +180,7 @@ export class PropertyService {
 
     // Update query based on whether we're using website database or user database
     const objectId = new ObjectId(id);
-    const query = websiteDatabaseName 
+    const query = websiteDatabaseName
       ? { _id: objectId, isActive: true }
       : { _id: objectId, userId, isActive: true };
 
@@ -192,7 +192,7 @@ export class PropertyService {
 
     // Handle both old and new MongoDB driver response formats
     const document = result?.value || result;
-    
+
     if (document && document._id) {
       return this.formatDocument(document);
     }
