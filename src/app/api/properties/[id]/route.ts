@@ -178,9 +178,33 @@ export async function DELETE(
     const userId = decoded.userId;
     const resolvedParams = await params;
     const propertyId = resolvedParams.id;
+    const { searchParams } = new URL(request.url);
+
+    // Get website ID from query parameters (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const { getCollection } = await import("@/lib/mongodb");
+      const { ObjectId } = require("mongodb");
+      const sitesCollection = await getCollection("sites");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
 
     // Delete the property
-    const success = await PropertyService.delete(propertyId, userId);
+    const success = await PropertyService.delete(
+      propertyId,
+      userId,
+      websiteDatabaseName
+    );
 
     if (!success) {
       return NextResponse.json(

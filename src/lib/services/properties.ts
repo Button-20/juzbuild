@@ -201,22 +201,26 @@ export class PropertyService {
   }
 
   /**
-   * Soft delete property (set isActive to false)
+   * Delete property from database (permanent deletion)
    */
-  static async delete(id: string, userId: string): Promise<boolean> {
-    const collection = await getUserCollection(this.COLLECTION, userId);
+  static async delete(
+    id: string,
+    userId: string,
+    websiteDatabaseName?: string
+  ): Promise<boolean> {
+    const collection = websiteDatabaseName
+      ? await getCollection(this.COLLECTION, websiteDatabaseName)
+      : await getUserCollection(this.COLLECTION, userId);
 
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id), userId },
-      {
-        $set: {
-          isActive: false,
-          updatedAt: new Date(),
-        },
-      }
-    );
+    // Delete query based on whether we're using website database or user database
+    const objectId = new ObjectId(id);
+    const query = websiteDatabaseName
+      ? { _id: objectId, isActive: true }
+      : { _id: objectId, userId, isActive: true };
 
-    return result.modifiedCount > 0;
+    const result = await collection.deleteOne(query);
+
+    return result.deletedCount > 0;
   }
 
   /**

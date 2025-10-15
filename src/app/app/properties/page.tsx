@@ -146,10 +146,22 @@ export default function PropertiesPage() {
       return;
     }
 
-    try {
-      const response = await fetch(`/api/properties/${propertyId}`, {
-        method: "DELETE",
+    if (!selectedWebsiteId) {
+      toast({
+        title: "Error",
+        description: "No website selected",
+        variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/properties/${propertyId}?websiteId=${selectedWebsiteId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (response.ok) {
         toast({
