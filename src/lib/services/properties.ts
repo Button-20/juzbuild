@@ -67,7 +67,7 @@ export class PropertyService {
       collection = await getUserCollection(this.COLLECTION, filters.userId!);
     }
 
-    const query: any = { isActive: true };
+    const query: any = {};
 
     // Add user/domain filtering only when not using websiteDatabaseName
     if (!filters.websiteDatabaseName) {
@@ -129,7 +129,7 @@ export class PropertyService {
     }
 
     // Query based on whether we're using website database or user database
-    const query: any = { _id: new ObjectId(id), isActive: true };
+    const query: any = { _id: new ObjectId(id) };
     if (userId && !websiteDatabaseName) {
       query.userId = userId;
     }
@@ -181,8 +181,8 @@ export class PropertyService {
     // Update query based on whether we're using website database or user database
     const objectId = new ObjectId(id);
     const query = websiteDatabaseName
-      ? { _id: objectId, isActive: true }
-      : { _id: objectId, userId, isActive: true };
+      ? { _id: objectId }
+      : { _id: objectId, userId };
 
     const result = await collection.findOneAndUpdate(
       query,

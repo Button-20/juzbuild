@@ -456,7 +456,16 @@ export default function PropertiesPage() {
                         <TableCell>
                           {getPropertyTypeBadge(property.propertyType)}
                         </TableCell>
-                        <TableCell>{getStatusBadge(property.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(property.status)}
+                            {!property.isActive && (
+                              <Badge variant="destructive" className="text-xs">
+                                Inactive
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-medium">
                           {formatPrice(property.price, property.currency)}
                         </TableCell>
