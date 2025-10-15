@@ -24,16 +24,45 @@ export async function GET(request: NextRequest) {
 
     const userId = decoded.userId;
 
-    // Get user's domain from their profile
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
     let userDomain = searchParams.get("domain");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        userDomain = website.domain;
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
     if (!userDomain) {
       const usersCollection = await getCollection("users");
       const user = await usersCollection.findOne({ _id: userId });
       if (user && user.domainName) {
         userDomain = user.domainName + ".juzbuild.com";
+        // Generate database name from user's domain
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
       } else {
         // Fallback to email-based domain
         userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
       }
     }
 
@@ -47,6 +76,7 @@ export async function GET(request: NextRequest) {
       page: parseInt(searchParams.get("page") || "1"),
       userId,
       domain: userDomain,
+      websiteDatabaseName, // Pass the specific website's database name
     };
 
     // Validate filters
@@ -90,17 +120,47 @@ export async function POST(request: NextRequest) {
 
     const userId = decoded.userId;
     const body = await request.json();
+    const { searchParams } = new URL(request.url);
 
-    // Get user's domain from their profile
+    // Get website ID from query parameters (from website switcher)
+    const websiteId = searchParams.get("websiteId");
     let domain = body.domain;
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        domain = website.domain;
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
     if (!domain) {
       const usersCollection = await getCollection("users");
       const user = await usersCollection.findOne({ _id: userId });
       if (user && user.domainName) {
         domain = user.domainName + ".juzbuild.com";
+        // Generate database name from user's domain
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
       } else {
         // Fallback to email-based domain
         domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
       }
     }
 
@@ -123,7 +183,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the property
-    const property = await PropertyService.create(propertyData, userId, domain);
+    const property = await PropertyService.create(
+      propertyData,
+      userId,
+      domain,
+      websiteDatabaseName
+    );
 
     return NextResponse.json(property, { status: 201 });
   } catch (error) {

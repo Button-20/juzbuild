@@ -19,9 +19,15 @@ export class PropertyService {
   static async create(
     data: CreatePropertyRequest,
     userId: string,
-    domain: string
+    domain: string,
+    websiteDatabaseName?: string | null
   ): Promise<Property> {
-    const collection = await getUserCollection(this.COLLECTION, userId);
+    let collection;
+    if (websiteDatabaseName) {
+      collection = await getCollection(this.COLLECTION, websiteDatabaseName);
+    } else {
+      collection = await getUserCollection(this.COLLECTION, userId);
+    }
 
     const propertyData = {
       ...data,
@@ -51,16 +57,23 @@ export class PropertyService {
   static async findAll(
     filters: PropertyFilter
   ): Promise<{ properties: Property[]; total: number }> {
-    const collection = await getUserCollection(
-      this.COLLECTION,
-      filters.userId!
-    );
+    let collection;
+    if (filters.websiteDatabaseName) {
+      collection = await getCollection(
+        this.COLLECTION,
+        filters.websiteDatabaseName
+      );
+    } else {
+      collection = await getUserCollection(this.COLLECTION, filters.userId!);
+    }
 
     const query: any = { isActive: true };
 
-    // Add user/domain filtering
-    if (filters.userId) query.userId = filters.userId;
-    if (filters.domain) query.domain = filters.domain;
+    // Add user/domain filtering only when not using websiteDatabaseName
+    if (!filters.websiteDatabaseName) {
+      if (filters.userId) query.userId = filters.userId;
+      if (filters.domain) query.domain = filters.domain;
+    }
 
     // Add other filters
     if (filters.featured !== undefined) query.isFeatured = filters.featured;
@@ -101,13 +114,25 @@ export class PropertyService {
   /**
    * Find property by ID
    */
-  static async findById(id: string, userId?: string): Promise<Property | null> {
-    const collection = userId
-      ? await getUserCollection(this.COLLECTION, userId)
-      : await getCollection(this.COLLECTION);
+  static async findById(
+    id: string, 
+    userId?: string, 
+    websiteDatabaseName?: string
+  ): Promise<Property | null> {
+    let collection;
+    if (websiteDatabaseName) {
+      collection = await getCollection(this.COLLECTION, websiteDatabaseName);
+    } else if (userId) {
+      collection = await getUserCollection(this.COLLECTION, userId);
+    } else {
+      collection = await getCollection(this.COLLECTION);
+    }
 
+    // Query based on whether we're using website database or user database
     const query: any = { _id: new ObjectId(id), isActive: true };
-    if (userId) query.userId = userId;
+    if (userId && !websiteDatabaseName) {
+      query.userId = userId;
+    }
 
     const property = await collection.findOne(query);
 
@@ -140,9 +165,12 @@ export class PropertyService {
   static async update(
     id: string,
     data: UpdatePropertyRequest,
-    userId: string
+    userId: string,
+    websiteDatabaseName?: string
   ): Promise<Property | null> {
-    const collection = await getUserCollection(this.COLLECTION, userId);
+    const collection = websiteDatabaseName 
+      ? await getCollection(this.COLLECTION, websiteDatabaseName)
+      : await getUserCollection(this.COLLECTION, userId);
 
     const { _id: _, ...dataWithoutId } = data;
     const updateData = {
@@ -150,13 +178,26 @@ export class PropertyService {
       updatedAt: new Date(),
     };
 
+    // Update query based on whether we're using website database or user database
+    const objectId = new ObjectId(id);
+    const query = websiteDatabaseName 
+      ? { _id: objectId, isActive: true }
+      : { _id: objectId, userId, isActive: true };
+
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id), userId, isActive: true },
+      query,
       { $set: updateData },
       { returnDocument: "after" }
     );
 
-    return result.value ? this.formatDocument(result.value) : null;
+    // Handle both old and new MongoDB driver response formats
+    const document = result?.value || result;
+    
+    if (document && document._id) {
+      return this.formatDocument(document);
+    }
+
+    return null;
   }
 
   /**
@@ -181,26 +222,80 @@ export class PropertyService {
   /**
    * Get property statistics for dashboard
    */
-  static async getStats(userId: string, domain: string) {
-    const collection = await getUserCollection(this.COLLECTION, userId);
+  static async getStats(
+    userId: string,
+    domain: string,
+    websiteDatabaseName?: string
+  ) {
+    const collection = websiteDatabaseName
+      ? await getCollection(this.COLLECTION, websiteDatabaseName)
+      : await getUserCollection(this.COLLECTION, userId);
+
+    const matchQuery = websiteDatabaseName
+      ? { isActive: true }
+      : { userId, domain, isActive: true };
 
     const pipeline = [
-      { $match: { userId, domain, isActive: true } },
+      { $match: matchQuery },
       {
         $group: {
           _id: null,
           totalProperties: { $sum: 1 },
           forSale: {
-            $sum: { $cond: [{ $eq: ["$status", "for-sale"] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ["$status", "for-sale"] },
+                    { $eq: ["$status", "For Sale"] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
           forRent: {
-            $sum: { $cond: [{ $eq: ["$status", "for-rent"] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ["$status", "for-rent"] },
+                    { $eq: ["$status", "For Rent"] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
           sold: {
-            $sum: { $cond: [{ $eq: ["$status", "sold"] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ["$status", "sold"] },
+                    { $eq: ["$status", "Sold"] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
           rented: {
-            $sum: { $cond: [{ $eq: ["$status", "rented"] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $or: [
+                    { $eq: ["$status", "rented"] },
+                    { $eq: ["$status", "Rented"] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
           featured: {
             $sum: { $cond: ["$isFeatured", 1, 0] },

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -23,10 +23,31 @@ export async function GET(
     }
 
     const userId = decoded.userId;
-    const propertyId = params.id;
+    const resolvedParams = await params;
+    const propertyId = resolvedParams.id;
+    const { searchParams } = new URL(request.url);
+
+    // Get website ID from query parameters (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const { getCollection } = await import("@/lib/mongodb");
+      const { ObjectId } = require("mongodb");
+      const sitesCollection = await getCollection("sites");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
 
     // Get the property
-    const property = await PropertyService.findById(propertyId, userId);
+    const property = await PropertyService.findById(propertyId, userId, websiteDatabaseName);
 
     if (!property) {
       return NextResponse.json(
@@ -47,7 +68,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -65,8 +86,29 @@ export async function PUT(
     }
 
     const userId = decoded.userId;
-    const propertyId = params.id;
+    const resolvedParams = await params;
+    const propertyId = resolvedParams.id;
     const body = await request.json();
+    const { searchParams } = new URL(request.url);
+
+    // Get website ID from query parameters (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const { getCollection } = await import("@/lib/mongodb");
+      const { ObjectId } = require("mongodb");
+      const sitesCollection = await getCollection("sites");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
 
     // Validate property data (allow partial updates)
     const propertyData = propertySchema
@@ -84,7 +126,8 @@ export async function PUT(
     const property = await PropertyService.update(
       propertyId,
       { ...propertyData, _id: propertyId },
-      userId
+      userId,
+      websiteDatabaseName
     );
 
     if (!property) {

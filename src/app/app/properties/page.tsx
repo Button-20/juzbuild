@@ -36,6 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
 import {
   CURRENCY_OPTIONS,
@@ -79,16 +80,19 @@ export default function PropertiesPage() {
   });
 
   const { toast } = useToast();
+  const { selectedWebsiteId } = useWebsite();
 
   // Fetch properties and property types
   const fetchData = async () => {
+    if (!selectedWebsiteId) return;
+
     try {
       setLoading(true);
 
       const [propertiesRes, typesRes, statsRes] = await Promise.all([
-        fetch("/api/properties"),
+        fetch(`/api/properties?websiteId=${selectedWebsiteId}`),
         fetch("/api/property-types"),
-        fetch("/api/properties/stats"),
+        fetch(`/api/properties/stats?websiteId=${selectedWebsiteId}`),
       ]);
 
       if (propertiesRes.ok) {
@@ -119,7 +123,7 @@ export default function PropertiesPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedWebsiteId]);
 
   // Filter properties based on search and filters
   const filteredProperties = properties.filter((property) => {
@@ -248,6 +252,7 @@ export default function PropertiesPage() {
                 </DialogHeader>
                 <PropertyForm
                   propertyTypes={propertyTypes}
+                  websiteId={selectedWebsiteId || undefined}
                   onSuccess={handlePropertySaved}
                   onCancel={() => setIsCreateDialogOpen(false)}
                 />
@@ -476,6 +481,7 @@ export default function PropertiesPage() {
               <PropertyForm
                 property={editingProperty}
                 propertyTypes={propertyTypes}
+                websiteId={selectedWebsiteId || undefined}
                 onSuccess={handlePropertySaved}
                 onCancel={() => {
                   setIsEditDialogOpen(false);

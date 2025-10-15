@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageUpload } from "./ImageUpload";
 import {
   Form,
   FormControl,
@@ -57,6 +58,7 @@ type PropertyFormData = z.infer<typeof propertyFormSchema>;
 interface PropertyFormProps {
   property?: Property;
   propertyTypes: PropertyType[];
+  websiteId?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -64,14 +66,13 @@ interface PropertyFormProps {
 export function PropertyForm({
   property,
   propertyTypes,
+  websiteId,
   onSuccess,
   onCancel,
 }: PropertyFormProps) {
   const [loading, setLoading] = useState(false);
   const [amenityInput, setAmenityInput] = useState("");
   const [featureInput, setFeatureInput] = useState("");
-  const [imageInput, setImageInput] = useState("");
-  const [altInput, setAltInput] = useState("");
   const { toast } = useToast();
 
   // Initialize form with default values or existing property data
@@ -119,8 +120,10 @@ export function PropertyForm({
       setLoading(true);
 
       const url = property
-        ? `/api/properties/${property._id}`
-        : "/api/properties";
+        ? `/api/properties/${property._id}${
+            websiteId ? `?websiteId=${websiteId}` : ""
+          }`
+        : `/api/properties${websiteId ? `?websiteId=${websiteId}` : ""}`;
       const method = property ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -193,39 +196,7 @@ export function PropertyForm({
     );
   };
 
-  // Handle adding images
-  const addImage = () => {
-    if (imageInput.trim()) {
-      const currentImages = form.getValues("images");
-      const newImage = {
-        src: imageInput.trim(),
-        alt: altInput.trim() || "",
-        isMain: currentImages.length === 0, // First image is main by default
-      };
-      form.setValue("images", [...currentImages, newImage]);
-      setImageInput("");
-      setAltInput("");
-    }
-  };
 
-  // Handle removing images
-  const removeImage = (index: number) => {
-    const currentImages = form.getValues("images");
-    form.setValue(
-      "images",
-      currentImages.filter((_, i) => i !== index)
-    );
-  };
-
-  // Handle setting main image
-  const setMainImage = (index: number) => {
-    const currentImages = form.getValues("images");
-    const updatedImages = currentImages.map((img, i) => ({
-      ...img,
-      isMain: i === index,
-    }));
-    form.setValue("images", updatedImages);
-  };
 
   return (
     <Form {...form}>
@@ -503,70 +474,23 @@ export function PropertyForm({
               Property Images
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Image URL"
-                value={imageInput}
-                onChange={(e) => setImageInput(e.target.value)}
-                className="flex-1"
-              />
-              <Input
-                placeholder="Alt text (optional)"
-                value={altInput}
-                onChange={(e) => setAltInput(e.target.value)}
-                className="w-40"
-              />
-              <Button
-                type="button"
-                onClick={addImage}
-                disabled={!imageInput.trim()}
-              >
-                <PlusIcon className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {form.watch("images").map((image, index) => (
-                <div key={index} className="relative border rounded-lg p-2">
-                  <img
-                    src={image.src}
-                    alt={image.alt || `Property image ${index + 1}`}
-                    className="w-full h-32 object-cover rounded"
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/placeholder.jpg";
-                    }}
-                  />
-                  <div className="absolute top-1 right-1 flex gap-1">
-                    {image.isMain && (
-                      <Badge variant="secondary" className="text-xs">
-                        Main
-                      </Badge>
-                    )}
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => removeImage(index)}
-                    >
-                      <XIcon className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  {!image.isMain && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-2 text-xs"
-                      onClick={() => setMainImage(index)}
-                    >
-                      Set as Main
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <ImageUpload
+                      images={field.value}
+                      onImagesChange={field.onChange}
+                      maxImages={10}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
         </Card>
 

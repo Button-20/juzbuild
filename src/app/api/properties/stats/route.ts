@@ -21,29 +21,57 @@ export async function GET(request: NextRequest) {
 
     const userId = decoded.userId;
     const { searchParams } = new URL(request.url);
+    const websiteId = searchParams.get("websiteId");
 
-    // Get user's domain from their profile
-    let domain = searchParams.get("domain");
-    if (!domain) {
-      const usersCollection = await getCollection("users");
-      const user = await usersCollection.findOne({ _id: userId });
-      if (user && user.domainName) {
-        domain = user.domainName + ".juzbuild.com";
-      } else {
-        // Fallback to email-based domain
-        domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+    let websiteDatabaseName: string;
+
+    if (websiteId) {
+      // Get website database name from sites collection
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (!website) {
+        return NextResponse.json(
+          { error: "Website not found" },
+          { status: 404 }
+        );
       }
-    }
 
-    if (!domain) {
-      return NextResponse.json(
-        { error: "Domain is required" },
-        { status: 400 }
-      );
+      websiteDatabaseName = website.dbName;
+    } else {
+      // Fallback to user's domain
+      let domain = searchParams.get("domain");
+      if (!domain) {
+        const usersCollection = await getCollection("users");
+        const user = await usersCollection.findOne({ _id: userId });
+        if (user && user.domainName) {
+          domain = user.domainName + ".juzbuild.com";
+        } else {
+          // Fallback to email-based domain
+          domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        }
+      }
+
+      if (!domain) {
+        return NextResponse.json(
+          { error: "Domain is required" },
+          { status: 400 }
+        );
+      }
+
+      websiteDatabaseName = domain;
     }
 
     // Get property statistics
-    const stats = await PropertyService.getStats(userId, domain);
+    const stats = await PropertyService.getStats(
+      userId,
+      websiteDatabaseName,
+      websiteId ? websiteDatabaseName : undefined
+    );
 
     return NextResponse.json(stats);
   } catch (error) {
