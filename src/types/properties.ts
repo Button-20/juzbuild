@@ -116,21 +116,25 @@ export const PROPERTY_STATUSES = [
   {
     value: "for-sale",
     label: "For Sale",
+    variant: "for-sale",
     color: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   },
   {
     value: "for-rent",
     label: "For Rent",
+    variant: "for-rent",
     color: "bg-blue-100 text-blue-800 border border-blue-200",
   },
   {
     value: "sold",
     label: "Sold",
+    variant: "sold",
     color: "bg-slate-100 text-slate-700 border border-slate-200",
   },
   {
     value: "rented",
     label: "Rented",
+    variant: "rented",
     color: "bg-violet-100 text-violet-800 border border-violet-200",
   },
 ] as const;

@@ -190,14 +190,35 @@ export default function PropertiesPage() {
     return type?.name || "Unknown Type";
   };
 
-  // Get status badge color
+  // Get status badge with proper variant
   const getStatusBadge = (status: string) => {
     const statusConfig = PROPERTY_STATUSES.find((s) => s.value === status);
     return statusConfig ? (
-      <Badge className={statusConfig.color}>{statusConfig.label}</Badge>
+      <Badge variant={status as "for-sale" | "for-rent" | "sold" | "rented"}>
+        {statusConfig.label}
+      </Badge>
     ) : (
-      <Badge>{status}</Badge>
+      <Badge variant="outline">{status}</Badge>
     );
+  };
+
+  // Get property type badge
+  const getPropertyTypeBadge = (propertyTypeId: string) => {
+    const typeName = getPropertyTypeName(propertyTypeId);
+    return (
+      <Badge variant="info" className="font-medium">
+        {typeName}
+      </Badge>
+    );
+  };
+
+  // Helper function to check if property is recently added (within last 7 days)
+  const isRecentlyAdded = (createdAt: string | Date) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffTime = Math.abs(now.getTime() - created.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 7;
   };
 
   // Format price
@@ -278,10 +299,10 @@ export default function PropertiesPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">For Sale</CardTitle>
-                <Badge variant="secondary">{stats.forSale}</Badge>
+                <Badge variant="for-sale">{stats.forSale}</Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-emerald-600">
                   {stats.forSale}
                 </div>
               </CardContent>
@@ -289,7 +310,7 @@ export default function PropertiesPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">For Rent</CardTitle>
-                <Badge variant="secondary">{stats.forRent}</Badge>
+                <Badge variant="for-rent">{stats.forRent}</Badge>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">
@@ -300,10 +321,10 @@ export default function PropertiesPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Featured</CardTitle>
-                <Badge variant="secondary">{stats.featured}</Badge>
+                <Badge variant="success">{stats.featured}</Badge>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-green-600">
                   {stats.featured}
                 </div>
               </CardContent>
@@ -393,7 +414,21 @@ export default function PropertiesPage() {
                       <TableRow key={property._id}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{property.name}</div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{property.name}</span>
+                              <div className="flex gap-1">
+                                {property.isFeatured && (
+                                  <Badge variant="success" className="text-xs">
+                                    Featured
+                                  </Badge>
+                                )}
+                                {property.createdAt && isRecentlyAdded(property.createdAt) && (
+                                  <Badge variant="warning" className="text-xs">
+                                    New
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                             <div className="text-sm text-muted-foreground flex items-center">
                               <MapPinIcon className="mr-1 h-3 w-3" />
                               {property.location}
@@ -401,9 +436,7 @@ export default function PropertiesPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {getPropertyTypeName(property.propertyType)}
-                          </Badge>
+                          {getPropertyTypeBadge(property.propertyType)}
                         </TableCell>
                         <TableCell>{getStatusBadge(property.status)}</TableCell>
                         <TableCell className="font-medium">
