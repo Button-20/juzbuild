@@ -158,7 +158,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -176,7 +176,8 @@ export async function DELETE(
     }
 
     const userId = decoded.userId;
-    const propertyId = params.id;
+    const resolvedParams = await params;
+    const propertyId = resolvedParams.id;
 
     // Delete the property
     const success = await PropertyService.delete(propertyId, userId);
