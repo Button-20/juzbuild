@@ -20,27 +20,57 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const userId = decoded.userId;
     const { searchParams } = new URL(request.url);
+    const userId = decoded.userId;
 
-    // Get user's domain from their profile
-    let domain = searchParams.get("domain");
-    if (!domain) {
-      const usersCollection = await getCollection("users");
-      const user = await usersCollection.findOne({ _id: userId });
-      if (user && user.domainName) {
-        domain = user.domainName + ".juzbuild.com";
-      } else {
-        // Fallback to email-based domain
-        domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let userDomain = searchParams.get("domain");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        userDomain = website.domain;
+        websiteDatabaseName = website.dbName;
       }
     }
 
-    // Seed default property types if none exist
-    await PropertyTypeService.seedDefaults();
+    // Fallback to user's profile domain if no specific website selected
+    if (!userDomain) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        userDomain = user.domainName + ".juzbuild.com";
+        // Generate database name from user's domain
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        // Fallback to email-based domain
+        userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
 
-    // Get property types (includes both global and user-specific)
-    const propertyTypes = await PropertyTypeService.findAll(userId, domain);
+    // Get property types from website-specific database
+    const propertyTypes = await PropertyTypeService.findAll(
+      userId,
+      userDomain,
+      websiteDatabaseName
+    );
 
     return NextResponse.json(propertyTypes);
   } catch (error) {

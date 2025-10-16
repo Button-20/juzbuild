@@ -80,7 +80,7 @@ export default function PropertiesPage() {
   });
 
   const { toast } = useToast();
-  const { selectedWebsiteId } = useWebsite();
+  const { selectedWebsiteId, selectedWebsite } = useWebsite();
 
   // Fetch properties and property types
   const fetchData = async () => {
@@ -91,7 +91,7 @@ export default function PropertiesPage() {
 
       const [propertiesRes, typesRes, statsRes] = await Promise.all([
         fetch(`/api/properties?websiteId=${selectedWebsiteId}`),
-        fetch("/api/property-types"),
+        fetch(`/api/property-types?websiteId=${selectedWebsiteId}`),
         fetch(`/api/properties/stats?websiteId=${selectedWebsiteId}`),
       ]);
 
@@ -128,9 +128,13 @@ export default function PropertiesPage() {
   // Filter properties based on search and filters
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
-      property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (property.name?.toLowerCase() ?? "").includes(searchTerm.toLowerCase()) ||
+      (property.location?.toLowerCase() ?? "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (property.description?.toLowerCase() ?? "").includes(
+        searchTerm.toLowerCase()
+      );
 
     const matchesStatus =
       statusFilter === "all" || property.status === statusFilter;
@@ -196,10 +200,34 @@ export default function PropertiesPage() {
     });
   };
 
-  // Get property type name
+  // Get property type name helper
   const getPropertyTypeName = (typeId: string) => {
     const type = propertyTypes.find((t) => t._id === typeId);
     return type?.name || "Unknown Type";
+  };
+
+  // Get property type slug helper
+  const getPropertyTypeSlug = (typeId: string) => {
+    const type = propertyTypes.find((t) => t._id === typeId);
+    return type?.slug || typeId;
+  };
+
+  // Handle view details - opens property on the generated website
+  const handleViewDetails = (property: Property) => {
+    if (!selectedWebsite || !selectedWebsite.domain) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Website domain not available",
+      });
+      return;
+    }
+
+    const propertyTypeSlug = getPropertyTypeSlug(property.propertyType);
+    const propertyUrl = `https://${selectedWebsite.domain}/properties/${propertyTypeSlug}/${property.slug}`;
+
+    // Open in new tab
+    window.open(propertyUrl, "_blank");
   };
 
   // Get status badge with proper variant
@@ -428,7 +456,7 @@ export default function PropertiesPage() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">
-                                {property.name}
+                                {property.name || "Unnamed Property"}
                               </span>
                               <div className="flex gap-1">
                                 {property.isFeatured && (
@@ -449,7 +477,7 @@ export default function PropertiesPage() {
                             </div>
                             <div className="text-sm text-muted-foreground flex items-center">
                               <MapPinIcon className="mr-1 h-3 w-3" />
-                              {property.location}
+                              {property.location || "No location specified"}
                             </div>
                           </div>
                         </TableCell>
@@ -499,7 +527,9 @@ export default function PropertiesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleViewDetails(property)}
+                              >
                                 <EyeIcon className="mr-2 h-4 w-4" />
                                 View Details
                               </DropdownMenuItem>

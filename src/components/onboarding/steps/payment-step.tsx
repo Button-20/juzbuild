@@ -48,8 +48,8 @@ export default function PaymentStep({
     let processedValue = value;
 
     if (field === "cvv") {
-      // Limit CVC to 4 digits maximum and only allow numbers
-      processedValue = value.replace(/\D/g, "").slice(0, 4);
+      // Limit CVC to 3 digits maximum and only allow numbers
+      processedValue = value.replace(/\D/g, "").slice(0, 3);
     }
 
     updateData({
@@ -368,7 +368,7 @@ export default function PaymentStep({
                     handlePaymentMethodChange("cvv", e.target.value)
                   }
                   className={errors.cvv ? "border-destructive" : ""}
-                  maxLength={4}
+                  maxLength={3}
                   inputMode="numeric"
                   pattern="[0-9]*"
                 />

@@ -85,7 +85,6 @@ async function initializeDatabase(db: any): Promise<void> {
   try {
     // Initialize collections sequentially to avoid conflicts
     await initializeUsersCollection(db);
-    await initializePropertiesCollection(db);
     await initializePropertyTypesCollection(db);
     await initializeOnboardingCollection(db);
   } catch (error) {
@@ -145,72 +144,10 @@ async function initializeUsersCollection(db: any): Promise<void> {
 }
 
 /**
- * Initialize properties collection with proper indexes
- */
-async function initializePropertiesCollection(db: any): Promise<void> {
-  const propertiesCollection = db.collection("properties");
-
-  try {
-    // Create compound index on userId and domain for user data isolation
-    await propertiesCollection.createIndex(
-      { userId: 1, domain: 1 },
-      {
-        name: "user_domain_index",
-        background: true,
-      }
-    );
-
-    // Create index on slug for fast property lookups
-    await propertiesCollection.createIndex(
-      { slug: 1, domain: 1 },
-      {
-        name: "slug_domain_index",
-        background: true,
-      }
-    );
-
-    // Create index on status and isActive for filtering
-    await propertiesCollection.createIndex(
-      { status: 1, isActive: 1 },
-      {
-        name: "status_active_index",
-        background: true,
-      }
-    );
-
-    // Create text index for search functionality
-    await propertiesCollection.createIndex(
-      {
-        name: "text",
-        description: "text",
-        location: "text",
-      },
-      {
-        name: "search_text_index",
-        background: true,
-      }
-    );
-
-    // Create index on createdAt for sorting
-    await propertiesCollection.createIndex(
-      { createdAt: -1 },
-      {
-        name: "created_at_index",
-        background: true,
-      }
-    );
-  } catch (error: any) {
-    if (error.code !== 11000) {
-      throw error;
-    }
-  }
-}
-
-/**
  * Initialize property types collection with proper indexes
  */
 async function initializePropertyTypesCollection(db: any): Promise<void> {
-  const propertyTypesCollection = db.collection("propertyTypes");
+  const propertyTypesCollection = db.collection("property-types");
 
   try {
     // Create unique compound index on slug (global types have null userId)

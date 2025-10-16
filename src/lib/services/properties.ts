@@ -350,7 +350,7 @@ export class PropertyService {
 }
 
 export class PropertyTypeService {
-  private static COLLECTION = "propertyTypes";
+  private static COLLECTION = "property-types";
 
   /**
    * Create a new property type
@@ -391,16 +391,24 @@ export class PropertyTypeService {
    */
   static async findAll(
     userId?: string,
-    domain?: string
+    domain?: string,
+    websiteDatabaseName?: string
   ): Promise<PropertyType[]> {
-    const collection = userId
-      ? await getUserCollection(this.COLLECTION, userId)
-      : await getCollection(this.COLLECTION);
+    let collection;
+    if (websiteDatabaseName) {
+      collection = await getCollection(this.COLLECTION, websiteDatabaseName);
+    } else {
+      collection = userId
+        ? await getUserCollection(this.COLLECTION, userId)
+        : await getCollection(this.COLLECTION);
+    }
 
     const query: any = { isActive: true };
 
-    // Include both global property types (no userId/domain) and user-specific ones
-    if (userId && domain) {
+    // For website-specific databases, no need for user/domain filtering
+    // as the database itself is scoped to the website
+    if (!websiteDatabaseName && userId && domain) {
+      // Include both global property types (no userId/domain) and user-specific ones
       query.$or = [
         { userId: null, domain: null }, // Global types
         { userId, domain }, // User-specific types
@@ -412,7 +420,74 @@ export class PropertyTypeService {
       .sort({ name: 1 })
       .toArray();
 
+    // If using website-specific database and no property types found, create defaults
+    if (websiteDatabaseName && propertyTypes.length === 0 && userId && domain) {
+      const defaultTypes = await this.createDefaultTypesForWebsite(
+        collection,
+        userId,
+        domain
+      );
+      return defaultTypes.map(this.formatDocument);
+    }
+
     return propertyTypes.map(this.formatDocument);
+  }
+
+  /**
+   * Create default property types for a website database
+   */
+  private static async createDefaultTypesForWebsite(
+    collection: any,
+    userId: string,
+    domain: string
+  ): Promise<any[]> {
+    const { ObjectId } = require("mongodb");
+
+    const defaultTypes = [
+      {
+        _id: new ObjectId(),
+        name: "House",
+        slug: "house",
+        description: "Single-family residential house",
+        image: "/images/property-types/house.jpg",
+        icon: "🏠",
+        isActive: true,
+        userId,
+        domain,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        _id: new ObjectId(),
+        name: "Apartment",
+        slug: "apartment",
+        description: "Multi-unit residential building",
+        image: "/images/property-types/apartment.jpg",
+        icon: "🏢",
+        isActive: true,
+        userId,
+        domain,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        _id: new ObjectId(),
+        name: "Condo",
+        slug: "condo",
+        description: "Condominium unit",
+        image: "/images/property-types/condo.jpg",
+        icon: "🏬",
+        isActive: true,
+        userId,
+        domain,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    await collection.insertMany(defaultTypes);
+
+    return defaultTypes;
   }
 
   /**
