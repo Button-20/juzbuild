@@ -85,7 +85,6 @@ async function initializeDatabase(db: any): Promise<void> {
   try {
     // Initialize collections sequentially to avoid conflicts
     await initializeUsersCollection(db);
-    await initializePropertyTypesCollection(db);
     await initializeOnboardingCollection(db);
   } catch (error) {
     throw error;
@@ -137,38 +136,6 @@ async function initializeUsersCollection(db: any): Promise<void> {
     );
   } catch (error: any) {
     // Handle duplicate key errors gracefully (indexes already exist)
-    if (error.code !== 11000) {
-      throw error;
-    }
-  }
-}
-
-/**
- * Initialize property types collection with proper indexes
- */
-async function initializePropertyTypesCollection(db: any): Promise<void> {
-  const propertyTypesCollection = db.collection("property-types");
-
-  try {
-    // Create unique compound index on slug (global types have null userId)
-    await propertyTypesCollection.createIndex(
-      { slug: 1, userId: 1 },
-      {
-        name: "slug_user_index",
-        background: true,
-        sparse: true, // Allow null userId for global types
-      }
-    );
-
-    // Create index on isActive for filtering
-    await propertyTypesCollection.createIndex(
-      { isActive: 1 },
-      {
-        name: "active_index",
-        background: true,
-      }
-    );
-  } catch (error: any) {
     if (error.code !== 11000) {
       throw error;
     }
