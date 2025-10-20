@@ -35,6 +35,7 @@ interface DeploymentStatus {
   progress?: number;
   jobId?: string;
   websiteUrl?: string;
+  aliasUrl?: string; // Add the alias URL property
   estimatedCompletion?: string;
   steps?: {
     name: string;
@@ -189,15 +190,22 @@ export default function DeploymentPage() {
           </p>
 
           {deploymentStatus.status === "completed" &&
-            deploymentStatus.websiteUrl && (
+            (deploymentStatus.websiteUrl || deploymentStatus.aliasUrl) && (
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <a
                   href={(() => {
-                    let url = deploymentStatus.websiteUrl;
+                    // Use aliasUrl if available, otherwise fall back to websiteUrl
+                    let url =
+                      deploymentStatus.aliasUrl || deploymentStatus.websiteUrl;
+
+                    // Return empty string if no URL is available
+                    if (!url) return "";
+
                     // Clean up malformed URLs that might have localhost prefix
                     if (url.includes("localhost:3000/signup/")) {
                       url = url.split("localhost:3000/signup/")[1];
                     }
+
                     // Ensure it has https protocol
                     if (
                       !url.startsWith("http://") &&
@@ -205,10 +213,12 @@ export default function DeploymentPage() {
                     ) {
                       url = `https://${url}`;
                     }
+
                     // Convert http to https for security
                     if (url.startsWith("http://")) {
                       url = url.replace("http://", "https://");
                     }
+
                     return url;
                   })()}
                   target="_blank"
