@@ -151,3 +151,31 @@ export const CURRENCY_OPTIONS = [
 
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number]["value"];
 export type Currency = (typeof CURRENCY_OPTIONS)[number]["value"];
+
+// Testimonial Schema
+export const testimonialSchema = z.object({
+  _id: z.string().optional(),
+  name: z.string().min(1, "Name is required"),
+  role: z.string().min(1, "Role is required"),
+  company: z.string().optional(),
+  message: z.string().min(1, "Message is required"),
+  image: z.string().url("Valid image URL required").optional(),
+  rating: z.number().min(1).max(5).optional(),
+  isActive: z.boolean().default(true),
+  order: z.number().min(0).default(0),
+  // User/Website association fields
+  userId: z.string().optional(), // Made optional for existing data
+  websiteId: z.string().optional(),
+  domain: z.string().optional(), // Made optional for existing data
+  // Timestamps
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+// Testimonial Types
+export type Testimonial = z.infer<typeof testimonialSchema>;
+export type CreateTestimonialRequest = Omit<
+  Testimonial,
+  "_id" | "userId" | "domain" | "createdAt" | "updatedAt"
+>;
+export type UpdateTestimonialRequest = Partial<CreateTestimonialRequest>;

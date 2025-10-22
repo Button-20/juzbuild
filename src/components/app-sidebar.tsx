@@ -54,6 +54,11 @@ const data = {
       icon: TagIcon,
     },
     {
+      title: "Testimonials",
+      url: "/app/testimonials",
+      icon: ClipboardListIcon,
+    },
+    {
       title: "Analytics",
       url: "/app/analytics",
       icon: BarChartIcon,
