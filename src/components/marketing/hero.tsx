@@ -41,27 +41,27 @@ const Hero = () => {
                 <span className="px-2 py-[0.5px] h-[18px] tracking-wide flex items-center justify-center rounded-full bg-gradient-to-r from-sky-400 to-blue-600 text-[9px] font-medium mr-2 text-white">
                   NEW
                 </span>
-                Explore the 2024 recap
+                Professional templates now available
               </span>
             </button>
           </Container>
           <Container delay={0.15}>
             <h1 className="text-4xl md:text-4xl lg:text-7xl font-bold text-center !leading-tight max-w-4xl mx-auto">
-              Transform your <span className="">marketing </span>
-              with AI Precision
+              Build your <span className="">professional website</span> in
+              minutes
             </h1>
           </Container>
           <Container delay={0.2}>
             <p className="max-w-xl mx-auto mt-2 text-base lg:text-lg text-center text-muted-foreground">
-              AI-powered automation and insights to maximize your campaigns and
-              grow your brand.
+              Create stunning real estate websites with our easy-to-use builder.
+              No coding required - just customize and launch.
             </p>
           </Container>
           <Container delay={0.25} className="z-20">
             <div className="flex items-center justify-center mt-6 gap-x-4">
               <Link href="/signup" className="flex items-center gap-2 group">
                 <Button size="lg">
-                  Start Free Trial
+                  Build Your Website
                   <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-all duration-300" />
                 </Button>
               </Link>
@@ -75,7 +75,7 @@ const Hero = () => {
               <div className="rounded-lg lg:rounded-[22px] border border-border bg-background">
                 <Image
                   src="/images/dashboard.png"
-                  alt="dashboard"
+                  alt="Website Builder Dashboard"
                   width={1920}
                   height={1080}
                   className="rounded-lg lg:rounded-[20px]"

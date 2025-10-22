@@ -26,6 +26,18 @@ export interface UserProfileData {
   selectedTheme: string; // Theme ID selected by user
   selectedPlan: "starter" | "pro" | "agency";
   billingCycle: "monthly" | "yearly";
+
+  // Contact Information (for next.config.ts)
+  supportEmail?: string;
+  whatsappNumber?: string;
+  address?: string;
+
+  // Social Media Links (for next.config.ts)
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
 }
 
 // Onboarding-specific data that is stored separately in onboarding collection

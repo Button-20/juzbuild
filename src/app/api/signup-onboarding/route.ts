@@ -26,6 +26,42 @@ const userProfileSchema = z.object({
   tagline: z.string().min(2, "Tagline is required"),
   aboutSection: z.string().min(10, "About section is required"),
 
+  // Contact Information (optional)
+  supportEmail: z
+    .string()
+    .email("Valid email is required")
+    .optional()
+    .or(z.literal("")),
+  whatsappNumber: z.string().optional(),
+  address: z.string().optional(),
+
+  // Social Media Links (optional)
+  facebookUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  twitterUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  instagramUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  linkedinUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+  youtubeUrl: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
+
   // Step 3 - Website Setup
   selectedTheme: z.string().min(1, "Please select a theme"),
 
@@ -187,6 +223,19 @@ export async function POST(req: NextRequest) {
           propertyTypes: data.propertyTypes,
           includedPages: data.includedPages,
           preferredContactMethod: data.preferredContactMethod,
+
+          // Contact Information
+          phoneNumber: data.phoneNumber,
+          supportEmail: data.supportEmail,
+          whatsappNumber: data.whatsappNumber,
+          address: data.address,
+
+          // Social Media Links
+          facebookUrl: data.facebookUrl,
+          twitterUrl: data.twitterUrl,
+          instagramUrl: data.instagramUrl,
+          linkedinUrl: data.linkedinUrl,
+          youtubeUrl: data.youtubeUrl,
         };
 
         // Create website and get jobId for tracking

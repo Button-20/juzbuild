@@ -11,6 +11,7 @@ import {
   HelpCircleIcon,
   LayoutDashboardIcon,
   SettingsIcon,
+  TagIcon,
   UsersIcon,
 } from "lucide-react";
 import * as React from "react";
@@ -46,6 +47,11 @@ const data = {
       title: "Properties",
       url: "/app/properties",
       icon: FolderIcon,
+    },
+    {
+      title: "Property Types",
+      url: "/app/property-types",
+      icon: TagIcon,
     },
     {
       title: "Analytics",

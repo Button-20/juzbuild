@@ -237,6 +237,139 @@ export default function BusinessInfoStep({
         </div>
       </div>
 
+      {/* Contact Information */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">Contact Information</h3>
+          <p className="text-sm text-muted-foreground">
+            How can clients reach you? (Optional but recommended)
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Support Email */}
+          <div className="space-y-2">
+            <Label htmlFor="supportEmail">Support Email</Label>
+            <Input
+              id="supportEmail"
+              type="email"
+              placeholder="support@yourcompany.com"
+              value={data.supportEmail || ""}
+              onChange={(e) => updateData({ supportEmail: e.target.value })}
+              className="h-12"
+            />
+            <p className="text-xs text-muted-foreground">
+              For customer support inquiries
+            </p>
+          </div>
+
+          {/* WhatsApp Number */}
+          <div className="space-y-2">
+            <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+            <Input
+              id="whatsappNumber"
+              type="tel"
+              placeholder="+1234567890"
+              value={data.whatsappNumber || ""}
+              onChange={(e) => updateData({ whatsappNumber: e.target.value })}
+              className="h-12"
+            />
+            <p className="text-xs text-muted-foreground">
+              Include country code (e.g., +1, +44, +233)
+            </p>
+          </div>
+
+          {/* Address */}
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="address">Business Address</Label>
+            <Input
+              id="address"
+              placeholder="123 Business St, City, State, Country"
+              value={data.address || ""}
+              onChange={(e) => updateData({ address: e.target.value })}
+              className="h-12"
+            />
+            <p className="text-xs text-muted-foreground">
+              Your business location or service area
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Social Media Links */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">
+            Social Media (Optional)
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Connect your social media profiles
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Facebook */}
+          <div className="space-y-2">
+            <Label htmlFor="facebookUrl">Facebook Page</Label>
+            <Input
+              id="facebookUrl"
+              placeholder="https://facebook.com/yourpage"
+              value={data.facebookUrl || ""}
+              onChange={(e) => updateData({ facebookUrl: e.target.value })}
+              className="h-12"
+            />
+          </div>
+
+          {/* Instagram */}
+          <div className="space-y-2">
+            <Label htmlFor="instagramUrl">Instagram Profile</Label>
+            <Input
+              id="instagramUrl"
+              placeholder="https://instagram.com/yourprofile"
+              value={data.instagramUrl || ""}
+              onChange={(e) => updateData({ instagramUrl: e.target.value })}
+              className="h-12"
+            />
+          </div>
+
+          {/* Twitter */}
+          <div className="space-y-2">
+            <Label htmlFor="twitterUrl">Twitter Profile</Label>
+            <Input
+              id="twitterUrl"
+              placeholder="https://twitter.com/yourprofile"
+              value={data.twitterUrl || ""}
+              onChange={(e) => updateData({ twitterUrl: e.target.value })}
+              className="h-12"
+            />
+          </div>
+
+          {/* LinkedIn */}
+          <div className="space-y-2">
+            <Label htmlFor="linkedinUrl">LinkedIn Profile</Label>
+            <Input
+              id="linkedinUrl"
+              placeholder="https://linkedin.com/company/yourcompany"
+              value={data.linkedinUrl || ""}
+              onChange={(e) => updateData({ linkedinUrl: e.target.value })}
+              className="h-12"
+            />
+          </div>
+
+          {/* YouTube (optional) */}
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="youtubeUrl">YouTube Channel</Label>
+            <Input
+              id="youtubeUrl"
+              placeholder="https://youtube.com/channel/yourchannel"
+              value={data.youtubeUrl || ""}
+              onChange={(e) => updateData({ youtubeUrl: e.target.value })}
+              className="h-12"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Navigation */}
       <div className="flex justify-between pt-6 border-t">
         <Button variant="outline" onClick={onBack} size="lg" className="px-8">

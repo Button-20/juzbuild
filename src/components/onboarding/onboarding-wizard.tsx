@@ -78,6 +78,15 @@ export default function OnboardingWizard({
     preferredContactMethod: [],
     selectedPlan: "pro", // Default to Pro plan
     billingCycle: "yearly", // Default to yearly billing
+    // Initialize new contact and social fields
+    supportEmail: "",
+    whatsappNumber: "",
+    address: "",
+    facebookUrl: "",
+    twitterUrl: "",
+    instagramUrl: "",
+    linkedinUrl: "",
+    youtubeUrl: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -139,14 +148,23 @@ export default function OnboardingWizard({
           );
           break;
 
-        case 1: // Business Profile Step - Tagline and About section required
+        case 1: // Business Profile Step - Tagline and About section required, contact/social optional
           isValid = !!(
             data.tagline?.trim() &&
             data.tagline.trim().length >= 2 &&
             data.aboutSection?.trim() &&
             data.aboutSection.trim().length >= 10 &&
             !errors.tagline &&
-            !errors.aboutSection
+            !errors.aboutSection &&
+            // Contact and social media fields are optional, but if provided should be valid
+            !errors.supportEmail &&
+            !errors.whatsappNumber &&
+            !errors.address &&
+            !errors.facebookUrl &&
+            !errors.twitterUrl &&
+            !errors.instagramUrl &&
+            !errors.linkedinUrl &&
+            !errors.youtubeUrl
           );
           break;
 
@@ -258,7 +276,7 @@ export default function OnboardingWizard({
           newErrors.city = "City must be at least 2 characters";
         break;
 
-      case 1: // Business Profile Step - Tagline and About section required
+      case 1: // Business Profile Step - Tagline and About section required, contact/social optional but validated
         if (!formData.tagline?.trim())
           newErrors.tagline = "Tagline/Slogan is required";
         else if (formData.tagline.trim().length < 2)
@@ -269,6 +287,57 @@ export default function OnboardingWizard({
         else if (formData.aboutSection.trim().length < 10)
           newErrors.aboutSection =
             "About section must be at least 10 characters";
+
+        // Optional field validation - only validate if provided
+        if (
+          formData.supportEmail?.trim() &&
+          !/\S+@\S+\.\S+/.test(formData.supportEmail)
+        )
+          newErrors.supportEmail = "Please enter a valid email address";
+
+        if (
+          formData.whatsappNumber?.trim() &&
+          !/^\+[1-9]\d{6,14}$/.test(formData.whatsappNumber.replace(/\s/g, ""))
+        )
+          newErrors.whatsappNumber =
+            "Please enter a valid WhatsApp number with country code (e.g., +1234567890)";
+
+        // Social media URL validation - only if provided
+        const urlPattern = /^https?:\/\/.+/;
+        if (
+          formData.facebookUrl?.trim() &&
+          !urlPattern.test(formData.facebookUrl)
+        )
+          newErrors.facebookUrl =
+            "Please enter a valid URL starting with http:// or https://";
+
+        if (
+          formData.twitterUrl?.trim() &&
+          !urlPattern.test(formData.twitterUrl)
+        )
+          newErrors.twitterUrl =
+            "Please enter a valid URL starting with http:// or https://";
+
+        if (
+          formData.instagramUrl?.trim() &&
+          !urlPattern.test(formData.instagramUrl)
+        )
+          newErrors.instagramUrl =
+            "Please enter a valid URL starting with http:// or https://";
+
+        if (
+          formData.linkedinUrl?.trim() &&
+          !urlPattern.test(formData.linkedinUrl)
+        )
+          newErrors.linkedinUrl =
+            "Please enter a valid URL starting with http:// or https://";
+
+        if (
+          formData.youtubeUrl?.trim() &&
+          !urlPattern.test(formData.youtubeUrl)
+        )
+          newErrors.youtubeUrl =
+            "Please enter a valid URL starting with http:// or https://";
         break;
 
       case 2: // Website Setup Step - All fields are required

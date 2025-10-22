@@ -72,7 +72,10 @@ export async function GET(request: NextRequest) {
       websiteDatabaseName
     );
 
-    return NextResponse.json(propertyTypes);
+    return NextResponse.json({
+      success: true,
+      propertyTypes,
+    });
   } catch (error) {
     console.error("Error fetching property types:", error);
     return NextResponse.json(
@@ -100,17 +103,46 @@ export async function POST(request: NextRequest) {
 
     const userId = decoded.userId;
     const body = await request.json();
+    const { searchParams } = new URL(request.url);
+    const websiteId = searchParams.get("websiteId");
 
-    // Get user's domain from their profile
-    let domain = body.domain;
-    if (!domain) {
+    let userDomain = body.domain;
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        userDomain = website.domain;
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!userDomain) {
       const usersCollection = await getCollection("users");
       const user = await usersCollection.findOne({ _id: userId });
       if (user && user.domainName) {
-        domain = user.domainName + ".juzbuild.com";
+        userDomain = user.domainName + ".juzbuild.com";
+        // Generate database name from user's domain
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
       } else {
         // Fallback to email-based domain
-        domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
       }
     }
 
@@ -125,19 +157,37 @@ export async function POST(request: NextRequest) {
       })
       .parse(body);
 
-    if (!domain) {
+    if (!userDomain) {
       return NextResponse.json(
         { error: "Domain is required" },
         { status: 400 }
       );
     }
 
-    // Create the property type
-    const propertyType = await PropertyTypeService.create(
-      propertyTypeData,
+    // Create the property type in the website-specific database
+    const collection = websiteDatabaseName 
+      ? await getCollection("property-types", websiteDatabaseName)
+      : await getCollection("property-types");
+
+    const newPropertyType = {
+      ...propertyTypeData,
       userId,
-      domain
-    );
+      domain: userDomain,
+      slug: propertyTypeData.slug || propertyTypeData.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await collection.insertOne(newPropertyType);
+
+    if (!result.insertedId) {
+      throw new Error("Failed to create property type");
+    }
+
+    const propertyType = {
+      ...newPropertyType,
+      _id: result.insertedId.toString(),
+    };
 
     return NextResponse.json(propertyType, { status: 201 });
   } catch (error) {

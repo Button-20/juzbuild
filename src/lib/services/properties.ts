@@ -403,17 +403,20 @@ export class PropertyTypeService {
         : await getCollection(this.COLLECTION);
     }
 
-    const query: any = { isActive: true };
-
-    // For website-specific databases, no need for user/domain filtering
+    // Build query - for website-specific databases, get all property types
     // as the database itself is scoped to the website
+    const query: any = {};
+
     if (!websiteDatabaseName && userId && domain) {
       // Include both global property types (no userId/domain) and user-specific ones
       query.$or = [
         { userId: null, domain: null }, // Global types
         { userId, domain }, // User-specific types
       ];
+      // For main database, filter by active status
+      query.isActive = { $ne: false }; // Include true and undefined/null values
     }
+    // For website-specific databases, don't filter by isActive to show all property types
 
     const propertyTypes = await collection
       .find(query)
