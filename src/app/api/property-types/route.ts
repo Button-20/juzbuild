@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the property type in the website-specific database
-    const collection = websiteDatabaseName 
+    const collection = websiteDatabaseName
       ? await getCollection("property-types", websiteDatabaseName)
       : await getCollection("property-types");
 
@@ -173,7 +173,9 @@ export async function POST(request: NextRequest) {
       ...propertyTypeData,
       userId,
       domain: userDomain,
-      slug: propertyTypeData.slug || propertyTypeData.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+      slug:
+        propertyTypeData.slug ||
+        propertyTypeData.name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
