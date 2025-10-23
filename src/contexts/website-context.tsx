@@ -31,16 +31,12 @@ export function WebsiteProvider({ children }: { children: React.ReactNode }) {
 
   const fetchWebsites = async () => {
     try {
-      console.log("Fetching websites from /api/sites...");
       const response = await fetch("/api/sites");
-      console.log("Response status:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Sites data received:", data);
 
         if (data.success) {
-          console.log(`Found ${data.sites.length} websites`);
           setWebsites(data.sites);
 
           // Auto-select the first website if none is selected and we have websites
@@ -50,19 +46,12 @@ export function WebsiteProvider({ children }: { children: React.ReactNode }) {
               ? data.sites.find((site: Website) => site.id === savedWebsiteId)
                   ?.id || data.sites[0].id
               : data.sites[0].id;
-            console.log("Auto-selecting website:", websiteToSelect);
             setSelectedWebsiteId(websiteToSelect);
           }
-        } else {
-          console.warn("API returned success: false");
         }
-      } else {
-        console.error("Failed to fetch websites, status:", response.status);
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
       }
     } catch (error) {
-      console.error("Failed to fetch websites:", error);
+      // Silently handle errors - you can add proper error handling here if needed
     } finally {
       setLoading(false);
     }
