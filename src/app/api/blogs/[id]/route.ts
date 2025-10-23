@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -23,7 +23,8 @@ export async function PUT(
 
     const { searchParams } = new URL(request.url);
     const userId = decoded.userId;
-    const blogId = params.id;
+    const resolvedParams = await params;
+    const blogId = resolvedParams.id;
 
     // Get website database name
     const websiteId = searchParams.get("websiteId");
@@ -141,7 +142,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -160,7 +161,8 @@ export async function DELETE(
 
     const { searchParams } = new URL(request.url);
     const userId = decoded.userId;
-    const blogId = params.id;
+    const resolvedParams = await params;
+    const blogId = resolvedParams.id;
 
     // Get website database name
     const websiteId = searchParams.get("websiteId");
