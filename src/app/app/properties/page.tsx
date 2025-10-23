@@ -102,7 +102,7 @@ export default function PropertiesPage() {
 
       if (typesRes.ok) {
         const typesData = await typesRes.json();
-        setPropertyTypes(typesData || []);
+        setPropertyTypes(typesData.propertyTypes || []);
       }
 
       if (statsRes.ok) {

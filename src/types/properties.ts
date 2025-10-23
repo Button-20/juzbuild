@@ -194,11 +194,10 @@ export const blogSchema = z.object({
   excerpt: z
     .string()
     .min(1, "Excerpt is required")
-    .max(500, "Excerpt cannot exceed 500 characters"),
+    .max(1000, "Excerpt cannot exceed 1000 characters"),
   content: z.string().min(1, "Content is required"),
-  coverImage: z.string().min(1, "Cover image is required"),
-  author: z.string().min(1, "Author is required"),
-  authorImage: z.string().optional(),
+  coverImage: z.string().optional(),
+  authorId: z.string().min(1, "Author ID is required"),
   tags: z.array(z.string()).default([]),
   isPublished: z.boolean().default(false),
   publishedAt: z.date().nullable().optional(),
@@ -227,3 +226,31 @@ export type CreateBlogRequest = Omit<
   | "views"
 >;
 export type UpdateBlogRequest = Partial<CreateBlogRequest>;
+
+// Author Schema
+export const authorSchema = z.object({
+  _id: z.string().optional(),
+  name: z.string().min(1, "Author name is required"),
+  email: z.string().email("Valid email is required"),
+  bio: z
+    .string()
+    .min(1, "Bio is required")
+    .max(500, "Bio cannot exceed 500 characters"),
+  image: z.string().optional(),
+  slug: z.string().min(1, "Slug is required"),
+  // User/Website association fields
+  userId: z.string().optional(),
+  websiteId: z.string().optional(),
+  domain: z.string().optional(),
+  // Timestamps
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+// Author Types
+export type Author = z.infer<typeof authorSchema>;
+export type CreateAuthorRequest = Omit<
+  Author,
+  "_id" | "userId" | "domain" | "createdAt" | "updatedAt"
+>;
+export type UpdateAuthorRequest = Partial<CreateAuthorRequest>;

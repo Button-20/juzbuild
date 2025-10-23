@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { NavDocuments } from "@/components/nav-documents";
+import { NavBlog } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -60,11 +60,6 @@ const data = {
       icon: ClipboardListIcon,
     },
     {
-      title: "Blog",
-      url: "/app/blogs",
-      icon: FileTextIcon,
-    },
-    {
       title: "Analytics",
       url: "/app/analytics",
       icon: BarChartIcon,
@@ -73,11 +68,6 @@ const data = {
       title: "Leads",
       url: "/app/leads",
       icon: UsersIcon,
-    },
-    {
-      title: "Website",
-      url: "/app/website",
-      icon: FileCodeIcon,
     },
   ],
   navSecondary: [
@@ -97,21 +87,16 @@ const data = {
       icon: HelpCircleIcon,
     },
   ],
-  documents: [
+  blog: [
     {
-      name: "Property Library",
-      url: "/app/library",
-      icon: DatabaseIcon,
+      name: "Posts",
+      url: "/app/blog/posts",
+      icon: FileTextIcon,
     },
     {
-      name: "Reports",
-      url: "/app/reports",
-      icon: ClipboardListIcon,
-    },
-    {
-      name: "Templates",
-      url: "/app/templates",
-      icon: FileIcon,
+      name: "Authors",
+      url: "/app/blog/authors",
+      icon: UsersIcon,
     },
   ],
 };
@@ -136,7 +121,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavBlog items={data.blog} title="Blog" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

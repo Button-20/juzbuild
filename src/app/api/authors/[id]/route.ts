@@ -1,9 +1,11 @@
 import { verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
-import { blogSchema } from "@/types/properties";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     // Verify authentication
     const token = request.cookies.get("auth-token")?.value;
@@ -21,14 +23,15 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const userId = decoded.userId;
+    const resolvedParams = await params;
+    const authorId = resolvedParams.id;
 
-    // Get website ID from query params (from website switcher)
+    // Get website database name
     const websiteId = searchParams.get("websiteId");
     let userDomain = searchParams.get("domain");
     let websiteDatabaseName = null;
 
     if (websiteId) {
-      // Get the specific website's database name
       const sitesCollection = await getCollection("sites");
       const { ObjectId } = require("mongodb");
       const website = await sitesCollection.findOne({
@@ -42,19 +45,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fallback to user's profile domain if no specific website selected
     if (!userDomain) {
       const usersCollection = await getCollection("users");
       const user = await usersCollection.findOne({ _id: userId });
       if (user && user.domainName) {
         userDomain = user.domainName + ".juzbuild.com";
-        // Generate database name from user's domain
         const websiteName = user.domainName
           .toLowerCase()
           .replace(/[^a-z0-9]/g, "");
         websiteDatabaseName = `juzbuild_${websiteName}`;
       } else {
-        // Fallback to email-based domain
         userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
         const emailPrefix = decoded.email
           ?.split("@")[0]
@@ -64,38 +64,83 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get blogs from website-specific database
     const collection = websiteDatabaseName
-      ? await getCollection("blogs", websiteDatabaseName)
-      : await getCollection("blogs");
+      ? await getCollection("authors", websiteDatabaseName)
+      : await getCollection("authors");
 
-    const blogs = await collection.find({}).sort({ createdAt: -1 }).toArray();
+    const { ObjectId } = require("mongodb");
 
-    // Convert _id to string for each blog and ensure required fields
-    const formattedBlogs = blogs.map((blog: any) => ({
-      ...blog,
-      _id: blog._id.toString(),
-      userId: blog.userId || userId,
-      domain: blog.domain || userDomain,
-      tags: blog.tags || [],
-      readTime: blog.readTime || 0,
-      views: blog.views || 0,
-    }));
+    // Check if author exists
+    const existingAuthor = await collection.findOne({
+      _id: new ObjectId(authorId),
+    });
+
+    if (!existingAuthor) {
+      return NextResponse.json({ error: "Author not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+
+    const updateData = {
+      ...body,
+      updatedAt: new Date(),
+    };
+
+    // Remove undefined values
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+
+    // Check if slug is being changed and if it conflicts with existing authors
+    if (updateData.slug && updateData.slug !== existingAuthor.slug) {
+      const conflictingAuthor = await collection.findOne({
+        slug: updateData.slug,
+        _id: { $ne: new ObjectId(authorId) },
+      });
+      if (conflictingAuthor) {
+        return NextResponse.json(
+          { error: "Author with this slug already exists" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(authorId) },
+      { $set: updateData }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: "Author not found" }, { status: 404 });
+    }
+
+    // Get updated author
+    const updatedAuthor = await collection.findOne({
+      _id: new ObjectId(authorId),
+    });
 
     return NextResponse.json({
       success: true,
-      blogs: formattedBlogs,
+      author: {
+        ...updatedAuthor,
+        _id: updatedAuthor._id.toString(),
+      },
     });
   } catch (error) {
-    console.error("Error fetching blogs:", error);
+    console.error("Error updating author:", error);
     return NextResponse.json(
-      { error: "Failed to fetch blogs" },
+      { error: "Failed to update author" },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     // Verify authentication
     const token = request.cookies.get("auth-token")?.value;
@@ -113,14 +158,15 @@ export async function POST(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const userId = decoded.userId;
+    const resolvedParams = await params;
+    const authorId = resolvedParams.id;
 
-    // Get website ID from query params
+    // Get website database name
     const websiteId = searchParams.get("websiteId");
     let userDomain = searchParams.get("domain");
     let websiteDatabaseName = null;
 
     if (websiteId) {
-      // Get the specific website's database name
       const sitesCollection = await getCollection("sites");
       const { ObjectId } = require("mongodb");
       const website = await sitesCollection.findOne({
@@ -134,7 +180,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fallback to user's profile domain if no specific website selected
     if (!userDomain) {
       const usersCollection = await getCollection("users");
       const user = await usersCollection.findOne({ _id: userId });
@@ -154,46 +199,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json();
-
-    // Calculate read time (rough estimate: 200 words per minute)
-    const wordCount = body.content.split(/\s+/).length;
-    const readTime = Math.ceil(wordCount / 200);
-
-    // Create blog data with required fields
-    const blogData = {
-      ...body,
-      userId,
-      domain: userDomain,
-      websiteId,
-      readTime,
-      views: 0,
-      publishedAt: body.isPublished ? new Date() : null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Validate the blog data
-    const validatedBlog = blogSchema.parse(blogData);
-
-    // Insert into website-specific database
     const collection = websiteDatabaseName
+      ? await getCollection("authors", websiteDatabaseName)
+      : await getCollection("authors");
+
+    const { ObjectId } = require("mongodb");
+
+    // Check if there are any blog posts using this author
+    const blogsCollection = websiteDatabaseName
       ? await getCollection("blogs", websiteDatabaseName)
       : await getCollection("blogs");
 
-    const result = await collection.insertOne(validatedBlog);
+    const authorData = await collection.findOne({
+      _id: new ObjectId(authorId),
+    });
+    if (authorData) {
+      const blogCount = await blogsCollection.countDocuments({
+        author: authorData.name,
+      });
+      if (blogCount > 0) {
+        return NextResponse.json(
+          {
+            error: `Cannot delete author. ${blogCount} blog post(s) are still using this author.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    const result = await collection.deleteOne({
+      _id: new ObjectId(authorId),
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: "Author not found" }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
-      blog: {
-        ...validatedBlog,
-        _id: result.insertedId.toString(),
-      },
+      message: "Author deleted successfully",
     });
   } catch (error) {
-    console.error("Error creating blog:", error);
+    console.error("Error deleting author:", error);
     return NextResponse.json(
-      { error: "Failed to create blog" },
+      { error: "Failed to delete author" },
       { status: 500 }
     );
   }

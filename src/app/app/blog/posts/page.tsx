@@ -18,6 +18,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -33,13 +40,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
 import { Blog } from "@/types/properties";
-import { Calendar, Clock, Edit, Eye, Plus, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Edit,
+  Eye,
+  FileText,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+
+interface Author {
+  _id?: string;
+  name: string;
+  email: string;
+  bio: string;
+  image: string;
+  slug: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export default function BlogsPage() {
   const { selectedWebsite } = useWebsite();
   const { toast } = useToast();
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
@@ -49,15 +76,13 @@ export default function BlogsPage() {
     excerpt: "",
     content: "",
     coverImage: "",
-    author: "",
-    authorImage: "",
+    authorId: "",
     tags: "",
     isPublished: false,
   });
 
   const fetchBlogs = async () => {
     try {
-      setLoading(true);
       const websiteParam = selectedWebsite?.id
         ? `?websiteId=${selectedWebsite.id}`
         : `?domain=${selectedWebsite?.domain || ""}`;
@@ -74,18 +99,43 @@ export default function BlogsPage() {
         });
       }
     } catch (error) {
+      console.error("Error fetching blogs:", error);
       toast({
         title: "Error",
         description: "Failed to fetch blogs",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
+  const fetchAuthors = async () => {
+    try {
+      const websiteParam = selectedWebsite?.id
+        ? `?websiteId=${selectedWebsite.id}`
+        : `?domain=${selectedWebsite?.domain || ""}`;
+
+      const response = await fetch(`/api/authors${websiteParam}`);
+      if (response.ok) {
+        const data = await response.json();
+        setAuthors(data.authors || []);
+      } else {
+        console.error("Failed to fetch authors");
+      }
+    } catch (error) {
+      console.error("Error fetching authors:", error);
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([fetchBlogs(), fetchAuthors()]);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchBlogs();
+    if (selectedWebsite) {
+      fetchData();
+    }
   }, [selectedWebsite]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,7 +182,7 @@ export default function BlogsPage() {
         });
         setIsDialogOpen(false);
         resetForm();
-        fetchBlogs();
+        fetchData();
       } else {
         const error = await response.json();
         toast({
@@ -167,7 +217,7 @@ export default function BlogsPage() {
           title: "Success",
           description: "Blog deleted successfully",
         });
-        fetchBlogs();
+        fetchData();
       } else {
         toast({
           title: "Error",
@@ -192,8 +242,7 @@ export default function BlogsPage() {
       excerpt: blog.excerpt,
       content: blog.content,
       coverImage: blog.coverImage || "",
-      author: blog.author,
-      authorImage: blog.authorImage || "",
+      authorId: blog.authorId,
       tags: blog.tags.join(", "),
       isPublished: blog.isPublished,
     });
@@ -207,8 +256,7 @@ export default function BlogsPage() {
       excerpt: "",
       content: "",
       coverImage: "",
-      author: "",
-      authorImage: "",
+      authorId: "",
       tags: "",
       isPublished: false,
     });
@@ -232,6 +280,11 @@ export default function BlogsPage() {
     });
   };
 
+  const getAuthorName = (authorId: string) => {
+    const author = authors.find((a) => a._id === authorId);
+    return author ? author.name : "Unknown Author";
+  };
+
   return (
     <ProtectedRoute>
       <SidebarInset>
@@ -239,11 +292,9 @@ export default function BlogsPage() {
         <div className="flex flex-1 flex-col gap-4 p-5 pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Blog Management
-              </h1>
+              <h1 className="text-3xl font-bold tracking-tight">Blog Posts</h1>
               <p className="text-muted-foreground">
-                Manage your blog posts and content
+                Create and manage your blog posts and content
               </p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -321,15 +372,45 @@ export default function BlogsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="author">Author</Label>
-                      <Input
-                        id="author"
-                        value={formData.author}
-                        onChange={(e) =>
-                          setFormData({ ...formData, author: e.target.value })
-                        }
-                        placeholder="Author name"
-                        required
-                      />
+                      <Select
+                        value={formData.authorId}
+                        onValueChange={(value) => {
+                          setFormData({
+                            ...formData,
+                            authorId: value,
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an author" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {authors.map((author) => (
+                            <SelectItem
+                              key={author._id}
+                              value={author._id || ""}
+                            >
+                              {author.name}
+                            </SelectItem>
+                          ))}
+                          {authors.length === 0 && (
+                            <SelectItem value="no-authors" disabled>
+                              No authors available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {authors.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          <a
+                            href="/app/blog/authors"
+                            className="underline text-primary"
+                          >
+                            Create authors
+                          </a>{" "}
+                          to select from this dropdown.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="tags">Tags</Label>
@@ -344,26 +425,15 @@ export default function BlogsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <BlogImageUpload
-                      type="cover"
-                      label="Cover Image"
-                      value={formData.coverImage}
-                      onChange={(coverImage) =>
-                        setFormData({ ...formData, coverImage })
-                      }
-                      placeholder="Or paste cover image URL..."
-                    />
-                    <BlogImageUpload
-                      type="author"
-                      label="Author Image"
-                      value={formData.authorImage}
-                      onChange={(authorImage) =>
-                        setFormData({ ...formData, authorImage })
-                      }
-                      placeholder="Or paste author image URL..."
-                    />
-                  </div>
+                  <BlogImageUpload
+                    type="cover"
+                    label="Cover Image"
+                    value={formData.coverImage}
+                    onChange={(coverImage) =>
+                      setFormData({ ...formData, coverImage })
+                    }
+                    placeholder="Or paste cover image URL..."
+                  />
 
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -409,6 +479,7 @@ export default function BlogsPage() {
                 </div>
               ) : blogs.length === 0 ? (
                 <div className="text-center py-8">
+                  <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground mb-4">
                     No blog posts yet
                   </p>
@@ -443,16 +514,9 @@ export default function BlogsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            {blog.authorImage && (
-                              <img
-                                src={blog.authorImage}
-                                alt={blog.author}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            )}
-                            <span className="text-sm">{blog.author}</span>
-                          </div>
+                          <span className="text-sm">
+                            {getAuthorName(blog.authorId)}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge

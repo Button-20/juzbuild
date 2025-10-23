@@ -11,7 +11,8 @@
     "test-full-workflow": "node scripts/test-full-workflow.js",
     "check-subdomains": "node scripts/check-subdomains.js",
     "cleanup-test-dbs": "node scripts/cleanup-test-dbs.js",
-    "test-homely-template": "node scripts/test-homely-template.js"
+    "test-homely-template": "node scripts/test-homely-template.js",
+    "seed-blogs": "node scripts/seed-blogs.js"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
