@@ -7,6 +7,7 @@ import {
   DatabaseIcon,
   FileCodeIcon,
   FileIcon,
+  FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
@@ -57,6 +58,11 @@ const data = {
       title: "Testimonials",
       url: "/app/testimonials",
       icon: ClipboardListIcon,
+    },
+    {
+      title: "Blog",
+      url: "/app/blogs",
+      icon: FileTextIcon,
     },
     {
       title: "Analytics",

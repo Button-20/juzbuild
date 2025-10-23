@@ -179,3 +179,51 @@ export type CreateTestimonialRequest = Omit<
   "_id" | "userId" | "domain" | "createdAt" | "updatedAt"
 >;
 export type UpdateTestimonialRequest = Partial<CreateTestimonialRequest>;
+
+// Blog Schema
+export const blogSchema = z.object({
+  _id: z.string().optional(),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title cannot exceed 200 characters"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be URL-friendly"),
+  excerpt: z
+    .string()
+    .min(1, "Excerpt is required")
+    .max(500, "Excerpt cannot exceed 500 characters"),
+  content: z.string().min(1, "Content is required"),
+  coverImage: z.string().min(1, "Cover image is required"),
+  author: z.string().min(1, "Author is required"),
+  authorImage: z.string().optional(),
+  tags: z.array(z.string()).default([]),
+  isPublished: z.boolean().default(false),
+  publishedAt: z.date().nullable().optional(),
+  readTime: z.number().min(0).default(0),
+  views: z.number().min(0).default(0),
+  // User/Website association fields
+  userId: z.string().optional(),
+  websiteId: z.string().optional(),
+  domain: z.string().optional(),
+  // Timestamps
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+// Blog Types
+export type Blog = z.infer<typeof blogSchema>;
+export type CreateBlogRequest = Omit<
+  Blog,
+  | "_id"
+  | "userId"
+  | "domain"
+  | "createdAt"
+  | "updatedAt"
+  | "readTime"
+  | "publishedAt"
+  | "views"
+>;
+export type UpdateBlogRequest = Partial<CreateBlogRequest>;
