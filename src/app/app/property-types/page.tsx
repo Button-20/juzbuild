@@ -31,14 +31,6 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
@@ -46,7 +38,6 @@ import {
   Building,
   Building2,
   Crown,
-  Edit,
   Home,
   MapPin,
   MoreHorizontal,
@@ -54,7 +45,6 @@ import {
   SearchIcon,
   Store,
   TagIcon,
-  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -804,127 +794,6 @@ export default function PropertyTypesPage() {
                     : "No property types found. Add your first property type to get started."
                 }
               />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {propertyTypes.map((propertyType) => (
-                    <TableRow key={propertyType._id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {propertyType.image ? (
-                            <div className="w-8 h-8 rounded overflow-hidden bg-muted flex-shrink-0">
-                              <img
-                                src={propertyType.image}
-                                alt={propertyType.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  // Fallback to icon if image fails
-                                  e.currentTarget.style.display = "none";
-                                  const nextElement = e.currentTarget
-                                    .nextElementSibling as HTMLElement;
-                                  if (nextElement) {
-                                    nextElement.style.display = "block";
-                                  }
-                                }}
-                              />
-                              <span className="text-lg hidden">
-                                {propertyType.icon}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-2xl flex-shrink-0">
-                              {propertyType.icon}
-                            </span>
-                          )}
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {propertyType.name}
-                              </span>
-                              {propertyType.createdAt &&
-                                isRecentlyAdded(propertyType.createdAt) && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    New
-                                  </Badge>
-                                )}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Slug: {propertyType.slug}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {propertyType.description || "No description provided"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            propertyType.isActive ? "default" : "secondary"
-                          }
-                        >
-                          {propertyType.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {propertyType.createdAt
-                          ? new Date(
-                              propertyType.createdAt
-                            ).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleEdit(propertyType)}
-                            >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                toggleStatus(
-                                  propertyType._id!,
-                                  !propertyType.isActive
-                                )
-                              }
-                            >
-                              <TagIcon className="mr-2 h-4 w-4" />
-                              {propertyType.isActive
-                                ? "Deactivate"
-                                : "Activate"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(propertyType._id!)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
             </CardContent>
           </Card>
         </div>
