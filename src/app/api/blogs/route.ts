@@ -1,5 +1,6 @@
 import { verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
+import { BlogService } from "@/lib/services";
 import { blogSchema } from "@/types/properties";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -64,27 +65,45 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get blogs from website-specific database
-    const collection = websiteDatabaseName
-      ? await getCollection("blogs", websiteDatabaseName)
-      : await getCollection("blogs");
+    // Get pagination and sorting parameters
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const sortDirection = (searchParams.get("sortDirection") || "desc") as
+      | "asc"
+      | "desc";
+    const search = searchParams.get("search") || "";
+    const status = searchParams.get("status") || "all";
+    const authorId = searchParams.get("authorId") || "";
 
-    const blogs = await collection.find({}).sort({ createdAt: -1 }).toArray();
+    // Get blogs using BlogService with pagination and sorting
+    const result = await BlogService.getBlogs(
+      {
+        page,
+        limit,
+        sortBy,
+        sortDirection,
+        search,
+        status: status as "all" | "published" | "draft",
+        authorId: authorId || undefined,
+      },
+      websiteDatabaseName || undefined
+    );
 
-    // Convert _id to string for each blog and ensure required fields
-    const formattedBlogs = blogs.map((blog: any) => ({
+    // Add user and domain info to each blog
+    const formattedBlogs = result.blogs.map((blog: any) => ({
       ...blog,
-      _id: blog._id.toString(),
       userId: blog.userId || userId,
       domain: blog.domain || userDomain,
-      tags: blog.tags || [],
-      readTime: blog.readTime || 0,
-      views: blog.views || 0,
     }));
 
     return NextResponse.json({
       success: true,
       blogs: formattedBlogs,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     });
   } catch (error) {
     console.error("Error fetching blogs:", error);

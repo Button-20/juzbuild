@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Column, DataTable, SortDirection } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -31,14 +32,6 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
@@ -81,6 +74,13 @@ export default function TestimonialsPage() {
     isActive: true,
   });
 
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [sortBy, setSortBy] = useState<string>("order");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
   const fetchTestimonials = useCallback(async () => {
     if (!selectedWebsiteId) {
       toast({
@@ -93,9 +93,23 @@ export default function TestimonialsPage() {
 
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/testimonials?websiteId=${selectedWebsiteId}`
-      );
+      const params = new URLSearchParams({
+        websiteId: selectedWebsiteId,
+        page: currentPage.toString(),
+        limit: "10",
+        sortBy: sortBy,
+        sortDirection: sortDirection,
+      });
+
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
+
+      if (statusFilter !== "all") {
+        params.append("isActive", statusFilter === "active" ? "true" : "false");
+      }
+
+      const response = await fetch(`/api/testimonials?${params.toString()}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -105,6 +119,8 @@ export default function TestimonialsPage() {
       const data = await response.json();
       console.log("Received testimonials data:", data);
       setTestimonials(data.testimonials || []);
+      setTotal(data.total || 0);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
       toast({
@@ -117,38 +133,35 @@ export default function TestimonialsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedWebsiteId, toast]);
+  }, [
+    selectedWebsiteId,
+    toast,
+    currentPage,
+    sortBy,
+    sortDirection,
+    searchTerm,
+    statusFilter,
+  ]);
+
+  // Pagination and sorting handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSort = (key: string, direction: SortDirection) => {
+    setSortBy(key);
+    setSortDirection(direction);
+    setCurrentPage(1); // Reset to first page when sorting
+  };
 
   useEffect(() => {
     fetchTestimonials();
   }, [fetchTestimonials]);
 
+  // Since we're doing server-side filtering, we don't need client-side filtering
   useEffect(() => {
-    let filtered = testimonials;
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (testimonial) =>
-          testimonial.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          testimonial.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          testimonial.company
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          testimonial.message.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply status filter
-    filtered = filtered.filter(
-      (testimonial) =>
-        statusFilter === "all" ||
-        (statusFilter === "active" && testimonial.isActive) ||
-        (statusFilter === "inactive" && !testimonial.isActive)
-    );
-
-    setFilteredTestimonials(filtered);
-  }, [searchTerm, statusFilter, testimonials]);
+    setFilteredTestimonials(testimonials);
+  }, [testimonials]);
 
   const resetForm = () => {
     setFormData({
@@ -305,6 +318,107 @@ export default function TestimonialsPage() {
           ).toFixed(1)
         : "0",
   };
+
+  // DataTable columns configuration
+  const columns: Column<Testimonial>[] = [
+    {
+      key: "name",
+      header: "Testimonial",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={row.image || ""} alt={value as string} />
+            <AvatarFallback>
+              {(value as string)
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium">{value as string}</div>
+            <div className="text-sm text-muted-foreground">{row.role}</div>
+            {row.company && (
+              <div className="text-xs text-muted-foreground">
+                at {row.company}
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "message",
+      header: "Message",
+      sortable: false,
+      render: (value) => (
+        <div className="max-w-xs truncate text-sm">{value as string}</div>
+      ),
+    },
+    {
+      key: "rating",
+      header: "Rating",
+      sortable: true,
+      render: (value) => (
+        <div className="flex items-center">
+          {"★".repeat((value as number) || 5)}
+          <span className="ml-1 text-sm text-muted-foreground">
+            {value || 5}/5
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "isActive",
+      header: "Status",
+      sortable: true,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Active" : "Inactive"}
+        </Badge>
+      ),
+    },
+    {
+      key: "order",
+      header: "Order",
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm font-mono">{value as number}</div>
+      ),
+    },
+    {
+      key: "_id",
+      header: "Actions",
+      sortable: false,
+      render: (value, row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => openDialog(row)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => row._id && handleDelete(row._id)}
+              className="text-red-600"
+              disabled={!row._id || deletingId === row._id}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {deletingId === row._id ? "Deleting..." : "Delete"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <ProtectedRoute>
@@ -596,193 +710,28 @@ export default function TestimonialsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!loading && filteredTestimonials.length === 0 ? (
-                <div className="text-center py-8">
-                  <ClipboardListIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-semibold">No testimonials found</p>
-                  <p className="text-muted-foreground mb-4">
-                    {searchTerm || statusFilter !== "all"
-                      ? "Try adjusting your search or filters"
-                      : "Get started by adding your first testimonial"}
-                  </p>
-                  {!searchTerm && statusFilter === "all" && (
-                    <Button onClick={() => openDialog()}>
-                      <PlusIcon className="mr-2 h-4 w-4" />
-                      Add Your First Testimonial
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Photo</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Rating</TableHead>
-                      <TableHead>Order</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      // Loading skeleton rows
-                      <>
-                        {[...Array(5)].map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Skeleton className="h-10 w-10 rounded-full" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-24" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-20" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-28" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-4 w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-1">
-                                {[...Array(5)].map((_, starIndex) => (
-                                  <Skeleton
-                                    key={starIndex}
-                                    className="h-4 w-4"
-                                  />
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-6 w-12 rounded-full" />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton className="h-6 w-16 rounded-full" />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Skeleton className="h-8 w-8 rounded ml-auto" />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </>
-                    ) : filteredTestimonials.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={9} className="text-center py-10">
-                          No testimonials found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredTestimonials.map((testimonial) => (
-                        <TableRow key={testimonial._id}>
-                          <TableCell>
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage
-                                src={testimonial.image}
-                                alt={testimonial.name}
-                              />
-                              <AvatarFallback>
-                                {testimonial.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {testimonial.name}
-                          </TableCell>
-                          <TableCell>{testimonial.role}</TableCell>
-                          <TableCell>{testimonial.company || "-"}</TableCell>
-                          <TableCell>
-                            <div
-                              className="max-w-xs truncate"
-                              title={testimonial.message}
-                            >
-                              {testimonial.message}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex">
-                              {Array.from({ length: 5 }, (_, i) => (
-                                <span
-                                  key={i}
-                                  className={
-                                    i < (testimonial.rating || 0)
-                                      ? "text-yellow-400"
-                                      : "text-gray-300"
-                                  }
-                                >
-                                  ★
-                                </span>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{testimonial.order}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                testimonial.isActive ? "default" : "secondary"
-                              }
-                            >
-                              {testimonial.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  disabled={deletingId === testimonial._id}
-                                >
-                                  {deletingId === testimonial._id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => openDialog(testimonial)}
-                                >
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-red-600"
-                                  onClick={() =>
-                                    testimonial._id &&
-                                    handleDelete(testimonial._id)
-                                  }
-                                  disabled={deletingId === testimonial._id}
-                                >
-                                  {deletingId === testimonial._id ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                  )}
-                                  {deletingId === testimonial._id
-                                    ? "Deleting..."
-                                    : "Delete"}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              )}
+              <DataTable
+                columns={columns}
+                data={testimonials}
+                loading={loading}
+                pagination={{
+                  page: currentPage,
+                  pageSize: 10,
+                  total: total,
+                  onPageChange: handlePageChange,
+                  onPageSizeChange: () => {}, // Not implemented yet
+                }}
+                sorting={{
+                  sortBy: sortBy as keyof Testimonial,
+                  sortDirection: sortDirection,
+                  onSort: handleSort,
+                }}
+                emptyMessage={
+                  searchTerm || statusFilter !== "all"
+                    ? "No testimonials match your filters"
+                    : "No testimonials found. Add your first testimonial to get started."
+                }
+              />
             </CardContent>
           </Card>
         </div>

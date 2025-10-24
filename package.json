@@ -9,10 +9,7 @@
     "lint": "next lint",
     "create-template": "node scripts/create-template.js",
     "test-full-workflow": "node scripts/test-full-workflow.js",
-    "check-subdomains": "node scripts/check-subdomains.js",
-    "cleanup-test-dbs": "node scripts/cleanup-test-dbs.js",
-    "test-homely-template": "node scripts/test-homely-template.js",
-    "seed-blogs": "node scripts/seed-blogs.js"
+    "cleanup-test-dbs": "node scripts/cleanup-test-dbs.js"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
@@ -80,7 +77,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.471.2",
     "mongodb": "^6.20.0",
-    "next": "15.1.4",
+    "next": "^16.0.0",
     "next-cloudinary": "^6.16.0",
     "next-themes": "^0.4.6",
     "nodemailer": "^7.0.6",

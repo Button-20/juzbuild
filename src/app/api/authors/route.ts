@@ -1,5 +1,6 @@
 import { verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
+import { AuthorService } from "@/lib/services";
 import { authorSchema } from "@/types/properties";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -60,22 +61,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const collection = websiteDatabaseName
-      ? await getCollection("authors", websiteDatabaseName)
-      : await getCollection("authors");
+    // Get pagination and sorting parameters
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const sortDirection = (searchParams.get("sortDirection") || "desc") as
+      | "asc"
+      | "desc";
+    const search = searchParams.get("search") || "";
 
-    // Get authors with sorting
-    const authors = await collection.find({}).sort({ createdAt: -1 }).toArray();
-
-    // Convert ObjectId to string for each author
-    const formattedAuthors = authors.map((author: any) => ({
-      ...author,
-      _id: author._id.toString(),
-    }));
+    // Get authors using AuthorService with pagination and sorting
+    const result = await AuthorService.getAuthors(
+      {
+        page,
+        limit,
+        sortBy,
+        sortDirection,
+        search,
+      },
+      websiteDatabaseName || undefined
+    );
 
     return NextResponse.json({
       success: true,
-      authors: formattedAuthors,
+      authors: result.authors,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     });
   } catch (error) {
     console.error("Error fetching authors:", error);

@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Add empty turbopack config to silence the warning
+  turbopack: {},
   images: {
     remotePatterns: [
       {

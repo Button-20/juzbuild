@@ -42,6 +42,7 @@ import {
   BathIcon,
   BedIcon,
   EditIcon,
+  EyeIcon,
   HomeIcon,
   MapPinIcon,
   MoreVerticalIcon,
@@ -347,6 +348,10 @@ export default function PropertiesPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleViewDetails(row)}>
+              <EyeIcon className="mr-2 h-4 w-4" />
+              View
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 setEditingProperty(row);

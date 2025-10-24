@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Column, DataTable, SortDirection } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -28,14 +35,6 @@ import {
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +45,7 @@ import {
   Edit,
   Eye,
   FileText,
+  MoreVerticalIcon,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -81,16 +81,34 @@ export default function BlogsPage() {
     isPublished: false,
   });
 
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
   const fetchBlogs = async () => {
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const params = new URLSearchParams();
 
-      const response = await fetch(`/api/blogs${websiteParam}`);
+      if (selectedWebsite?.id) {
+        params.append("websiteId", selectedWebsite.id);
+      } else if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
+      }
+
+      params.append("page", currentPage.toString());
+      params.append("limit", "10");
+      params.append("sortBy", sortBy);
+      params.append("sortDirection", sortDirection);
+
+      const response = await fetch(`/api/blogs?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setBlogs(data.blogs || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
       } else {
         toast({
           title: "Error",
@@ -136,7 +154,7 @@ export default function BlogsPage() {
     if (selectedWebsite) {
       fetchData();
     }
-  }, [selectedWebsite]);
+  }, [selectedWebsite, currentPage, sortBy, sortDirection]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,6 +302,138 @@ export default function BlogsPage() {
     const author = authors.find((a) => a._id === authorId);
     return author ? author.name : "Unknown Author";
   };
+
+  // Pagination and sorting handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSort = (key: string, direction: SortDirection) => {
+    setSortBy(key);
+    setSortDirection(direction);
+    setCurrentPage(1); // Reset to first page when sorting
+  };
+
+  // DataTable columns configuration
+  const columns: Column<Blog>[] = [
+    {
+      key: "title",
+      header: "Title",
+      sortable: true,
+      render: (value, row) => (
+        <div className="max-w-[200px]">
+          <div className="font-medium truncate" title={value as string}>
+            {value as string}
+          </div>
+          <div
+            className="text-sm text-muted-foreground truncate"
+            title={`/${row.slug}`}
+          >
+            /{row.slug}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "authorId",
+      header: "Author",
+      sortable: false,
+      render: (value) => (
+        <span className="text-sm">{getAuthorName(value as string)}</span>
+      ),
+    },
+    {
+      key: "isPublished",
+      header: "Status",
+      sortable: true,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Published" : "Draft"}
+        </Badge>
+      ),
+    },
+    {
+      key: "tags",
+      header: "Tags",
+      sortable: false,
+      render: (value, row) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.tags || []).slice(0, 2).map((tag: string, index: number) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+          {(row.tags || []).length > 2 && (
+            <Badge variant="outline" className="text-xs">
+              +{(row.tags || []).length - 2}
+            </Badge>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "readTime",
+      header: "Read Time",
+      sortable: true,
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          <span className="text-sm">{value || 0} min</span>
+        </div>
+      ),
+    },
+    {
+      key: "views",
+      header: "Views",
+      sortable: true,
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Eye className="h-3 w-3" />
+          <span className="text-sm">{value || 0}</span>
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      sortable: true,
+      render: (value) => (
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3 w-3" />
+          <span className="text-sm">{formatDate(value as Date)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "_id",
+      header: "Actions",
+      sortable: false,
+      render: (value, row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVerticalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleEdit(row)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => row._id && handleDelete(row._id)}
+              className="text-red-600"
+              disabled={!row._id}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <ProtectedRoute>
@@ -489,103 +639,24 @@ export default function BlogsPage() {
                   </Button>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Author</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Tags</TableHead>
-                      <TableHead>Read Time</TableHead>
-                      <TableHead>Views</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {blogs.map((blog) => (
-                      <TableRow key={blog._id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{blog.title}</div>
-                            <div className="text-sm text-muted-foreground">
-                              /{blog.slug}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">
-                            {getAuthorName(blog.authorId)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={blog.isPublished ? "default" : "secondary"}
-                          >
-                            {blog.isPublished ? "Published" : "Draft"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {blog.tags.slice(0, 2).map((tag, index) => (
-                              <Badge
-                                key={index}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                            {blog.tags.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{blog.tags.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span className="text-sm">{blog.readTime} min</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            <span className="text-sm">{blog.views}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span className="text-sm">
-                              {formatDate(blog.createdAt)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(blog)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => blog._id && handleDelete(blog._id)}
-                              disabled={!blog._id}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <DataTable
+                  columns={columns}
+                  data={blogs}
+                  loading={loading}
+                  pagination={{
+                    page: currentPage,
+                    pageSize: 10,
+                    total: total,
+                    onPageChange: handlePageChange,
+                    onPageSizeChange: () => {}, // Not implemented yet
+                  }}
+                  sorting={{
+                    sortBy: sortBy as keyof Blog,
+                    sortDirection: sortDirection,
+                    onSort: handleSort,
+                  }}
+                  emptyMessage="No blog posts found. Add your first blog post to get started."
+                />
               )}
             </CardContent>
           </Card>

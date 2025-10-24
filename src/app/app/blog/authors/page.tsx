@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Column, DataTable, SortDirection } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -15,22 +16,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Plus, Trash2, User } from "lucide-react";
+import { Edit, MoreVerticalIcon, Plus, Trash2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Author {
@@ -60,17 +59,35 @@ export default function AuthorsPage() {
     slug: "",
   });
 
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
   const fetchAuthors = async () => {
     try {
       setLoading(true);
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const params = new URLSearchParams();
 
-      const response = await fetch(`/api/authors${websiteParam}`);
+      if (selectedWebsite?.id) {
+        params.append("websiteId", selectedWebsite.id);
+      } else if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
+      }
+
+      params.append("page", currentPage.toString());
+      params.append("limit", "10");
+      params.append("sortBy", sortBy);
+      params.append("sortDirection", sortDirection);
+
+      const response = await fetch(`/api/authors?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setAuthors(data.authors || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
       } else {
         toast({
           title: "Error",
@@ -94,7 +111,18 @@ export default function AuthorsPage() {
     if (selectedWebsite) {
       fetchAuthors();
     }
-  }, [selectedWebsite]);
+  }, [selectedWebsite, currentPage, sortBy, sortDirection]);
+
+  // Pagination and sorting handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSort = (key: string, direction: SortDirection) => {
+    setSortBy(key);
+    setSortDirection(direction);
+    setCurrentPage(1); // Reset to first page when sorting
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,6 +280,90 @@ export default function AuthorsPage() {
     return d.toLocaleDateString();
   };
 
+  // DataTable columns configuration
+  const columns: Column<Author>[] = [
+    {
+      key: "name",
+      header: "Author",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={row.image} alt={value as string} />
+            <AvatarFallback>
+              {(value as string)
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium">{value as string}</div>
+            <div className="text-sm text-muted-foreground">{row.email}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "slug",
+      header: "Slug",
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm font-mono text-muted-foreground">
+          /{value as string}
+        </div>
+      ),
+    },
+    {
+      key: "bio",
+      header: "Bio",
+      sortable: false,
+      render: (value) => (
+        <div className="max-w-xs truncate text-sm text-muted-foreground">
+          {value as string}
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm">{formatDate(value as Date)}</div>
+      ),
+    },
+    {
+      key: "_id",
+      header: "Actions",
+      sortable: false,
+      render: (value, row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVerticalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleEdit(row)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => row._id && handleDelete(row._id)}
+              className="text-red-600"
+              disabled={!row._id}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
   return (
     <ProtectedRoute>
       <SidebarInset>
@@ -401,73 +513,24 @@ export default function AuthorsPage() {
                   </Button>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Author</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {authors.map((author) => (
-                      <TableRow key={author._id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage
-                                src={author.image}
-                                alt={author.name}
-                              />
-                              <AvatarFallback>
-                                {author.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{author.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                @{author.slug}
-                              </div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">{author.email}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-muted-foreground">
-                            {formatDate(author.createdAt)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(author)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                author._id && handleDelete(author._id)
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <DataTable
+                  columns={columns}
+                  data={authors}
+                  loading={loading}
+                  pagination={{
+                    page: currentPage,
+                    pageSize: 10,
+                    total: total,
+                    onPageChange: handlePageChange,
+                    onPageSizeChange: () => {}, // Not implemented yet
+                  }}
+                  sorting={{
+                    sortBy: sortBy as keyof Author,
+                    sortDirection: sortDirection,
+                    onSort: handleSort,
+                  }}
+                  emptyMessage="No authors found. Add your first author to get started."
+                />
               )}
             </CardContent>
           </Card>

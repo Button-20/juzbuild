@@ -1,5 +1,6 @@
 import { verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
+import { TestimonialService } from "@/lib/services";
 import { testimonialSchema } from "@/types/properties";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -64,30 +65,46 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get testimonials from website-specific database
-    const collection = websiteDatabaseName
-      ? await getCollection("testimonials", websiteDatabaseName)
-      : await getCollection("testimonials");
+    // Get pagination and sorting parameters
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const sortBy = searchParams.get("sortBy") || "order";
+    const sortDirection = (searchParams.get("sortDirection") || "asc") as
+      | "asc"
+      | "desc";
+    const search = searchParams.get("search") || "";
+    const isActive = searchParams.get("isActive");
 
-    const testimonials = await collection
-      .find({})
-      .sort({ order: 1, createdAt: -1 })
-      .toArray();
+    // Get testimonials using TestimonialService with pagination and sorting
+    const result = await TestimonialService.getTestimonials(
+      {
+        page,
+        limit,
+        sortBy,
+        sortDirection,
+        search,
+        isActive: isActive ? isActive === "true" : undefined,
+      },
+      websiteDatabaseName || undefined
+    );
 
-    // Convert _id to string for each testimonial and ensure required fields
-    const formattedTestimonials = testimonials.map((testimonial: any) => ({
-      ...testimonial,
-      _id: testimonial._id.toString(),
-      userId: testimonial.userId || userId, // Use current user if missing
-      domain: testimonial.domain || userDomain, // Use current domain if missing
-      company: testimonial.company || "", // Ensure company field exists
-      rating: testimonial.rating || 5, // Default rating if missing
-      order: testimonial.order || 0, // Default order if missing
-    }));
+    // Add user and domain info to each testimonial
+    const formattedTestimonials = result.testimonials.map(
+      (testimonial: any) => ({
+        ...testimonial,
+        userId: testimonial.userId || userId,
+        domain: testimonial.domain || userDomain,
+        company: testimonial.company || "",
+      })
+    );
 
     return NextResponse.json({
       success: true,
       testimonials: formattedTestimonials,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
     });
   } catch (error) {
     console.error("Error fetching testimonials:", error);
