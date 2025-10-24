@@ -91,11 +91,12 @@ export async function POST(request: NextRequest) {
     const propertyTypes = await PropertyTypeService.findAll(
       userId,
       userDomain,
-      websiteDatabaseName
+      websiteDatabaseName,
+      { page: 1, limit: 1000 } // Get all property types for validation
     );
 
     const propertyTypeMap = new Map();
-    propertyTypes.forEach((type) => {
+    propertyTypes.propertyTypes.forEach((type) => {
       propertyTypeMap.set(type.name.toLowerCase(), type._id);
       propertyTypeMap.set(type.slug.toLowerCase(), type._id);
     });

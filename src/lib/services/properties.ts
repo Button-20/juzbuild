@@ -93,15 +93,19 @@ export class PropertyService {
     const limit = filters.limit || 10;
     const skip = ((filters.page || 1) - 1) * limit;
 
+    // Build sort object
+    const sortObj: any = {};
+    if (filters.sortBy) {
+      sortObj[filters.sortBy] = filters.sortDirection === "desc" ? -1 : 1;
+    } else {
+      sortObj.createdAt = -1; // Default sort by creation date
+    }
+
     // Get total count
     const total = await collection.countDocuments(query);
 
-    // Get properties with pagination
-    const cursor = collection
-      .find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    // Get properties with pagination and sorting
+    const cursor = collection.find(query).sort(sortObj).skip(skip).limit(limit);
 
     const properties = await cursor.toArray();
 
@@ -392,8 +396,15 @@ export class PropertyTypeService {
   static async findAll(
     userId?: string,
     domain?: string,
-    websiteDatabaseName?: string
-  ): Promise<PropertyType[]> {
+    websiteDatabaseName?: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortDirection?: "asc" | "desc";
+      search?: string;
+    }
+  ): Promise<{ propertyTypes: PropertyType[]; total: number }> {
     let collection;
     if (websiteDatabaseName) {
       collection = await getCollection(this.COLLECTION, websiteDatabaseName);
@@ -410,17 +421,46 @@ export class PropertyTypeService {
     if (!websiteDatabaseName && userId && domain) {
       // Include both global property types (no userId/domain) and user-specific ones
       query.$or = [
-        { userId: null, domain: null }, // Global types
-        { userId, domain }, // User-specific types
+        { userId: { $exists: false } }, // Global property types
+        { userId, domain }, // User-specific property types
       ];
       // For main database, filter by active status
       query.isActive = { $ne: false }; // Include true and undefined/null values
     }
     // For website-specific databases, don't filter by isActive to show all property types
 
+    // Add search functionality
+    if (options?.search) {
+      query.$and = query.$and || [];
+      query.$and.push({
+        $or: [
+          { name: { $regex: options.search, $options: "i" } },
+          { description: { $regex: options.search, $options: "i" } },
+        ],
+      });
+    }
+
+    // Calculate pagination
+    const limit = options?.limit || 50;
+    const skip = ((options?.page || 1) - 1) * limit;
+
+    // Build sort object
+    const sortObj: any = {};
+    if (options?.sortBy) {
+      sortObj[options.sortBy] = options.sortDirection === "desc" ? -1 : 1;
+    } else {
+      sortObj.name = 1; // Default sort by name
+    }
+
+    // Get total count
+    const total = await collection.countDocuments(query);
+
+    // Get property types with pagination and sorting
     const propertyTypes = await collection
       .find(query)
-      .sort({ name: 1 })
+      .sort(sortObj)
+      .skip(skip)
+      .limit(limit)
       .toArray();
 
     // If using website-specific database and no property types found, create defaults
@@ -430,10 +470,16 @@ export class PropertyTypeService {
         userId,
         domain
       );
-      return defaultTypes.map(this.formatDocument);
+      return {
+        propertyTypes: defaultTypes.map(this.formatDocument),
+        total: defaultTypes.length,
+      };
     }
 
-    return propertyTypes.map(this.formatDocument);
+    return {
+      propertyTypes: propertyTypes.map(this.formatDocument),
+      total,
+    };
   }
 
   /**

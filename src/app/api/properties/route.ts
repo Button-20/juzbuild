@@ -74,6 +74,9 @@ export async function GET(request: NextRequest) {
       search: searchParams.get("search") || undefined,
       limit: parseInt(searchParams.get("limit") || "10"),
       page: parseInt(searchParams.get("page") || "1"),
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortDirection:
+        (searchParams.get("sortDirection") as "asc" | "desc") || "asc",
       userId,
       domain: userDomain,
       websiteDatabaseName, // Pass the specific website's database name

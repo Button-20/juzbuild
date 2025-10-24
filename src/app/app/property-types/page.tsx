@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Column, DataTable, SortDirection } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -87,6 +88,13 @@ export default function PropertyTypesPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<PropertyType | null>(null);
+
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalPropertyTypes, setTotalPropertyTypes] = useState(0);
+  const [sortBy, setSortBy] = useState<keyof PropertyType | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [formData, setFormData] = useState<
     Omit<PropertyType, "_id" | "createdAt" | "updatedAt">
   >({
@@ -109,24 +117,45 @@ export default function PropertyTypesPage() {
   // Load property types on component mount
   useEffect(() => {
     loadPropertyTypes();
-  }, [selectedWebsiteId]);
+  }, [
+    selectedWebsiteId,
+    currentPage,
+    pageSize,
+    searchTerm,
+    sortBy,
+    sortDirection,
+  ]);
 
   const loadPropertyTypes = async () => {
     if (!selectedWebsiteId) return;
 
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `/api/property-types?websiteId=${selectedWebsiteId}`
-      );
+
+      // Build query parameters
+      const params = new URLSearchParams({
+        websiteId: selectedWebsiteId,
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+
+      // Add filters
+      if (searchTerm) params.append("search", searchTerm);
+      if (sortBy) {
+        params.append("sortBy", sortBy.toString());
+        params.append("sortDirection", sortDirection);
+      }
+
+      const response = await fetch(`/api/property-types?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         const types = data.propertyTypes || [];
         setPropertyTypes(types);
+        setTotalPropertyTypes(data.total || 0);
 
         // Calculate stats
         setStats({
-          totalTypes: types.length,
+          totalTypes: data.total || 0,
           activeTypes: types.filter((t: PropertyType) => t.isActive).length,
           inactiveTypes: types.filter((t: PropertyType) => !t.isActive).length,
         });
@@ -408,17 +437,118 @@ export default function PropertyTypesPage() {
     setIsDialogOpen(true);
   };
 
-  // Filter property types based on search and status
-  const filteredPropertyTypes = propertyTypes.filter((type) => {
-    const matchesSearch =
-      type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      type.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && type.isActive) ||
-      (statusFilter === "inactive" && !type.isActive);
-    return matchesSearch && matchesStatus;
-  });
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
+
+  // Sorting handlers
+  const handleSort = (key: keyof PropertyType, direction: SortDirection) => {
+    setSortBy(key);
+    setSortDirection(direction);
+    setCurrentPage(1);
+  };
+
+  // Column configuration for DataTable
+  const columns: Column<PropertyType>[] = [
+    {
+      key: "name",
+      header: "Property Type",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-lg">
+            {row.icon}
+          </div>
+          <div>
+            <div className="font-medium">{value}</div>
+            <div className="text-sm text-muted-foreground">{row.slug}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "description",
+      header: "Description",
+      sortable: true,
+      render: (value) => (
+        <div className="max-w-xs truncate text-sm text-muted-foreground">
+          {value}
+        </div>
+      ),
+    },
+    {
+      key: "isActive",
+      header: "Status",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center gap-2">
+          <Badge variant={value ? "default" : "secondary"}>
+            {value ? "Active" : "Inactive"}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm text-muted-foreground">
+          {value ? new Date(value).toLocaleDateString() : "—"}
+        </div>
+      ),
+    },
+    {
+      key: "_id",
+      header: "Actions",
+      sortable: false,
+      render: (value, row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingType(row);
+                setFormData({
+                  name: row.name,
+                  slug: row.slug,
+                  description: row.description,
+                  image: row.image,
+                  icon: row.icon,
+                  isActive: row.isActive,
+                });
+                setIsDialogOpen(true);
+              }}
+            >
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => toggleStatus(value!, !row.isActive)}
+            >
+              {row.isActive ? "Deactivate" : "Activate"}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(value!)}
+              className="text-red-600"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   // Helper function to check if property type is recently added (within last 7 days)
   const isRecentlyAdded = (createdAt?: Date) => {
@@ -649,153 +779,152 @@ export default function PropertyTypesPage() {
           {/* Property Types Table */}
           <Card>
             <CardHeader>
-              <CardTitle>
-                Property Types ({filteredPropertyTypes.length})
-              </CardTitle>
+              <CardTitle>Property Types ({totalPropertyTypes})</CardTitle>
             </CardHeader>
             <CardContent>
-              {filteredPropertyTypes.length === 0 ? (
-                <div className="text-center py-8">
-                  <TagIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-semibold">
-                    No property types found
-                  </p>
-                  <p className="text-muted-foreground mb-4">
-                    {searchTerm || statusFilter !== "all"
-                      ? "Try adjusting your search or filters"
-                      : "Get started by adding your first property type"}
-                  </p>
-                  {!searchTerm && statusFilter === "all" && (
-                    <Button onClick={openCreateDialog}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Your First Property Type
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPropertyTypes.map((propertyType) => (
-                      <TableRow key={propertyType._id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            {propertyType.image ? (
-                              <div className="w-8 h-8 rounded overflow-hidden bg-muted flex-shrink-0">
-                                <img
-                                  src={propertyType.image}
-                                  alt={propertyType.name}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    // Fallback to icon if image fails
-                                    e.currentTarget.style.display = "none";
-                                    const nextElement = e.currentTarget
-                                      .nextElementSibling as HTMLElement;
-                                    if (nextElement) {
-                                      nextElement.style.display = "block";
-                                    }
-                                  }}
-                                />
-                                <span className="text-lg hidden">
-                                  {propertyType.icon}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-2xl flex-shrink-0">
+              <DataTable
+                data={propertyTypes}
+                columns={columns}
+                loading={isLoading}
+                pagination={{
+                  page: currentPage,
+                  pageSize: pageSize,
+                  total: totalPropertyTypes,
+                  onPageChange: handlePageChange,
+                  onPageSizeChange: handlePageSizeChange,
+                }}
+                sorting={{
+                  sortBy: sortBy,
+                  sortDirection: sortDirection,
+                  onSort: handleSort,
+                }}
+                emptyMessage={
+                  searchTerm || statusFilter !== "all"
+                    ? "No property types match your filters"
+                    : "No property types found. Add your first property type to get started."
+                }
+              />
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {propertyTypes.map((propertyType) => (
+                    <TableRow key={propertyType._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {propertyType.image ? (
+                            <div className="w-8 h-8 rounded overflow-hidden bg-muted flex-shrink-0">
+                              <img
+                                src={propertyType.image}
+                                alt={propertyType.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  // Fallback to icon if image fails
+                                  e.currentTarget.style.display = "none";
+                                  const nextElement = e.currentTarget
+                                    .nextElementSibling as HTMLElement;
+                                  if (nextElement) {
+                                    nextElement.style.display = "block";
+                                  }
+                                }}
+                              />
+                              <span className="text-lg hidden">
                                 {propertyType.icon}
                               </span>
-                            )}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                  {propertyType.name}
-                                </span>
-                                {propertyType.createdAt &&
-                                  isRecentlyAdded(propertyType.createdAt) && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs"
-                                    >
-                                      New
-                                    </Badge>
-                                  )}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Slug: {propertyType.slug}
-                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-2xl flex-shrink-0">
+                              {propertyType.icon}
+                            </span>
+                          )}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {propertyType.name}
+                              </span>
+                              {propertyType.createdAt &&
+                                isRecentlyAdded(propertyType.createdAt) && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    New
+                                  </Badge>
+                                )}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Slug: {propertyType.slug}
                             </div>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {propertyType.description ||
-                            "No description provided"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              propertyType.isActive ? "default" : "secondary"
-                            }
-                          >
-                            {propertyType.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {propertyType.createdAt
-                            ? new Date(
-                                propertyType.createdAt
-                              ).toLocaleDateString()
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(propertyType)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  toggleStatus(
-                                    propertyType._id!,
-                                    !propertyType.isActive
-                                  )
-                                }
-                              >
-                                <TagIcon className="mr-2 h-4 w-4" />
-                                {propertyType.isActive
-                                  ? "Deactivate"
-                                  : "Activate"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(propertyType._id!)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {propertyType.description || "No description provided"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            propertyType.isActive ? "default" : "secondary"
+                          }
+                        >
+                          {propertyType.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {propertyType.createdAt
+                          ? new Date(
+                              propertyType.createdAt
+                            ).toLocaleDateString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(propertyType)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                toggleStatus(
+                                  propertyType._id!,
+                                  !propertyType.isActive
+                                )
+                              }
+                            >
+                              <TagIcon className="mr-2 h-4 w-4" />
+                              {propertyType.isActive
+                                ? "Deactivate"
+                                : "Activate"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(propertyType._id!)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </div>

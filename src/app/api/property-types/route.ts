@@ -65,16 +65,31 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Parse pagination and sorting parameters
+    const options = {
+      page: parseInt(searchParams.get("page") || "1"),
+      limit: parseInt(searchParams.get("limit") || "50"),
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortDirection:
+        (searchParams.get("sortDirection") as "asc" | "desc") || "asc",
+      search: searchParams.get("search") || undefined,
+    };
+
     // Get property types from website-specific database
-    const propertyTypes = await PropertyTypeService.findAll(
+    const { propertyTypes, total } = await PropertyTypeService.findAll(
       userId,
       userDomain,
-      websiteDatabaseName
+      websiteDatabaseName,
+      options
     );
 
     return NextResponse.json({
       success: true,
       propertyTypes,
+      total,
+      page: options.page,
+      limit: options.limit,
+      totalPages: Math.ceil(total / options.limit),
     });
   } catch (error) {
     console.error("Error fetching property types:", error);

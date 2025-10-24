@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Column, DataTable, SortDirection } from "@/components/ui/data-table";
 import {
   Dialog,
   DialogContent,
@@ -29,14 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarInset } from "@/components/ui/sidebar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useWebsite } from "@/contexts/website-context";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -48,9 +41,7 @@ import {
 import {
   BathIcon,
   BedIcon,
-  CalendarIcon,
   EditIcon,
-  EyeIcon,
   HomeIcon,
   MapPinIcon,
   MoreVerticalIcon,
@@ -71,6 +62,13 @@ export default function PropertiesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+
+  // Pagination and sorting state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalProperties, setTotalProperties] = useState(0);
+  const [sortBy, setSortBy] = useState<keyof Property | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [stats, setStats] = useState({
     totalProperties: 0,
     forSale: 0,
@@ -90,8 +88,25 @@ export default function PropertiesPage() {
     try {
       setLoading(true);
 
+      // Build query parameters for properties
+      const propertiesParams = new URLSearchParams({
+        websiteId: selectedWebsiteId,
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      });
+
+      // Add filters
+      if (searchTerm) propertiesParams.append("search", searchTerm);
+      if (statusFilter !== "all")
+        propertiesParams.append("status", statusFilter);
+      if (typeFilter !== "all") propertiesParams.append("type", typeFilter);
+      if (sortBy) {
+        propertiesParams.append("sortBy", sortBy.toString());
+        propertiesParams.append("sortDirection", sortDirection);
+      }
+
       const [propertiesRes, typesRes, statsRes] = await Promise.all([
-        fetch(`/api/properties?websiteId=${selectedWebsiteId}`),
+        fetch(`/api/properties?${propertiesParams.toString()}`),
         fetch(`/api/property-types?websiteId=${selectedWebsiteId}`),
         fetch(`/api/properties/stats?websiteId=${selectedWebsiteId}`),
       ]);
@@ -99,6 +114,7 @@ export default function PropertiesPage() {
       if (propertiesRes.ok) {
         const propertiesData = await propertiesRes.json();
         setProperties(propertiesData.properties || []);
+        setTotalProperties(propertiesData.total || 0);
       }
 
       if (typesRes.ok) {
@@ -124,26 +140,48 @@ export default function PropertiesPage() {
 
   useEffect(() => {
     fetchData();
-  }, [selectedWebsiteId]);
+  }, [
+    selectedWebsiteId,
+    currentPage,
+    pageSize,
+    searchTerm,
+    statusFilter,
+    typeFilter,
+    sortBy,
+    sortDirection,
+  ]);
 
-  // Filter properties based on search and filters
-  const filteredProperties = properties.filter((property) => {
-    const matchesSearch =
-      (property.name?.toLowerCase() ?? "").includes(searchTerm.toLowerCase()) ||
-      (property.location?.toLowerCase() ?? "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (property.description?.toLowerCase() ?? "").includes(
-        searchTerm.toLowerCase()
-      );
+  // Helper functions (keeping these for the DataTable)
+  const getPropertyTypeBadge = (propertyTypeId: string) => {
+    const type = propertyTypes.find((t) => t._id === propertyTypeId);
+    return type ? type.name : "Unknown";
+  };
 
-    const matchesStatus =
-      statusFilter === "all" || property.status === statusFilter;
-    const matchesType =
-      typeFilter === "all" || property.propertyType === typeFilter;
+  const renderPropertyTypeBadge = (propertyTypeId: string) => {
+    const typeName = getPropertyTypeBadge(propertyTypeId);
+    return (
+      <Badge variant="secondary" className="text-xs">
+        {typeName}
+      </Badge>
+    );
+  };
 
-    return matchesSearch && matchesStatus && matchesType;
-  });
+  const getStatusVariant = (
+    status: string
+  ): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case "for-sale":
+        return "default";
+      case "for-rent":
+        return "secondary";
+      case "sold":
+        return "destructive";
+      case "rented":
+        return "outline";
+      default:
+        return "secondary";
+    }
+  };
 
   // Handle property deletion
   const handleDelete = async (propertyId: string) => {
@@ -201,6 +239,136 @@ export default function PropertiesPage() {
     });
   };
 
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  // Sorting handlers
+  const handleSort = (key: keyof Property, direction: SortDirection) => {
+    setSortBy(key);
+    setSortDirection(direction);
+    setCurrentPage(1); // Reset to first page when sorting
+  };
+
+  // Column configuration for DataTable
+  const columns: Column<Property>[] = [
+    {
+      key: "name",
+      header: "Property",
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+            <HomeIcon className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div>
+            <div className="font-medium">{value}</div>
+            <div className="text-sm text-muted-foreground flex items-center gap-1">
+              <MapPinIcon className="h-3 w-3" />
+              {row.location}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "propertyType",
+      header: "Type",
+      sortable: true,
+      render: (value) => renderPropertyTypeBadge(value),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortable: true,
+      render: (value) => (
+        <Badge variant={getStatusVariant(value)}>
+          {PROPERTY_STATUSES.find((s) => s.value === value)?.label || value}
+        </Badge>
+      ),
+    },
+    {
+      key: "price",
+      header: "Price",
+      sortable: true,
+      render: (value, row) => (
+        <div className="text-right font-medium">
+          {formatPrice(value, row.currency)}
+        </div>
+      ),
+    },
+    {
+      key: "beds",
+      header: "Details",
+      sortable: false,
+      render: (value, row) => (
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <BedIcon className="h-4 w-4" />
+            {value}
+          </div>
+          <div className="flex items-center gap-1">
+            <BathIcon className="h-4 w-4" />
+            {row.baths}
+          </div>
+          <div className="flex items-center gap-1">
+            <RulerIcon className="h-4 w-4" />
+            {row.area} sqft
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm text-muted-foreground">
+          {new Date(value).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      key: "_id",
+      header: "Actions",
+      sortable: false,
+      render: (value, row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVerticalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                setEditingProperty(row);
+                setIsEditDialogOpen(true);
+              }}
+            >
+              <EditIcon className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDelete(value)}
+              className="text-red-600"
+            >
+              <TrashIcon className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
   // Get property type name helper
   const getPropertyTypeName = (typeId: string) => {
     const type = propertyTypes.find((t) => t._id === typeId);
@@ -240,16 +408,6 @@ export default function PropertiesPage() {
       </Badge>
     ) : (
       <Badge variant="outline">{status}</Badge>
-    );
-  };
-
-  // Get property type badge
-  const getPropertyTypeBadge = (propertyTypeId: string) => {
-    const typeName = getPropertyTypeName(propertyTypeId);
-    return (
-      <Badge variant="info" className="font-medium">
-        {typeName}
-      </Badge>
     );
   };
 
@@ -420,150 +578,31 @@ export default function PropertiesPage() {
           {/* Properties Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Properties ({filteredProperties.length})</CardTitle>
+              <CardTitle>Properties ({totalProperties})</CardTitle>
             </CardHeader>
             <CardContent>
-              {filteredProperties.length === 0 ? (
-                <div className="text-center py-8">
-                  <HomeIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-semibold">No properties found</p>
-                  <p className="text-muted-foreground mb-4">
-                    {searchTerm ||
-                    statusFilter !== "all" ||
-                    typeFilter !== "all"
-                      ? "Try adjusting your search or filters"
-                      : "Get started by adding your first property"}
-                  </p>
-                  {!searchTerm &&
-                    statusFilter === "all" &&
-                    typeFilter === "all" && (
-                      <Button onClick={() => setIsCreateDialogOpen(true)}>
-                        <PlusIcon className="mr-2 h-4 w-4" />
-                        Add Your First Property
-                      </Button>
-                    )}
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Property</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Details</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProperties.map((property) => (
-                      <TableRow key={property._id}>
-                        <TableCell>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {property.name || "Unnamed Property"}
-                              </span>
-                              <div className="flex gap-1">
-                                {property.isFeatured && (
-                                  <Badge variant="success" className="text-xs">
-                                    Featured
-                                  </Badge>
-                                )}
-                                {property.createdAt &&
-                                  isRecentlyAdded(property.createdAt) && (
-                                    <Badge
-                                      variant="warning"
-                                      className="text-xs"
-                                    >
-                                      New
-                                    </Badge>
-                                  )}
-                              </div>
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center">
-                              <MapPinIcon className="mr-1 h-3 w-3" />
-                              {property.location || "No location specified"}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {getPropertyTypeBadge(property.propertyType)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(property.status)}
-                            {!property.isActive && (
-                              <Badge variant="destructive" className="text-xs">
-                                Inactive
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatPrice(property.price, property.currency)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            <span className="flex items-center">
-                              <BedIcon className="mr-1 h-3 w-3" />
-                              {property.beds}
-                            </span>
-                            <span className="flex items-center">
-                              <BathIcon className="mr-1 h-3 w-3" />
-                              {property.baths}
-                            </span>
-                            <span className="flex items-center">
-                              <RulerIcon className="mr-1 h-3 w-3" />
-                              {property.area} sq ft
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          <div className="flex items-center">
-                            <CalendarIcon className="mr-1 h-3 w-3" />
-                            {new Date(property.createdAt!).toLocaleDateString()}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreVerticalIcon className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleViewDetails(property)}
-                              >
-                                <EyeIcon className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setEditingProperty(property);
-                                  setIsEditDialogOpen(true);
-                                }}
-                              >
-                                <EditIcon className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(property._id!)}
-                                className="text-destructive"
-                              >
-                                <TrashIcon className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+              <DataTable
+                data={properties}
+                columns={columns}
+                loading={loading}
+                pagination={{
+                  page: currentPage,
+                  pageSize: pageSize,
+                  total: totalProperties,
+                  onPageChange: handlePageChange,
+                  onPageSizeChange: handlePageSizeChange,
+                }}
+                sorting={{
+                  sortBy: sortBy,
+                  sortDirection: sortDirection,
+                  onSort: handleSort,
+                }}
+                emptyMessage={
+                  searchTerm || statusFilter !== "all" || typeFilter !== "all"
+                    ? "No properties match your filters"
+                    : "No properties found. Add your first property to get started."
+                }
+              />
             </CardContent>
           </Card>
         </div>
