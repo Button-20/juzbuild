@@ -1,6 +1,7 @@
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { BulkPropertyUpload } from "@/components/properties/BulkPropertyUpload";
 import { PropertyForm } from "@/components/properties/PropertyForm";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -297,28 +298,34 @@ export default function PropertiesPage() {
                 Manage your property listings and inventory
               </p>
             </div>
-            <Dialog
-              open={isCreateDialogOpen}
-              onOpenChange={setIsCreateDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button>
-                  <PlusIcon className="mr-2 h-4 w-4" />
-                  Add Property
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Create New Property</DialogTitle>
-                </DialogHeader>
-                <PropertyForm
-                  propertyTypes={propertyTypes}
-                  websiteId={selectedWebsiteId || undefined}
-                  onSuccess={handlePropertySaved}
-                  onCancel={() => setIsCreateDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+            <div className="flex items-center gap-2">
+              <BulkPropertyUpload
+                websiteId={selectedWebsiteId || ""}
+                onUploadComplete={fetchData}
+              />
+              <Dialog
+                open={isCreateDialogOpen}
+                onOpenChange={setIsCreateDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button>
+                    <PlusIcon className="mr-2 h-4 w-4" />
+                    Add Property
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Create New Property</DialogTitle>
+                  </DialogHeader>
+                  <PropertyForm
+                    propertyTypes={propertyTypes}
+                    websiteId={selectedWebsiteId || undefined}
+                    onSuccess={handlePropertySaved}
+                    onCancel={() => setIsCreateDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           {/* Stats Cards */}
