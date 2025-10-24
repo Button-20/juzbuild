@@ -98,7 +98,7 @@ export function BulkPropertyUpload({
     XLSX.utils.book_append_sheet(workbook, worksheet, "Properties");
 
     // Set column widths
-    worksheet['!cols'] = [
+    worksheet["!cols"] = [
       { wch: 20 }, // name
       { wch: 20 }, // slug
       { wch: 40 }, // description

@@ -113,7 +113,8 @@ export async function POST(request: NextRequest) {
 
       try {
         // Map Excel columns to property fields
-        const propertyName = row.name || row.Name || row.title || row.Title || "";
+        const propertyName =
+          row.name || row.Name || row.title || row.Title || "";
         const propertyData = {
           name: propertyName,
           slug: row.slug || row.Slug || generateSlug(propertyName),
