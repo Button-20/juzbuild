@@ -1,5 +1,6 @@
 import { sendContactEmail } from "@/lib/email";
 import { getCollection } from "@/lib/mongodb";
+import { LeadService } from "@/lib/services";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -38,23 +39,41 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = contactSchema.parse(body);
 
+    // Get client information for lead tracking
+    const ipAddress =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+    const userAgent = req.headers.get("user-agent") || "unknown";
+
     // Save contact to database
     try {
       const contactCollection = await getCollection("contacts");
       const contactRecord = {
         ...data,
         createdAt: new Date(),
-        ipAddress:
-          req.headers.get("x-forwarded-for") ||
-          req.headers.get("x-real-ip") ||
-          "unknown",
-        userAgent: req.headers.get("user-agent") || "unknown",
+        ipAddress,
+        userAgent,
         status: "new",
       };
 
       const result = await contactCollection.insertOne(contactRecord);
     } catch (dbError) {
       // Continue with email sending even if database fails
+      console.error("Failed to save contact:", dbError);
+    }
+
+    // Create lead from contact form submission
+    try {
+      await LeadService.createFromContact(
+        data,
+        undefined,
+        ipAddress,
+        userAgent
+      );
+    } catch (leadError) {
+      // Continue even if lead creation fails
+      console.error("Failed to create lead:", leadError);
     }
 
     // Send email notifications

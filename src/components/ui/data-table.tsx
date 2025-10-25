@@ -48,11 +48,11 @@ export interface DataTableProps<T> {
     onPageSizeChange: (pageSize: number) => void;
   };
   sorting?: {
-    sortBy: keyof T | null;
+    sortBy: keyof T;
     sortDirection: SortDirection;
     onSort: (key: keyof T, direction: SortDirection) => void;
   };
-  emptyMessage?: string;
+  emptyMessage?: React.ReactNode;
   className?: string;
 }
 
