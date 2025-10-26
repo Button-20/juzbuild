@@ -133,6 +133,7 @@ export const leadFilterSchema = z.object({
   sortBy: z.string().optional().default("createdAt"),
   sortDirection: z.enum(["asc", "desc"]).default("desc"),
   userId: z.string().optional(),
+  database: z.string().optional(), // Database name to fetch leads from (for multi-tenant access)
 });
 
 export type LeadFilter = z.infer<typeof leadFilterSchema>;

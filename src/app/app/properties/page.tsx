@@ -598,7 +598,7 @@ export default function PropertiesPage() {
                   onPageSizeChange: handlePageSizeChange,
                 }}
                 sorting={{
-                  sortBy: sortBy,
+                  sortBy: sortBy as keyof Property,
                   sortDirection: sortDirection,
                   onSort: handleSort,
                 }}

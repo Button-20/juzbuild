@@ -1,4 +1,5 @@
 import { verifyToken } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { LeadService } from "@/lib/services";
 import { updateLeadSchema } from "@/types/leads";
 import { NextRequest, NextResponse } from "next/server";
@@ -25,8 +26,49 @@ export async function GET(
 
     const userId = decoded.userId;
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
 
-    const lead = await LeadService.findById(id, userId);
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!websiteDatabaseName) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
+
+    const lead = await LeadService.findById(
+      id,
+      websiteDatabaseName ? undefined : userId,
+      websiteDatabaseName || undefined
+    );
 
     if (!lead) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
@@ -63,13 +105,55 @@ export async function PATCH(
 
     const userId = decoded.userId;
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!websiteDatabaseName) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
 
     // Parse and validate request body
     const body = await request.json();
     const validatedData = updateLeadSchema.parse(body);
 
     // Update lead
-    const lead = await LeadService.update(id, validatedData, userId);
+    const lead = await LeadService.update(
+      id,
+      validatedData,
+      websiteDatabaseName ? undefined : userId,
+      websiteDatabaseName || undefined
+    );
 
     if (!lead) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
@@ -126,8 +210,49 @@ export async function DELETE(
 
     const userId = decoded.userId;
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
 
-    const deleted = await LeadService.delete(id, userId);
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!websiteDatabaseName) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
+
+    const deleted = await LeadService.delete(
+      id,
+      websiteDatabaseName ? undefined : userId,
+      websiteDatabaseName || undefined
+    );
 
     if (!deleted) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });

@@ -14,20 +14,32 @@ export class LeadService {
   private static COLLECTION = "leads";
 
   /**
+   * Get the appropriate collection based on database or userId
+   */
+  private static async getCollection(database?: string, userId?: string) {
+    if (database) {
+      // Use specific database when provided (for multi-tenant access)
+      return await getCollection(this.COLLECTION, database);
+    } else if (userId) {
+      // Fallback to user-specific database
+      return await getUserCollection(this.COLLECTION, userId);
+    } else {
+      // Fallback to main database
+      return await getCollection(this.COLLECTION);
+    }
+  }
+
+  /**
    * Create a new lead
    */
   static async create(
     data: CreateLeadData,
     userId?: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
+    database?: string
   ): Promise<Lead> {
-    let collection;
-    if (userId) {
-      collection = await getUserCollection(this.COLLECTION, userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+    const collection = await this.getCollection(database, userId);
 
     const leadData = {
       ...data,
@@ -62,12 +74,10 @@ export class LeadService {
     leads: Lead[];
     total: number;
   }> {
-    let collection;
-    if (filters.userId) {
-      collection = await getUserCollection(this.COLLECTION, filters.userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+    const collection = await this.getCollection(
+      filters.database,
+      filters.userId
+    );
 
     // Build MongoDB query
     const query: any = {};
@@ -148,16 +158,16 @@ export class LeadService {
   /**
    * Find a single lead by ID
    */
-  static async findById(id: string, userId?: string): Promise<Lead | null> {
-    let collection;
-    if (userId) {
-      collection = await getUserCollection(this.COLLECTION, userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+  static async findById(
+    id: string,
+    userId?: string,
+    database?: string
+  ): Promise<Lead | null> {
+    const collection = await this.getCollection(database, userId);
 
     const query: any = { _id: new ObjectId(id) };
-    if (userId) {
+    if (userId && !database) {
+      // Only filter by userId if not using a specific database
       query.userId = userId;
     }
 
@@ -179,17 +189,14 @@ export class LeadService {
   static async update(
     id: string,
     data: UpdateLeadData,
-    userId?: string
+    userId?: string,
+    database?: string
   ): Promise<Lead | null> {
-    let collection;
-    if (userId) {
-      collection = await getUserCollection(this.COLLECTION, userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+    const collection = await this.getCollection(database, userId);
 
     const query: any = { _id: new ObjectId(id) };
-    if (userId) {
+    if (userId && !database) {
+      // Only filter by userId if not using a specific database
       query.userId = userId;
     }
 
@@ -223,16 +230,16 @@ export class LeadService {
   /**
    * Delete a lead
    */
-  static async delete(id: string, userId?: string): Promise<boolean> {
-    let collection;
-    if (userId) {
-      collection = await getUserCollection(this.COLLECTION, userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+  static async delete(
+    id: string,
+    userId?: string,
+    database?: string
+  ): Promise<boolean> {
+    const collection = await this.getCollection(database, userId);
 
     const query: any = { _id: new ObjectId(id) };
-    if (userId) {
+    if (userId && !database) {
+      // Only filter by userId if not using a specific database
       query.userId = userId;
     }
 
@@ -243,16 +250,15 @@ export class LeadService {
   /**
    * Get lead statistics
    */
-  static async getStats(userId?: string): Promise<LeadStats> {
-    let collection;
-    if (userId) {
-      collection = await getUserCollection(this.COLLECTION, userId);
-    } else {
-      collection = await getCollection(this.COLLECTION);
-    }
+  static async getStats(
+    userId?: string,
+    database?: string
+  ): Promise<LeadStats> {
+    const collection = await this.getCollection(database, userId);
 
     const query: any = {};
-    if (userId) {
+    if (userId && !database) {
+      // Only filter by userId if not using a specific database
       query.userId = userId;
     }
 

@@ -1,4 +1,5 @@
 import { verifyToken } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { LeadService } from "@/lib/services";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,8 +20,48 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = decoded.userId;
+    const { searchParams } = new URL(request.url);
 
-    const stats = await LeadService.getStats(userId);
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!websiteDatabaseName) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
+
+    const stats = await LeadService.getStats(
+      websiteDatabaseName ? undefined : userId,
+      websiteDatabaseName || undefined
+    );
 
     return NextResponse.json(stats);
   } catch (error) {

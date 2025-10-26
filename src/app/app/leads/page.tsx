@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
+import { useWebsite } from "@/contexts/website-context";
 import {
   CreateLeadData,
   Lead,
@@ -122,6 +123,12 @@ export default function LeadsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    selectedWebsite,
+    selectedWebsiteId,
+    loading: websiteLoading,
+  } = useWebsite();
+
   const [formData, setFormData] = useState<CreateLeadData>({
     name: "",
     email: "",
@@ -151,6 +158,7 @@ export default function LeadsPage() {
         ...(statusFilter !== "all" && { status: statusFilter }),
         ...(sourceFilter !== "all" && { source: sourceFilter }),
         ...(priorityFilter !== "all" && { priority: priorityFilter }),
+        ...(selectedWebsiteId && { websiteId: selectedWebsiteId }),
       });
 
       const response = await fetch(`/api/leads?${params}`);
@@ -176,12 +184,17 @@ export default function LeadsPage() {
     priorityFilter,
     sortBy,
     sortDirection,
+    selectedWebsiteId,
   ]);
 
   // Fetch lead stats
   const fetchStats = async () => {
     try {
-      const response = await fetch("/api/leads/stats");
+      const params = new URLSearchParams();
+      if (selectedWebsiteId) {
+        params.append("websiteId", selectedWebsiteId);
+      }
+      const response = await fetch(`/api/leads/stats?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch stats");
       }
@@ -194,9 +207,11 @@ export default function LeadsPage() {
   };
 
   useEffect(() => {
-    fetchLeads();
-    fetchStats();
-  }, [fetchLeads]);
+    if (!websiteLoading) {
+      fetchLeads();
+      fetchStats();
+    }
+  }, [fetchLeads, websiteLoading]);
 
   const handleSort = (column: string, direction: SortDirection) => {
     setSortBy(column);
@@ -209,9 +224,18 @@ export default function LeadsPage() {
     setPage(1); // Reset to first page when searching
   };
 
+  // Reset page when database changes
+  useEffect(() => {
+    setPage(1);
+  }, [selectedWebsite]);
+
   const handleStatusUpdate = async (leadId: string, newStatus: LeadStatus) => {
     try {
-      const response = await fetch(`/api/leads/${leadId}`, {
+      const params = new URLSearchParams();
+      if (selectedWebsiteId) {
+        params.append("websiteId", selectedWebsiteId);
+      }
+      const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -252,7 +276,11 @@ export default function LeadsPage() {
     }
 
     try {
-      const response = await fetch(`/api/leads/${leadId}`, {
+      const params = new URLSearchParams();
+      if (selectedWebsiteId) {
+        params.append("websiteId", selectedWebsiteId);
+      }
+      const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "DELETE",
       });
 
@@ -307,7 +335,11 @@ export default function LeadsPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/leads", {
+      const params = new URLSearchParams();
+      if (selectedWebsiteId) {
+        params.append("websiteId", selectedWebsiteId);
+      }
+      const response = await fetch(`/api/leads?${params}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

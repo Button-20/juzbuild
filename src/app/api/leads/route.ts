@@ -1,4 +1,5 @@
 import { verifyToken } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { LeadService } from "@/lib/services";
 import { leadFilterSchema, leadSchema } from "@/types/leads";
 import { NextRequest, NextResponse } from "next/server";
@@ -23,6 +24,48 @@ export async function GET(request: NextRequest) {
     const userId = decoded.userId;
     const { searchParams } = new URL(request.url);
 
+    // Get website ID from query params (from website switcher)
+    const websiteId = searchParams.get("websiteId");
+    let userDomain = searchParams.get("domain");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        userDomain = website.domain;
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!userDomain) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        userDomain = user.domainName + ".juzbuild.com";
+        // Generate database name from user's domain
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        // Fallback to email-based domain
+        userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
+
     // Parse and validate query parameters
     const filterData = {
       status: searchParams.get("status") || undefined,
@@ -38,7 +81,8 @@ export async function GET(request: NextRequest) {
       sortBy: searchParams.get("sortBy") || "createdAt",
       sortDirection:
         (searchParams.get("sortDirection") as "asc" | "desc") || "desc",
-      userId,
+      userId: websiteDatabaseName ? undefined : userId, // Only use userId if no specific database is requested
+      database: websiteDatabaseName, // Use resolved database name
     };
 
     // Validate filters
@@ -90,6 +134,47 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = decoded.userId;
+    const { searchParams } = new URL(request.url);
+
+    // Get website ID from query params
+    const websiteId = searchParams.get("websiteId");
+    let userDomain = searchParams.get("domain");
+    let websiteDatabaseName = null;
+
+    if (websiteId) {
+      // Get the specific website's database name
+      const sitesCollection = await getCollection("sites");
+      const { ObjectId } = require("mongodb");
+      const website = await sitesCollection.findOne({
+        _id: new ObjectId(websiteId),
+        userId: userId,
+      });
+
+      if (website) {
+        userDomain = website.domain;
+        websiteDatabaseName = website.dbName;
+      }
+    }
+
+    // Fallback to user's profile domain if no specific website selected
+    if (!userDomain) {
+      const usersCollection = await getCollection("users");
+      const user = await usersCollection.findOne({ _id: userId });
+      if (user && user.domainName) {
+        userDomain = user.domainName + ".juzbuild.com";
+        const websiteName = user.domainName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${websiteName}`;
+      } else {
+        userDomain = decoded.email?.split("@")[0] + ".juzbuild.com";
+        const emailPrefix = decoded.email
+          ?.split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        websiteDatabaseName = `juzbuild_${emailPrefix}`;
+      }
+    }
 
     // Parse and validate request body
     const body = await request.json();
@@ -107,7 +192,8 @@ export async function POST(request: NextRequest) {
       validatedData,
       userId,
       ipAddress,
-      userAgent
+      userAgent,
+      websiteDatabaseName || undefined
     );
 
     return NextResponse.json(lead, { status: 201 });
