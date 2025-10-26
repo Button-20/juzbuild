@@ -158,7 +158,7 @@ export default function LeadsPage() {
         ...(statusFilter !== "all" && { status: statusFilter }),
         ...(sourceFilter !== "all" && { source: sourceFilter }),
         ...(priorityFilter !== "all" && { priority: priorityFilter }),
-        ...(selectedWebsiteId && { websiteId: selectedWebsiteId }),
+        ...(selectedWebsite?.domain && { domain: selectedWebsite.domain }),
       });
 
       const response = await fetch(`/api/leads?${params}`);
@@ -184,15 +184,15 @@ export default function LeadsPage() {
     priorityFilter,
     sortBy,
     sortDirection,
-    selectedWebsiteId,
+    selectedWebsite,
   ]);
 
   // Fetch lead stats
   const fetchStats = async () => {
     try {
       const params = new URLSearchParams();
-      if (selectedWebsiteId) {
-        params.append("websiteId", selectedWebsiteId);
+      if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
       }
       const response = await fetch(`/api/leads/stats?${params}`);
       if (!response.ok) {
@@ -232,8 +232,8 @@ export default function LeadsPage() {
   const handleStatusUpdate = async (leadId: string, newStatus: LeadStatus) => {
     try {
       const params = new URLSearchParams();
-      if (selectedWebsiteId) {
-        params.append("websiteId", selectedWebsiteId);
+      if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
       }
       const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "PATCH",
@@ -277,8 +277,8 @@ export default function LeadsPage() {
 
     try {
       const params = new URLSearchParams();
-      if (selectedWebsiteId) {
-        params.append("websiteId", selectedWebsiteId);
+      if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
       }
       const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "DELETE",
@@ -336,8 +336,8 @@ export default function LeadsPage() {
 
     try {
       const params = new URLSearchParams();
-      if (selectedWebsiteId) {
-        params.append("websiteId", selectedWebsiteId);
+      if (selectedWebsite?.domain) {
+        params.append("domain", selectedWebsite.domain);
       }
       const response = await fetch(`/api/leads?${params}`, {
         method: "POST",

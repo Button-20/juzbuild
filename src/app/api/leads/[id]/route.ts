@@ -28,17 +28,15 @@ export async function GET(
     const { id } = await params;
     const { searchParams } = new URL(request.url);
 
-    // Get website ID from query params (from website switcher)
-    const websiteId = searchParams.get("websiteId");
+    // Get domain from query params (from website switcher)
+    const domain = searchParams.get("domain");
     let websiteDatabaseName = null;
 
-    if (websiteId) {
-      // Get the specific website's database name
+    if (domain) {
+      // Get the specific website's database name by domain
       const sitesCollection = await getCollection("sites");
-      const { ObjectId } = require("mongodb");
       const website = await sitesCollection.findOne({
-        _id: new ObjectId(websiteId),
-        userId: userId,
+        domain: domain,
       });
 
       if (website) {
