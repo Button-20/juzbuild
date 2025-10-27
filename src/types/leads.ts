@@ -112,10 +112,60 @@ export const leadSchema = z.object({
   nextFollowUpDate: z.string().optional().or(z.literal("")),
 });
 
-export const updateLeadSchema = leadSchema.extend({
-  status: z.nativeEnum(LeadStatus),
-  priority: z.nativeEnum(LeadPriority),
+export const updateLeadSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .optional(),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .max(100, "Email must be less than 100 characters")
+    .optional(),
+  phone: z
+    .string()
+    .max(20, "Phone number must be less than 20 characters")
+    .optional()
+    .or(z.literal("")),
+  company: z
+    .string()
+    .max(100, "Company name must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  source: z.nativeEnum(LeadSource).optional(),
+  status: z.nativeEnum(LeadStatus).optional(),
+  priority: z.nativeEnum(LeadPriority).optional(),
+  subject: z
+    .string()
+    .max(200, "Subject must be less than 200 characters")
+    .optional()
+    .or(z.literal("")),
+  message: z
+    .string()
+    .max(2000, "Message must be less than 2000 characters")
+    .optional()
+    .or(z.literal("")),
+  propertyInterest: z.string().optional().or(z.literal("")),
+  budget: z
+    .string()
+    .max(100, "Budget must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  timeline: z
+    .string()
+    .max(100, "Timeline must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  assignedTo: z.string().optional().or(z.literal("")),
+  tags: z.array(z.string()).optional(),
+  notes: z
+    .string()
+    .max(2000, "Notes must be less than 2000 characters")
+    .optional()
+    .or(z.literal("")),
   lastContactDate: z.string().optional(),
+  nextFollowUpDate: z.string().optional().or(z.literal("")),
 });
 
 // Lead filter schema for API queries

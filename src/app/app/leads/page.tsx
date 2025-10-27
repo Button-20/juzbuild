@@ -58,6 +58,366 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+// Lead Details Form Component
+interface LeadDetailsFormProps {
+  lead: Lead;
+  isEditing: boolean;
+  onClose: () => void;
+  onSave: (updatedLead: Partial<Lead>) => Promise<void>;
+  onCancelEdit: () => void;
+  onEdit: () => void;
+}
+
+function LeadDetailsForm({
+  lead,
+  isEditing,
+  onClose,
+  onSave,
+  onCancelEdit,
+  onEdit,
+}: LeadDetailsFormProps) {
+  const [editFormData, setEditFormData] = useState<Partial<Lead>>(lead);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset form data when lead changes or editing starts
+  useEffect(() => {
+    setEditFormData(lead);
+  }, [lead, isEditing]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      await onSave(editFormData);
+    } catch (error) {
+      // Error is handled in parent
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSave} className="space-y-6">
+      {/* Lead Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+            <Contact className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">{lead.name}</h3>
+            <p className="text-sm text-muted-foreground">{lead.email}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge className={getStatusColor(lead.status)}>
+            {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+          </Badge>
+          <Badge className={getPriorityColor(lead.priority)}>
+            {lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1)}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Basic Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Name</Label>
+          {isEditing ? (
+            <Input
+              id="name"
+              name="name"
+              value={editFormData.name || ""}
+              onChange={handleInputChange}
+              required
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">{lead.name}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          {isEditing ? (
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={editFormData.email || ""}
+              onChange={handleInputChange}
+              required
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.email}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone</Label>
+          {isEditing ? (
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={editFormData.phone || ""}
+              onChange={handleInputChange}
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.phone || "Not provided"}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company">Company</Label>
+          {isEditing ? (
+            <Input
+              id="company"
+              name="company"
+              value={editFormData.company || ""}
+              onChange={handleInputChange}
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.company || "Not provided"}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="source">Lead Source</Label>
+          {isEditing ? (
+            <Select
+              value={editFormData.source || ""}
+              onValueChange={(value) => handleSelectChange("source", value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={LeadSource.CONTACT_FORM}>
+                  Contact Form
+                </SelectItem>
+                <SelectItem value={LeadSource.PROPERTY_INQUIRY}>
+                  Property Inquiry
+                </SelectItem>
+                <SelectItem value={LeadSource.PHONE_CALL}>
+                  Phone Call
+                </SelectItem>
+                <SelectItem value={LeadSource.EMAIL}>Email</SelectItem>
+                <SelectItem value={LeadSource.SOCIAL_MEDIA}>
+                  Social Media
+                </SelectItem>
+                <SelectItem value={LeadSource.REFERRAL}>Referral</SelectItem>
+                <SelectItem value={LeadSource.WEBSITE}>Website</SelectItem>
+                <SelectItem value={LeadSource.ADVERTISEMENT}>
+                  Advertisement
+                </SelectItem>
+                <SelectItem value={LeadSource.OTHER}>Other</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.source
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase())}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="priority">Priority</Label>
+          {isEditing ? (
+            <Select
+              value={editFormData.priority || ""}
+              onValueChange={(value) => handleSelectChange("priority", value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={LeadPriority.LOW}>Low</SelectItem>
+                <SelectItem value={LeadPriority.MEDIUM}>Medium</SelectItem>
+                <SelectItem value={LeadPriority.HIGH}>High</SelectItem>
+                <SelectItem value={LeadPriority.URGENT}>Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Subject and Message */}
+      <div className="space-y-2">
+        <Label htmlFor="subject">Subject</Label>
+        {isEditing ? (
+          <Input
+            id="subject"
+            name="subject"
+            value={editFormData.subject || ""}
+            onChange={handleInputChange}
+          />
+        ) : (
+          <p className="text-sm py-2 px-3 bg-muted rounded-md">
+            {lead.subject || "No subject"}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="message">Message</Label>
+        {isEditing ? (
+          <Textarea
+            id="message"
+            name="message"
+            value={editFormData.message || ""}
+            onChange={handleInputChange}
+            rows={4}
+          />
+        ) : (
+          <p className="text-sm py-2 px-3 bg-muted rounded-md whitespace-pre-wrap">
+            {lead.message}
+          </p>
+        )}
+      </div>
+
+      {/* Additional Details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="budget">Budget</Label>
+          {isEditing ? (
+            <Input
+              id="budget"
+              name="budget"
+              value={editFormData.budget || ""}
+              onChange={handleInputChange}
+              placeholder="e.g., $100k - $200k"
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.budget || "Not specified"}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="timeline">Timeline</Label>
+          {isEditing ? (
+            <Input
+              id="timeline"
+              name="timeline"
+              value={editFormData.timeline || ""}
+              onChange={handleInputChange}
+              placeholder="e.g., 3-6 months"
+            />
+          ) : (
+            <p className="text-sm py-2 px-3 bg-muted rounded-md">
+              {lead.timeline || "Not specified"}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Property Information (if applicable) */}
+      {lead.propertyInterest && (
+        <div className="space-y-2">
+          <Label>Property Interest</Label>
+          <div className="bg-muted p-3 rounded-md">
+            <p className="text-sm">
+              <span className="font-medium">Interested in:</span>{" "}
+              {lead.propertyInterest}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">Internal Notes</Label>
+        {isEditing ? (
+          <Textarea
+            id="notes"
+            name="notes"
+            value={editFormData.notes || ""}
+            onChange={handleInputChange}
+            placeholder="Add internal notes about this lead"
+            rows={3}
+          />
+        ) : (
+          <p className="text-sm py-2 px-3 bg-muted rounded-md whitespace-pre-wrap">
+            {lead.notes || "No notes"}
+          </p>
+        )}
+      </div>
+
+      {/* Timestamps */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+        <div>
+          <span className="font-medium">Created:</span>{" "}
+          {formatDate(lead.createdAt)}
+        </div>
+        <div>
+          <span className="font-medium">Last Updated:</span>{" "}
+          {formatDate(lead.updatedAt)}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2 pt-4 border-t">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Close
+        </Button>
+        {isEditing ? (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditFormData(lead);
+                onCancelEdit();
+              }}
+            >
+              Cancel Edit
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </>
+        ) : (
+          <Button type="button" onClick={onEdit}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Lead
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 // Helper function to format dates
 const formatDate = (date: string | Date) => {
   return new Intl.DateTimeFormat("en-US", {
@@ -739,6 +1099,71 @@ export default function LeadsPage() {
               </Dialog>
             </div>
           </div>
+
+          {/* Lead Details/Edit Dialog */}
+          <Dialog open={showDetails} onOpenChange={setShowDetails}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {isEditing ? "Edit Lead" : "Lead Details"}
+                </DialogTitle>
+              </DialogHeader>
+
+              {selectedLead && (
+                <LeadDetailsForm
+                  lead={selectedLead}
+                  isEditing={isEditing}
+                  onClose={() => {
+                    setShowDetails(false);
+                    setSelectedLead(null);
+                    setIsEditing(false);
+                  }}
+                  onSave={async (updatedLead: Partial<Lead>) => {
+                    try {
+                      const params = new URLSearchParams();
+                      if (selectedWebsite?.domain) {
+                        params.append("domain", selectedWebsite.domain);
+                      }
+                      const response = await fetch(
+                        `/api/leads/${selectedLead._id}?${params}`,
+                        {
+                          method: "PATCH",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify(updatedLead),
+                        }
+                      );
+
+                      if (!response.ok) {
+                        throw new Error("Failed to update lead");
+                      }
+
+                      const savedLead = await response.json();
+
+                      // Update leads list
+                      setLeads((prev) =>
+                        prev.map((lead) =>
+                          lead._id === selectedLead._id ? savedLead : lead
+                        )
+                      );
+
+                      setSelectedLead(savedLead);
+                      setIsEditing(false);
+
+                      toast.success("Lead updated successfully");
+                      fetchStats(); // Refresh stats
+                    } catch (error) {
+                      console.error("Error updating lead:", error);
+                      toast.error("Failed to update lead");
+                    }
+                  }}
+                  onCancelEdit={() => setIsEditing(false)}
+                  onEdit={() => setIsEditing(true)}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Stats Cards */}
           {stats && (
