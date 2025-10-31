@@ -194,9 +194,12 @@ export default function DeploymentPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <a
                   href={(() => {
-                    // Use aliasUrl if available, otherwise fall back to websiteUrl
-                    let url =
-                      deploymentStatus.aliasUrl || deploymentStatus.websiteUrl;
+                    // Priority: Use domain from response first (e.g., devtraco.onjuzbuild.com)
+                    // This is the custom domain configured on Namecheap + Vercel
+                    let url = domainName
+                      ? `${domainName}.onjuzbuild.com`
+                      : deploymentStatus.websiteUrl ||
+                        deploymentStatus.aliasUrl;
 
                     // Return empty string if no URL is available
                     if (!url) return "";
