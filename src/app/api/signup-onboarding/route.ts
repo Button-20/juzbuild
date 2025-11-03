@@ -74,7 +74,9 @@ const userProfileSchema = z.object({
 const onboardingSpecificSchema = z.object({
   // Step 2 - Business Profile
   logoUrl: z.string().optional(), // Cloudinary URL for uploaded logo
-  brandColors: z.array(z.string()).max(3, "Maximum 3 colors allowed"),
+  brandColors: z
+    .array(z.string())
+    .length(4, "Color palette must contain exactly 4 colors"),
 
   // Step 3 - Website Setup
   propertyTypes: z

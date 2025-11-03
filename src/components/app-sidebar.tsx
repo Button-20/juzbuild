@@ -4,9 +4,6 @@ import {
   ArrowUpCircleIcon,
   BarChartIcon,
   ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
   FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
@@ -58,6 +55,11 @@ const data = {
       title: "Testimonials",
       url: "/app/testimonials",
       icon: ClipboardListIcon,
+    },
+    {
+      title: "FAQs",
+      url: "/app/faqs",
+      icon: HelpCircleIcon,
     },
     {
       title: "Analytics",

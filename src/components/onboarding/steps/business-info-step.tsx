@@ -4,28 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { COLOR_PALETTES } from "@/constants/color-palettes";
 import { WizardStepProps } from "@/types/onboarding";
 import {
   ArrowLeft,
+  Check,
   FileText,
   MessageSquare,
   Palette,
   Upload,
 } from "lucide-react";
 import React, { useRef, useState } from "react";
-
-const PRESET_COLORS = [
-  "#3B82F6", // Blue
-  "#EF4444", // Red
-  "#10B981", // Green
-  "#F59E0B", // Amber
-  "#8B5CF6", // Purple
-  "#EC4899", // Pink
-  "#06B6D4", // Cyan
-  "#84CC16", // Lime
-  "#F97316", // Orange
-  "#6366F1", // Indigo
-];
 
 export default function BusinessInfoStep({
   data,
@@ -73,18 +62,39 @@ export default function BusinessInfoStep({
     }
   };
 
-  const handleColorToggle = (color: string) => {
-    const currentColors = data.brandColors || [];
-    if (currentColors.includes(color)) {
+  const handlePaletteSelect = (paletteId: string) => {
+    const palette = COLOR_PALETTES.find((p) => p.id === paletteId);
+    if (palette) {
+      // Store all 4 colors from the palette
       updateData({
-        brandColors: currentColors.filter((c) => c !== color),
-      });
-    } else if (currentColors.length < 3) {
-      updateData({
-        brandColors: [...currentColors, color],
+        brandColors: [
+          palette.colors.primary,
+          palette.colors.skyblue,
+          palette.colors.lightskyblue,
+          palette.colors.dark,
+        ],
       });
     }
   };
+
+  // Determine which palette is currently selected
+  const getSelectedPaletteId = (): string | null => {
+    if (!data.brandColors || data.brandColors.length !== 4) return null;
+
+    for (const palette of COLOR_PALETTES) {
+      if (
+        palette.colors.primary === data.brandColors[0] &&
+        palette.colors.skyblue === data.brandColors[1] &&
+        palette.colors.lightskyblue === data.brandColors[2] &&
+        palette.colors.dark === data.brandColors[3]
+      ) {
+        return palette.id;
+      }
+    }
+    return null;
+  };
+
+  const selectedPaletteId = getSelectedPaletteId();
 
   return (
     <div className="space-y-8">
@@ -153,34 +163,76 @@ export default function BusinessInfoStep({
           )}
         </div>
 
-        {/* Brand Colors */}
-        <div className="space-y-2">
+        {/* Brand Colors - Color Palette Selection */}
+        <div className="space-y-3">
           <Label className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
-            Brand Colors (Select up to 3)
+            Brand Color Palette (Select 1)
           </Label>
-          <div className="grid grid-cols-5 gap-3">
-            {PRESET_COLORS.map((color) => {
-              const isSelected = data.brandColors?.includes(color);
+          <p className="text-sm text-muted-foreground mb-4">
+            Choose a professional color palette for your website. Each palette
+            includes 4 harmonious colors that will be applied throughout your
+            site.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {COLOR_PALETTES.map((palette) => {
+              const isSelected = selectedPaletteId === palette.id;
               return (
                 <button
-                  key={color}
+                  key={palette.id}
                   type="button"
-                  className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                  className={`relative p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                     isSelected
-                      ? "border-primary shadow-lg scale-110"
+                      ? "border-primary shadow-lg ring-2 ring-primary/20"
                       : "border-border hover:border-primary/50"
                   }`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => handleColorToggle(color)}
-                  disabled={!isSelected && (data.brandColors?.length || 0) >= 3}
-                />
+                  onClick={() => handlePaletteSelect(palette.id)}
+                >
+                  {/* Selected checkmark */}
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+
+                  {/* Palette name */}
+                  <div className="text-sm font-semibold mb-3 text-left">
+                    {palette.name}
+                  </div>
+
+                  {/* Color swatches */}
+                  <div className="grid grid-cols-4 gap-2">
+                    <div
+                      className="h-10 rounded border border-border"
+                      style={{ backgroundColor: palette.colors.primary }}
+                      title="Primary"
+                    />
+                    <div
+                      className="h-10 rounded border border-border"
+                      style={{ backgroundColor: palette.colors.skyblue }}
+                      title="Accent 1"
+                    />
+                    <div
+                      className="h-10 rounded border border-border"
+                      style={{ backgroundColor: palette.colors.lightskyblue }}
+                      title="Accent 2"
+                    />
+                    <div
+                      className="h-10 rounded border border-border"
+                      style={{ backgroundColor: palette.colors.dark }}
+                      title="Dark"
+                    />
+                  </div>
+                </button>
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Selected: {data.brandColors?.length || 0}/3 colors
-          </p>
+          {selectedPaletteId && (
+            <p className="text-xs text-muted-foreground mt-2">
+              ✓ Selected:{" "}
+              {COLOR_PALETTES.find((p) => p.id === selectedPaletteId)?.name}
+            </p>
+          )}
         </div>
       </div>
 
