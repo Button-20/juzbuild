@@ -249,12 +249,16 @@ class NamecheapAPI {
       await client.close();
 
       // Convert sites to DNS records
-      const subdomainRecords = sites.map((site) => ({
-        hostName: site.websiteName,
-        recordType: "CNAME",
-        address: `${site.websiteName}.vercel.app`,
-        ttl: "300",
-      }));
+      const subdomainRecords = sites.map((site) => {
+        const siteName =
+          site.websiteName || site.websitename || site.companyName;
+        return {
+          hostName: siteName,
+          recordType: "CNAME",
+          address: `${siteName}.vercel.app`,
+          ttl: "300",
+        };
+      });
 
       // Add default records with URL redirect to juzbuild.com
       const defaultRecords = [
