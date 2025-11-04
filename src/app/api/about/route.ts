@@ -1,3 +1,4 @@
+import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -7,10 +8,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user's website URL from the session/database
-    // For now, we'll need to implement getting the website URL
-    const websiteUrl =
-      process.env.NEXT_PUBLIC_USER_WEBSITE_URL || "http://localhost:3000";
+    // Parse session to get userId
+    const sessionData = JSON.parse(session.value);
+    const userId = sessionData.userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
+
+    // Get user's website URL from the database
+    const sitesCollection = await getCollection("sites");
+    const site = await sitesCollection.findOne({ 
+      userId: userId,
+      status: "active"
+    });
+
+    if (!site || !site.websiteUrl) {
+      return NextResponse.json(
+        { error: "No active website found" },
+        { status: 404 }
+      );
+    }
+
+    const websiteUrl = site.websiteUrl;
 
     const response = await fetch(`${websiteUrl}/api/about`, {
       method: "GET",
@@ -37,9 +57,30 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Parse session to get userId
+    const sessionData = JSON.parse(session.value);
+    const userId = sessionData.userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
+
+    // Get user's website URL from the database
+    const sitesCollection = await getCollection("sites");
+    const site = await sitesCollection.findOne({ 
+      userId: userId,
+      status: "active"
+    });
+
+    if (!site || !site.websiteUrl) {
+      return NextResponse.json(
+        { error: "No active website found" },
+        { status: 404 }
+      );
+    }
+
+    const websiteUrl = site.websiteUrl;
     const body = await req.json();
-    const websiteUrl =
-      process.env.NEXT_PUBLIC_USER_WEBSITE_URL || "http://localhost:3000";
 
     const response = await fetch(`${websiteUrl}/api/about`, {
       method: "PUT",
