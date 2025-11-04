@@ -16,6 +16,19 @@ const createSiteSchema = z.object({
   propertyTypes: z.array(z.string()).min(1),
   includedPages: z.array(z.string()).min(1),
   preferredContactMethod: z.array(z.string()).min(1),
+
+  // Contact Information (optional)
+  phoneNumber: z.string().optional(),
+  supportEmail: z.string().email().optional(),
+  whatsappNumber: z.string().optional(),
+  address: z.string().optional(),
+
+  // Social Media Links (optional)
+  facebookUrl: z.string().url().optional(),
+  twitterUrl: z.string().url().optional(),
+  instagramUrl: z.string().url().optional(),
+  linkedinUrl: z.string().url().optional(),
+  youtubeUrl: z.string().url().optional(),
 });
 
 export async function POST(req: NextRequest) {
