@@ -19,16 +19,16 @@ const createSiteSchema = z.object({
 
   // Contact Information (optional)
   phoneNumber: z.string().optional(),
-  supportEmail: z.string().email().optional(),
+  supportEmail: z.string().email().optional().or(z.literal("")),
   whatsappNumber: z.string().optional(),
   address: z.string().optional(),
 
-  // Social Media Links (optional)
-  facebookUrl: z.string().url().optional(),
-  twitterUrl: z.string().url().optional(),
-  instagramUrl: z.string().url().optional(),
-  linkedinUrl: z.string().url().optional(),
-  youtubeUrl: z.string().url().optional(),
+  // Social Media Links (optional) - accept empty strings or valid URLs
+  facebookUrl: z.string().url().optional().or(z.literal("")),
+  twitterUrl: z.string().url().optional().or(z.literal("")),
+  instagramUrl: z.string().url().optional().or(z.literal("")),
+  linkedinUrl: z.string().url().optional().or(z.literal("")),
+  youtubeUrl: z.string().url().optional().or(z.literal("")),
 });
 
 export async function POST(req: NextRequest) {
