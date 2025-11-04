@@ -204,6 +204,21 @@ export default function AboutManagementPage() {
                     }
                     placeholder="https://example.com/image.jpg"
                   />
+                  {formData.storyImage && (
+                    <div className="mt-2 relative w-full h-48 rounded-lg overflow-hidden border">
+                      <img
+                        src={formData.storyImage}
+                        alt="Story preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "";
+                          e.currentTarget.alt = "Invalid image URL";
+                          e.currentTarget.className =
+                            "w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm";
+                        }}
+                      />
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Leave empty to use the default hero banner image
                   </p>
@@ -325,6 +340,21 @@ export default function AboutManagementPage() {
                         }
                         placeholder="https://example.com/value-image.jpg"
                       />
+                      {value.image && (
+                        <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border">
+                          <img
+                            src={value.image}
+                            alt={`${value.title} preview`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "";
+                              e.currentTarget.alt = "Invalid image URL";
+                              e.currentTarget.className =
+                                "w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm";
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -439,6 +469,21 @@ export default function AboutManagementPage() {
                     }
                     placeholder="https://example.com/cta-background.jpg"
                   />
+                  {formData.ctaImage && (
+                    <div className="mt-2 relative w-full h-48 rounded-lg overflow-hidden border">
+                      <img
+                        src={formData.ctaImage}
+                        alt="CTA background preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "";
+                          e.currentTarget.alt = "Invalid image URL";
+                          e.currentTarget.className =
+                            "w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm";
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
