@@ -23,14 +23,15 @@ export async function GET(req: NextRequest) {
       status: "active"
     });
 
-    if (!site || !site.websiteUrl) {
+    if (!site) {
       return NextResponse.json(
         { error: "No active website found" },
         { status: 404 }
       );
     }
 
-    const websiteUrl = site.websiteUrl;
+    // Use websiteUrl if available, otherwise construct from domain
+    const websiteUrl = site.websiteUrl || `https://${site.domain}`;
 
     const response = await fetch(`${websiteUrl}/api/about`, {
       method: "GET",
@@ -71,14 +72,15 @@ export async function PUT(req: NextRequest) {
       status: "active"
     });
 
-    if (!site || !site.websiteUrl) {
+    if (!site) {
       return NextResponse.json(
         { error: "No active website found" },
         { status: 404 }
       );
     }
 
-    const websiteUrl = site.websiteUrl;
+    // Use websiteUrl if available, otherwise construct from domain
+    const websiteUrl = site.websiteUrl || `https://${site.domain}`;
     const body = await req.json();
 
     const response = await fetch(`${websiteUrl}/api/about`, {
