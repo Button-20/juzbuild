@@ -59,7 +59,7 @@ class VercelAPI {
         },
         framework: "nextjs" as const,
         buildCommand: "npm run build",
-        devCommand: "npm run dev",
+        devCommand: "npm start",
         outputDirectory: ".next",
         installCommand: "npm i -f",
       },
@@ -70,7 +70,7 @@ class VercelAPI {
       name: result.name!,
       accountId: result.accountId!,
       framework: result.framework || framework,
-      devCommand: result.devCommand || "npm run dev",
+      devCommand: result.devCommand || "npm start",
       buildCommand: result.buildCommand || "npm run build",
       outputDirectory: result.outputDirectory || ".next",
     };
