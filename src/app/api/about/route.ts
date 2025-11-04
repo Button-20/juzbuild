@@ -1,20 +1,20 @@
+import { verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = req.cookies.get("auth-token");
-    if (!session) {
+    const token = req.cookies.get("auth-token")?.value;
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse session to get userId
-    const sessionData = JSON.parse(session.value);
-    const userId = sessionData.userId;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
+
+    const userId = decoded.userId;
 
     // Get user's website URL from the database
     const sitesCollection = await getCollection("sites");
@@ -52,18 +52,17 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = req.cookies.get("auth-token");
-    if (!session) {
+    const token = req.cookies.get("auth-token")?.value;
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse session to get userId
-    const sessionData = JSON.parse(session.value);
-    const userId = sessionData.userId;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
+
+    const userId = decoded.userId;
 
     // Get user's website URL from the database
     const sitesCollection = await getCollection("sites");
