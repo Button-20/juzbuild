@@ -7,6 +7,7 @@ import {
   FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
+  InfoIcon,
   LayoutDashboardIcon,
   SettingsIcon,
   TagIcon,
@@ -60,6 +61,11 @@ const data = {
       title: "FAQs",
       url: "/app/faqs",
       icon: HelpCircleIcon,
+    },
+    {
+      title: "About Page",
+      url: "/app/about",
+      icon: InfoIcon,
     },
     {
       title: "Analytics",
