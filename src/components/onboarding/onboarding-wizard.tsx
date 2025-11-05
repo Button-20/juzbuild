@@ -74,7 +74,8 @@ export default function OnboardingWizard({
     propertyTypes: [],
     includedPages: [],
     adsConnections: [],
-    leadCapturePreference: [],
+    leadCaptureMethods: [],
+    geminiApiKey: "",
     preferredContactMethod: [],
     selectedPlan: "pro", // Default to Pro plan
     billingCycle: "yearly", // Default to yearly billing
@@ -176,12 +177,15 @@ export default function OnboardingWizard({
             data.selectedTheme.trim() &&
             data.includedPages?.length &&
             data.includedPages.length > 0 &&
-            data.leadCapturePreference?.length &&
-            data.leadCapturePreference.length > 0 &&
+            data.leadCaptureMethods?.length &&
+            data.leadCaptureMethods.length > 0 &&
+            // If AI Chatbot is selected, geminiApiKey is required
+            (!data.leadCaptureMethods.includes("AI Chatbot") || data.geminiApiKey?.trim()) &&
             !errors.propertyTypes &&
             !errors.selectedTheme &&
             !errors.includedPages &&
-            !errors.leadCapturePreference
+            !errors.leadCaptureMethods &&
+            !errors.geminiApiKey
           );
           break;
 
@@ -350,9 +354,16 @@ export default function OnboardingWizard({
         if (!formData.includedPages?.length)
           newErrors.includedPages = "Select at least one page";
 
-        if (!formData.leadCapturePreference?.length)
-          newErrors.leadCapturePreference =
+        if (!formData.leadCaptureMethods?.length)
+          newErrors.leadCaptureMethods =
             "Select at least one lead capture method";
+
+        // If AI Chatbot is selected, geminiApiKey is required
+        if (
+          formData.leadCaptureMethods?.includes("AI Chatbot") &&
+          !formData.geminiApiKey?.trim()
+        )
+          newErrors.geminiApiKey = "Gemini API key is required when AI Chatbot is selected";
         break;
 
       case 3: // Marketing Setup Step - Only preferred contact method is required

@@ -61,10 +61,10 @@ const AVAILABLE_PAGES = [
 
 const LEAD_CAPTURE_OPTIONS = [
   {
-    value: "Contact Form",
-    name: "Contact Form",
-    description: "Traditional contact form with fields",
-    icon: "📝",
+    value: "AI Chatbot",
+    name: "AI Chatbot",
+    description: "AI-powered chatbot for instant responses",
+    icon: "🤖",
   },
   {
     value: "WhatsApp",
@@ -73,10 +73,16 @@ const LEAD_CAPTURE_OPTIONS = [
     icon: "💬",
   },
   {
-    value: "Email Only",
-    name: "Email Only",
-    description: "Simple email link for inquiries",
-    icon: "📧",
+    value: "Contact Form",
+    name: "Contact Form",
+    description: "Traditional contact form with fields",
+    icon: "📝",
+  },
+  {
+    value: "Inquiry Form",
+    name: "Inquiry Form",
+    description: "Property-specific inquiry forms",
+    icon: "�",
   },
 ];
 
@@ -145,18 +151,20 @@ export default function WebsiteSetupStep({
   };
 
   const handleLeadCaptureToggle = (option: string) => {
-    const currentSelection = data.leadCapturePreference || [];
+    const currentSelection = data.leadCaptureMethods || [];
     const isSelected = currentSelection.includes(option as any);
 
     if (isSelected) {
       updateData({
-        leadCapturePreference: currentSelection.filter(
+        leadCaptureMethods: currentSelection.filter(
           (item) => item !== option
         ),
+        // Clear API key if AI Chatbot is deselected
+        ...(option === "AI Chatbot" ? { geminiApiKey: "" } : {}),
       });
     } else {
       updateData({
-        leadCapturePreference: [...currentSelection, option as any],
+        leadCaptureMethods: [...currentSelection, option as any],
       });
     }
   };
@@ -464,10 +472,10 @@ export default function WebsiteSetupStep({
             <MessageCircle className="w-4 h-4" />
             Lead Capture Methods (Select all that apply) *
           </Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {LEAD_CAPTURE_OPTIONS.map((option) => {
               const isSelected =
-                data.leadCapturePreference?.includes(option.value as any) ||
+                data.leadCaptureMethods?.includes(option.value as any) ||
                 false;
               return (
                 <button
@@ -483,20 +491,66 @@ export default function WebsiteSetupStep({
                   <p className="text-sm text-muted-foreground">
                     {option.description}
                   </p>
+                  {isSelected && (
+                    <div className="mt-2 flex items-center gap-2 text-primary">
+                      <Check className="w-4 h-4" />
+                      <span className="text-sm font-medium">Selected</span>
+                    </div>
+                  )}
                 </button>
               );
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            Selected: {data.leadCapturePreference?.length || 0} method
-            {data.leadCapturePreference?.length === 1 ? "" : "s"}
+            Selected: {data.leadCaptureMethods?.length || 0} method
+            {data.leadCaptureMethods?.length === 1 ? "" : "s"}
           </p>
-          {errors.leadCapturePreference && (
+          {errors.leadCaptureMethods && (
             <p className="text-destructive text-sm">
-              {errors.leadCapturePreference}
+              {errors.leadCaptureMethods}
             </p>
           )}
         </div>
+
+        {/* Gemini API Key Input - Shown only when AI Chatbot is selected */}
+        {data.leadCaptureMethods?.includes("AI Chatbot") && (
+          <div className="space-y-4 p-6 border-2 border-primary/20 rounded-lg bg-primary/5">
+            <div className="space-y-2">
+              <Label htmlFor="geminiApiKey" className="text-base font-semibold">
+                🔑 Gemini API Key *
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Required to enable the AI chatbot on your website
+              </p>
+              <input
+                id="geminiApiKey"
+                type="text"
+                value={data.geminiApiKey || ""}
+                onChange={(e) => updateData({ geminiApiKey: e.target.value })}
+                placeholder="Enter your Gemini API key"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              {errors.geminiApiKey && (
+                <p className="text-destructive text-sm">{errors.geminiApiKey}</p>
+              )}
+            </div>
+            <div className="space-y-2 text-sm bg-background p-4 rounded-lg border">
+              <p className="font-semibold">How to get your Gemini API Key:</p>
+              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">Google AI Studio</a></li>
+                <li>Sign in with your Google account</li>
+                <li>Click on "Get API Key" or "Create API Key"</li>
+                <li>Copy the generated API key and paste it above</li>
+              </ol>
+              <p className="text-xs mt-2">
+                Note: The API key is free to use with generous quotas. Learn more at{" "}
+                <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
+                  ai.google.dev
+                </a>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

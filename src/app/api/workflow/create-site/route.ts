@@ -16,6 +16,8 @@ const createSiteSchema = z.object({
   propertyTypes: z.array(z.string()).min(1),
   includedPages: z.array(z.string()).min(1),
   preferredContactMethod: z.array(z.string()).min(1),
+  leadCaptureMethods: z.array(z.string()).optional(),
+  geminiApiKey: z.string().optional(),
 
   // Contact Information (optional)
   phoneNumber: z.string().optional(),

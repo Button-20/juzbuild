@@ -181,7 +181,8 @@ export async function POST(req: NextRequest) {
         brandColors: data.brandColors,
         propertyTypes: data.propertyTypes,
         includedPages: data.includedPages,
-        leadCapturePreference: data.leadCapturePreference,
+        leadCaptureMethods: data.leadCaptureMethods,
+        geminiApiKey: data.geminiApiKey,
         adsConnections: data.adsConnections,
         preferredContactMethod: data.preferredContactMethod,
         agreeToTerms: data.agreeToTerms,
@@ -225,6 +226,8 @@ export async function POST(req: NextRequest) {
           propertyTypes: data.propertyTypes,
           includedPages: data.includedPages,
           preferredContactMethod: data.preferredContactMethod,
+          leadCaptureMethods: data.leadCaptureMethods,
+          geminiApiKey: data.geminiApiKey,
 
           // Contact Information
           phoneNumber: data.phoneNumber,
