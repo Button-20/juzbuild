@@ -43,6 +43,16 @@ const data = {
       icon: LayoutDashboardIcon,
     },
     {
+      title: "Leads",
+      url: "/app/leads",
+      icon: UsersIcon,
+    },
+    {
+      title: "Analytics",
+      url: "/app/analytics",
+      icon: BarChartIcon,
+    },
+    {
       title: "Properties",
       url: "/app/properties",
       icon: FolderIcon,
@@ -52,42 +62,17 @@ const data = {
       url: "/app/property-types",
       icon: TagIcon,
     },
-    {
-      title: "Testimonials",
-      url: "/app/testimonials",
-      icon: ClipboardListIcon,
-    },
-    {
-      title: "FAQs",
-      url: "/app/faqs",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "About Page",
-      url: "/app/about",
-      icon: InfoIcon,
-    },
-    {
-      title: "Analytics",
-      url: "/app/analytics",
-      icon: BarChartIcon,
-    },
-    {
-      title: "Leads",
-      url: "/app/leads",
-      icon: UsersIcon,
-    },
   ],
   navSecondary: [
-    {
-      title: "Profile",
-      url: "/app/profile",
-      icon: UsersIcon,
-    },
     {
       title: "Settings",
       url: "/app/settings",
       icon: SettingsIcon,
+    },
+    {
+      title: "Profile",
+      url: "/app/profile",
+      icon: UsersIcon,
     },
     {
       title: "Get Help",
@@ -105,6 +90,23 @@ const data = {
       name: "Authors",
       url: "/app/blog/authors",
       icon: UsersIcon,
+    },
+  ],
+  content: [
+    {
+      name: "About Page",
+      url: "/app/about",
+      icon: InfoIcon,
+    },
+    {
+      name: "Testimonials",
+      url: "/app/testimonials",
+      icon: ClipboardListIcon,
+    },
+    {
+      name: "FAQs",
+      url: "/app/faqs",
+      icon: HelpCircleIcon,
     },
   ],
 };
@@ -129,6 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavBlog items={data.content} title="Content" />
         <NavBlog items={data.blog} title="Blog" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
