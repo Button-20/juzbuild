@@ -1,6 +1,5 @@
 "use client";
 
-import Icons from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -318,10 +317,7 @@ export default function BusinessInfoStep({
 
           {/* WhatsApp Number */}
           <div className="space-y-2">
-            <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
-              <Icons.whatsapp className="w-4 h-4 text-emerald-500" />
-              WhatsApp Number
-            </Label>
+            <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
             <Input
               id="whatsappNumber"
               type="tel"
