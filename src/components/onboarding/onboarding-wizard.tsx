@@ -180,7 +180,8 @@ export default function OnboardingWizard({
             data.leadCaptureMethods?.length &&
             data.leadCaptureMethods.length > 0 &&
             // If AI Chatbot is selected, geminiApiKey is required
-            (!data.leadCaptureMethods.includes("AI Chatbot") || data.geminiApiKey?.trim()) &&
+            (!data.leadCaptureMethods.includes("AI Chatbot") ||
+              data.geminiApiKey?.trim()) &&
             !errors.propertyTypes &&
             !errors.selectedTheme &&
             !errors.includedPages &&
@@ -363,7 +364,8 @@ export default function OnboardingWizard({
           formData.leadCaptureMethods?.includes("AI Chatbot") &&
           !formData.geminiApiKey?.trim()
         )
-          newErrors.geminiApiKey = "Gemini API key is required when AI Chatbot is selected";
+          newErrors.geminiApiKey =
+            "Gemini API key is required when AI Chatbot is selected";
         break;
 
       case 3: // Marketing Setup Step - Only preferred contact method is required

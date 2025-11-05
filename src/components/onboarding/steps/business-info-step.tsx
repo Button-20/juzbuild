@@ -1,12 +1,12 @@
 "use client";
 
+import Icons from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { COLOR_PALETTES } from "@/constants/color-palettes";
 import { WizardStepProps } from "@/types/onboarding";
-import Icons from "@/components/global/icons";
 import {
   ArrowLeft,
   Check,

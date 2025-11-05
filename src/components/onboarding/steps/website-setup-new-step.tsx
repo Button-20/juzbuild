@@ -1,15 +1,17 @@
 "use client";
 
+import Icons from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WebsiteTheme, WizardStepProps } from "@/types/onboarding";
-import Icons from "@/components/global/icons";
 import {
   ArrowLeft,
   Check,
   FileText,
   Home,
+  Key,
   Layout,
   MessageCircle,
   Palette,
@@ -71,7 +73,7 @@ const LEAD_CAPTURE_OPTIONS = [
     value: "WhatsApp",
     name: "WhatsApp",
     description: "Direct WhatsApp integration",
-    icon: <Icons.whatsapp className="w-12 h-12 text-emerald-500" />,
+    icon: <Icons.whatsapp className="w-10 h-10 text-emerald-500" />,
   },
   {
     value: "Contact Form",
@@ -157,9 +159,7 @@ export default function WebsiteSetupStep({
 
     if (isSelected) {
       updateData({
-        leadCaptureMethods: currentSelection.filter(
-          (item) => item !== option
-        ),
+        leadCaptureMethods: currentSelection.filter((item) => item !== option),
         // Clear API key if AI Chatbot is deselected
         ...(option === "AI Chatbot" ? { geminiApiKey: "" } : {}),
       });
@@ -476,8 +476,7 @@ export default function WebsiteSetupStep({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {LEAD_CAPTURE_OPTIONS.map((option) => {
               const isSelected =
-                data.leadCaptureMethods?.includes(option.value as any) ||
-                false;
+                data.leadCaptureMethods?.includes(option.value as any) || false;
               return (
                 <button
                   key={option.value}
@@ -487,7 +486,9 @@ export default function WebsiteSetupStep({
                     isSelected ? "border-primary bg-primary/5" : "border-border"
                   }`}
                 >
-                  <div className="text-3xl mb-2 flex items-center justify-start">{option.icon}</div>
+                  <div className="text-3xl mb-2 flex items-center justify-start">
+                    {option.icon}
+                  </div>
                   <h4 className="font-semibold mb-1">{option.name}</h4>
                   <p className="text-sm text-muted-foreground">
                     {option.description}
@@ -515,40 +516,65 @@ export default function WebsiteSetupStep({
 
         {/* Gemini API Key Input - Shown only when AI Chatbot is selected */}
         {data.leadCaptureMethods?.includes("AI Chatbot") && (
-          <div className="space-y-4 p-6 border-2 border-primary/20 rounded-lg bg-primary/5">
-            <div className="space-y-2">
-              <Label htmlFor="geminiApiKey" className="text-base font-semibold">
-                🔑 Gemini API Key *
-              </Label>
+          <div className="space-y-6">
+            <div className="border-l-4 border-primary pl-4">
+              <h3 className="text-lg font-semibold mb-1">AI Configuration</h3>
               <p className="text-sm text-muted-foreground">
-                Required to enable the AI chatbot on your website
+                Configure your AI chatbot settings
               </p>
-              <input
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="geminiApiKey" className="flex items-center gap-2">
+                <Key className="w-4 h-4" />
+                Gemini API Key *
+              </Label>
+              <Input
                 id="geminiApiKey"
                 type="text"
+                placeholder="Enter your Gemini API key"
                 value={data.geminiApiKey || ""}
                 onChange={(e) => updateData({ geminiApiKey: e.target.value })}
-                placeholder="Enter your Gemini API key"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`h-12 ${
+                  errors.geminiApiKey ? "border-destructive" : ""
+                }`}
               />
               {errors.geminiApiKey && (
-                <p className="text-destructive text-sm">{errors.geminiApiKey}</p>
+                <p className="text-destructive text-sm">
+                  {errors.geminiApiKey}
+                </p>
               )}
-            </div>
-            <div className="space-y-2 text-sm bg-background p-4 rounded-lg border">
-              <p className="font-semibold">How to get your Gemini API Key:</p>
-              <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                <li>Visit <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">Google AI Studio</a></li>
-                <li>Sign in with your Google account</li>
-                <li>Click on "Get API Key" or "Create API Key"</li>
-                <li>Copy the generated API key and paste it above</li>
-              </ol>
-              <p className="text-xs mt-2">
-                Note: The API key is free to use with generous quotas. Learn more at{" "}
-                <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">
-                  ai.google.dev
-                </a>
-              </p>
+              <div className="text-sm bg-muted/50 p-4 rounded-lg border space-y-2">
+                <p className="font-medium">How to get your Gemini API Key:</p>
+                <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                  <li>
+                    Visit{" "}
+                    <a
+                      href="https://makersuite.google.com/app/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:no-underline"
+                    >
+                      Google AI Studio
+                    </a>
+                  </li>
+                  <li>Sign in with your Google account</li>
+                  <li>Click on "Get API Key" or "Create API Key"</li>
+                  <li>Copy the generated API key and paste it above</li>
+                </ol>
+                <p className="text-xs mt-2">
+                  Note: The API key is free to use with generous quotas. Learn
+                  more at{" "}
+                  <a
+                    href="https://ai.google.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                  >
+                    ai.google.dev
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         )}
