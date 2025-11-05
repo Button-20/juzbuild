@@ -48,7 +48,7 @@ const CONTACT_METHODS = [
     value: "WhatsApp",
     name: "WhatsApp",
     description: "Instant messaging for quick responses",
-    icon: MessageCircle,
+    icon: Icons.whatsapp,
     color: "text-emerald-500",
   },
 ];

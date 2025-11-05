@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { WebsiteTheme, WizardStepProps } from "@/types/onboarding";
+import Icons from "@/components/global/icons";
 import {
   ArrowLeft,
   Check,
@@ -70,7 +71,7 @@ const LEAD_CAPTURE_OPTIONS = [
     value: "WhatsApp",
     name: "WhatsApp",
     description: "Direct WhatsApp integration",
-    icon: "💬",
+    icon: <Icons.whatsapp className="w-12 h-12 text-emerald-500" />,
   },
   {
     value: "Contact Form",
@@ -486,7 +487,7 @@ export default function WebsiteSetupStep({
                     isSelected ? "border-primary bg-primary/5" : "border-border"
                   }`}
                 >
-                  <div className="text-3xl mb-2">{option.icon}</div>
+                  <div className="text-3xl mb-2 flex items-center justify-start">{option.icon}</div>
                   <h4 className="font-semibold mb-1">{option.name}</h4>
                   <p className="text-sm text-muted-foreground">
                     {option.description}
