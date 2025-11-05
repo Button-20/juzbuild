@@ -84,7 +84,7 @@ const onboardingSpecificSchema = z.object({
     .min(1, "Select at least one property type"),
   includedPages: z.array(z.string()).min(1, "Select at least one page"),
   leadCaptureMethods: z
-    .array(z.enum(["AI Chatbot", "WhatsApp", "Contact Form", "Inquiry Form"]))
+    .array(z.enum(["AI Chatbot", "Contact Form", "Inquiry Form"]))
     .min(1, "Select at least one lead capture method"),
   geminiApiKey: z.string().optional(),
 

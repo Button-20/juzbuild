@@ -49,12 +49,7 @@ export interface OnboardingSpecificData {
   // Website setup preferences (used for website generation)
   propertyTypes: string[];
   includedPages: string[];
-  leadCaptureMethods: (
-    | "AI Chatbot"
-    | "WhatsApp"
-    | "Contact Form"
-    | "Inquiry Form"
-  )[];
+  leadCaptureMethods: ("AI Chatbot" | "Contact Form" | "Inquiry Form")[];
   geminiApiKey?: string; // Required if AI Chatbot is selected
 
   // Marketing setup (used for integrations)

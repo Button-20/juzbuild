@@ -70,12 +70,6 @@ const LEAD_CAPTURE_OPTIONS = [
     icon: "🤖",
   },
   {
-    value: "WhatsApp",
-    name: "WhatsApp",
-    description: "Direct WhatsApp integration",
-    icon: <Icons.whatsapp className="w-10 h-10 text-emerald-500" />,
-  },
-  {
     value: "Contact Form",
     name: "Contact Form",
     description: "Traditional contact form with fields",
@@ -85,7 +79,7 @@ const LEAD_CAPTURE_OPTIONS = [
     value: "Inquiry Form",
     name: "Inquiry Form",
     description: "Property-specific inquiry forms",
-    icon: "�",
+    icon: "📋",
   },
 ];
 
