@@ -10,7 +10,7 @@ const userProfileSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email is required").toLowerCase(),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  phoneNumber: z.string().optional(),
+  phoneNumber: z.string().min(10, "Phone number is required"),
   companyName: z.string().min(2, "Business name is required"),
   domainName: z
     .string()
@@ -20,7 +20,7 @@ const userProfileSchema = z.object({
       "Domain name can only contain letters, numbers, and hyphens"
     ),
   country: z.string().min(2, "Country is required"),
-  city: z.string().min(2, "City is required"),
+  city: z.string().min(2, "City is required");
 
   // Step 2 - Business Profile
   tagline: z.string().min(2, "Tagline is required"),

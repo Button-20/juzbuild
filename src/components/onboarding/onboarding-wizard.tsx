@@ -127,6 +127,7 @@ export default function OnboardingWizard({
               data.fullName?.trim() &&
               data.email?.trim() &&
               /\S+@\S+\.\S+/.test(data.email) &&
+              data.phoneNumber?.trim() &&
               data.password?.trim() &&
               data.password.length >= 8 &&
               // Business Information
@@ -141,6 +142,7 @@ export default function OnboardingWizard({
               !errors.email &&
               !errors.domainName &&
               !errors.fullName &&
+              !errors.phoneNumber &&
               !errors.password &&
               !errors.companyName &&
               !errors.country &&
@@ -253,6 +255,11 @@ export default function OnboardingWizard({
         if (!formData.email?.trim()) newErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(formData.email))
           newErrors.email = "Email is invalid";
+
+        if (!formData.phoneNumber?.trim())
+          newErrors.phoneNumber = "Phone number is required";
+        else if (formData.phoneNumber.trim().length < 10)
+          newErrors.phoneNumber = "Phone number must be at least 10 characters";
 
         if (!formData.password?.trim())
           newErrors.password = "Password is required";

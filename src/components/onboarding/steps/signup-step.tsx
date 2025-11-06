@@ -20,6 +20,7 @@ import {
   Lock,
   Mail,
   MapPin,
+  Phone,
   User,
 } from "lucide-react";
 import React from "react";
@@ -176,6 +177,27 @@ export default function SignupStep({
               !isValidatingEmail && (
                 <p className="text-green-600 text-sm">✓ Email is available</p>
               )}
+          </div>
+
+          {/* Phone Number */}
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+              <Phone className="w-4 h-4" />
+              Phone Number *
+            </Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              placeholder="+1 (555) 000-0000"
+              value={data.phoneNumber || ""}
+              onChange={(e) => updateData({ phoneNumber: e.target.value })}
+              className={`h-12 ${
+                errors.phoneNumber ? "border-destructive" : ""
+              }`}
+            />
+            {errors.phoneNumber && (
+              <p className="text-destructive text-sm">{errors.phoneNumber}</p>
+            )}
           </div>
 
           {/* Password */}

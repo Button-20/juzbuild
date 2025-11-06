@@ -16,7 +16,7 @@ export interface UserProfileData {
   fullName: string;
   email: string;
   password: string;
-  phoneNumber?: string;
+  phoneNumber: string;
   companyName: string;
   domainName: string;
   country: string;
