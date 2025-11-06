@@ -9,7 +9,9 @@ import {
   HelpCircleIcon,
   InfoIcon,
   LayoutDashboardIcon,
+  ScrollTextIcon,
   SettingsIcon,
+  ShieldCheckIcon,
   TagIcon,
   UsersIcon,
 } from "lucide-react";
@@ -109,6 +111,18 @@ const data = {
       icon: HelpCircleIcon,
     },
   ],
+  legal: [
+    {
+      name: "Privacy Policy",
+      url: "/app/privacy-policy",
+      icon: ShieldCheckIcon,
+    },
+    {
+      name: "Terms of Service",
+      url: "/app/terms-of-service",
+      icon: ScrollTextIcon,
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -133,6 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavBlog items={data.content} title="Content" />
         <NavBlog items={data.blog} title="Blog" />
+        <NavBlog items={data.legal} title="Legal" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
