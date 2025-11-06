@@ -20,7 +20,7 @@ const userProfileSchema = z.object({
       "Domain name can only contain letters, numbers, and hyphens"
     ),
   country: z.string().min(2, "Country is required"),
-  city: z.string().min(2, "City is required");
+  city: z.string().min(2, "City is required"),
 
   // Step 2 - Business Profile
   tagline: z.string().min(2, "Tagline is required"),
