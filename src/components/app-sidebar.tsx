@@ -6,6 +6,7 @@ import {
   ClipboardListIcon,
   FileTextIcon,
   FolderIcon,
+  GlobeIcon,
   HelpCircleIcon,
   InfoIcon,
   LayoutDashboardIcon,
@@ -43,6 +44,11 @@ const data = {
       title: "Dashboard",
       url: "/app/dashboard",
       icon: LayoutDashboardIcon,
+    },
+    {
+      title: "Domain",
+      url: "/app/domain",
+      icon: GlobeIcon,
     },
     {
       title: "Leads",
