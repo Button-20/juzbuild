@@ -40,21 +40,22 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Fetch GA4 detailed metrics if measurement ID exists
+      // Fetch GA4 detailed metrics if property ID or measurement ID exists
       let chartData: any = {
         dailyTrends: [],
         trafficSources: [],
         deviceBreakdown: [],
       };
 
-      if (website.ga4MeasurementId) {
+      if (website.ga4PropertyId) {
         try {
           // Fetch all detailed data in parallel
-          const [dailyTrends, trafficSources, deviceBreakdown] = await Promise.all([
-            fetchGA4DailyTrends(website.ga4MeasurementId),
-            fetchGA4TrafficSources(website.ga4MeasurementId),
-            fetchGA4DeviceBreakdown(website.ga4MeasurementId),
-          ]);
+          const [dailyTrends, trafficSources, deviceBreakdown] =
+            await Promise.all([
+              fetchGA4DailyTrends(website.ga4PropertyId),
+              fetchGA4TrafficSources(website.ga4PropertyId),
+              fetchGA4DeviceBreakdown(website.ga4PropertyId),
+            ]);
 
           chartData = {
             dailyTrends: dailyTrends,
@@ -63,6 +64,28 @@ export async function GET(request: NextRequest) {
           };
         } catch (error) {
           console.error("Failed to fetch detailed GA4 data:", error);
+          // Continue without chart data
+        }
+      } else if (website.ga4MeasurementId) {
+        try {
+          // Fetch all detailed data in parallel
+          const [dailyTrends, trafficSources, deviceBreakdown] =
+            await Promise.all([
+              fetchGA4DailyTrends(website.ga4MeasurementId),
+              fetchGA4TrafficSources(website.ga4MeasurementId),
+              fetchGA4DeviceBreakdown(website.ga4MeasurementId),
+            ]);
+
+          chartData = {
+            dailyTrends: dailyTrends,
+            trafficSources: trafficSources,
+            deviceBreakdown: deviceBreakdown,
+          };
+        } catch (error) {
+          console.error(
+            "Failed to fetch detailed GA4 data: Measurement ID requires Property ID. Please update your site configuration.",
+            error
+          );
           // Continue without detailed data
         }
       }

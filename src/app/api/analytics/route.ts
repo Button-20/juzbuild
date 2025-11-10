@@ -35,13 +35,30 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Fetch GA4 metrics if measurement ID exists
+      // Fetch theme name from themes collection
+      const themesCollection = db.collection("themes");
+      const theme = await themesCollection.findOne({
+        _id: new ObjectId(website.theme),
+      });
+      const themeName = theme?.name || website.theme;
+
+      // Fetch GA4 metrics if property ID or measurement ID exists
       let gaMetrics: any = null;
-      if (website.ga4MeasurementId) {
+      if (website.ga4PropertyId) {
+        try {
+          gaMetrics = await fetchGA4Report(website.ga4PropertyId);
+        } catch (error) {
+          console.error("Failed to fetch GA4 metrics:", error);
+          // Continue without GA metrics
+        }
+      } else if (website.ga4MeasurementId) {
         try {
           gaMetrics = await fetchGA4Report(website.ga4MeasurementId);
         } catch (error) {
-          console.error("Failed to fetch GA4 metrics:", error);
+          console.error(
+            "Failed to fetch GA4 metrics: Measurement ID requires Property ID. Please update your site configuration.",
+            error
+          );
           // Continue without GA metrics
         }
       }
@@ -97,12 +114,13 @@ export async function GET(request: NextRequest) {
           name: website.websiteName,
           company: website.companyName,
           domain: website.domain,
-          theme: website.theme,
+          theme: themeName,
           status: website.status,
           createdAt: website.createdAt,
         },
         googleAnalytics: {
           measurementId: website.ga4MeasurementId || null,
+          propertyId: website.ga4PropertyId || null,
           ...(gaMetrics && {
             metrics: {
               users: gaMetrics.users,

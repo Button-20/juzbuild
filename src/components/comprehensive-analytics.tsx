@@ -38,6 +38,7 @@ interface AnalyticsData {
   };
   googleAnalytics: {
     measurementId: string | null;
+    propertyId?: string | null;
     metrics?: {
       users: number;
       newUsers: number;
@@ -491,6 +492,14 @@ export function ComprehensiveAnalytics() {
                 </p>
                 <p className="text-xs font-mono">
                   {analytics.googleAnalytics.measurementId || "Not configured"}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">
+                  GA4 Property ID
+                </p>
+                <p className="text-xs font-mono">
+                  {analytics.googleAnalytics.propertyId || "Not configured"}
                 </p>
               </div>
               <div className="space-y-2">

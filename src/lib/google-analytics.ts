@@ -40,13 +40,39 @@ export interface DeviceBreakdownData {
 /**
  * Fetch GA4 metrics from Google Analytics API
  * Server-side function for use in API routes
+ *
+ * Uses the Google Analytics Data API v1beta with the following setup:
+ * - Authenticates via service account credentials (GOOGLE_SERVICE_ACCOUNT_KEY env var)
+ * - Requires numeric Property ID (NOT Measurement ID like G-XXXXX)
+ * - Documentation: https://developers.google.com/analytics/devguides/reporting/data/v1
+ *
+ * @param measurementIdOrPropertyId - Numeric GA4 Property ID (e.g., "123456789")
+ * @param startDate - Start date for the report (default: "30daysAgo")
+ * @param endDate - End date for the report (default: "today")
+ * @returns Aggregated GA4 metrics for the date range
  */
 export async function fetchGA4Report(
-  measurementId: string,
+  measurementIdOrPropertyId: string,
   startDate: string = "30daysAgo",
   endDate: string = "today"
 ): Promise<GAMetrics> {
   try {
+    // If the input starts with "G-", it's a measurement ID, so skip it
+    // The Google Analytics Data API requires a numeric property ID only
+    if (measurementIdOrPropertyId?.startsWith("G-")) {
+      console.warn(
+        "Warning: Measurement ID provided instead of Property ID. Skipping GA4 report."
+      );
+      throw new Error(
+        "Property ID (numeric) is required, not Measurement ID (G-XXXXX). Please configure GA4 Property ID in your site settings."
+      );
+    }
+
+    const propertyId = measurementIdOrPropertyId;
+    if (!propertyId || propertyId.trim() === "") {
+      throw new Error("Property ID is required");
+    }
+
     const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyFile) {
       throw new Error(
@@ -69,7 +95,7 @@ export async function fetchGA4Report(
     });
 
     const response = await analyticsdata.properties.runReport({
-      property: `properties/${measurementId}`,
+      property: `properties/${propertyId}`,
       requestBody: {
         dateRanges: [{ startDate, endDate }],
         metrics: [
@@ -142,13 +168,21 @@ export async function fetchGA4Report(
 /**
  * Fetch daily trend data from GA4 for visitor trends chart
  * Returns data for the last 30 days
+ *
+ * @param propertyId - Numeric GA4 Property ID (required for API calls)
+ * @param startDate - Start date for the report (default: "30daysAgo")
+ * @param endDate - End date for the report (default: "today")
  */
 export async function fetchGA4DailyTrends(
-  measurementId: string,
+  propertyId: string,
   startDate: string = "30daysAgo",
   endDate: string = "today"
 ): Promise<DailyTrendData[]> {
   try {
+    if (!propertyId || propertyId.trim() === "") {
+      throw new Error("Property ID is required");
+    }
+
     const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyFile) {
       throw new Error(
@@ -171,7 +205,7 @@ export async function fetchGA4DailyTrends(
     });
 
     const response = await analyticsdata.properties.runReport({
-      property: `properties/${measurementId}`,
+      property: `properties/${propertyId}`,
       requestBody: {
         dateRanges: [{ startDate, endDate }],
         metrics: [
@@ -228,13 +262,21 @@ export async function fetchGA4DailyTrends(
 /**
  * Fetch traffic source breakdown from GA4
  * Returns traffic distribution by source
+ *
+ * @param propertyId - Numeric GA4 Property ID (required for API calls)
+ * @param startDate - Start date for the report (default: "30daysAgo")
+ * @param endDate - End date for the report (default: "today")
  */
 export async function fetchGA4TrafficSources(
-  measurementId: string,
+  propertyId: string,
   startDate: string = "30daysAgo",
   endDate: string = "today"
 ): Promise<TrafficSourceData[]> {
   try {
+    if (!propertyId || propertyId.trim() === "") {
+      throw new Error("Property ID is required");
+    }
+
     const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyFile) {
       throw new Error(
@@ -257,7 +299,7 @@ export async function fetchGA4TrafficSources(
     });
 
     const response = await analyticsdata.properties.runReport({
-      property: `properties/${measurementId}`,
+      property: `properties/${propertyId}`,
       requestBody: {
         dateRanges: [{ startDate, endDate }],
         metrics: [{ name: "activeUsers" }, { name: "sessions" }],
@@ -308,13 +350,21 @@ export async function fetchGA4TrafficSources(
 /**
  * Fetch device breakdown from GA4
  * Returns metrics by device type (mobile, desktop, tablet)
+ *
+ * @param propertyId - Numeric GA4 Property ID (required for API calls)
+ * @param startDate - Start date for the report (default: "30daysAgo")
+ * @param endDate - End date for the report (default: "today")
  */
 export async function fetchGA4DeviceBreakdown(
-  measurementId: string,
+  propertyId: string,
   startDate: string = "30daysAgo",
   endDate: string = "today"
 ): Promise<DeviceBreakdownData[]> {
   try {
+    if (!propertyId || propertyId.trim() === "") {
+      throw new Error("Property ID is required");
+    }
+
     const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!keyFile) {
       throw new Error(
@@ -337,7 +387,7 @@ export async function fetchGA4DeviceBreakdown(
     });
 
     const response = await analyticsdata.properties.runReport({
-      property: `properties/${measurementId}`,
+      property: `properties/${propertyId}`,
       requestBody: {
         dateRanges: [{ startDate, endDate }],
         metrics: [
