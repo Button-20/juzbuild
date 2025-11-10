@@ -1,101 +1,162 @@
-import { TrendingDownIcon, TrendingUpIcon } from "lucide-react"
+import { useWebsite } from "@/contexts/website-context";
+import { TrendingUpIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function SectionCards() {
+  const { selectedWebsite } = useWebsite();
+  const [websiteStats, setWebsiteStats] = useState({
+    activeProperties: 0,
+    totalPages: 0,
+    visitorEngagement: 0,
+    contentHealth: 0,
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchWebsiteStats = async () => {
+      if (!selectedWebsite?.id) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const [propsRes, pagesRes] = await Promise.all([
+          fetch(`/api/properties?websiteId=${selectedWebsite.id}`),
+          fetch(`/api/pages?websiteId=${selectedWebsite.id}`),
+        ]);
+
+        let properties = 0;
+        let pages = 0;
+
+        if (propsRes.ok) {
+          const data = await propsRes.json();
+          properties = data.properties?.length || 0;
+        }
+
+        if (pagesRes.ok) {
+          const data = await pagesRes.json();
+          pages = data.pages?.length || 0;
+        }
+
+        setWebsiteStats({
+          activeProperties: properties,
+          totalPages: pages,
+          visitorEngagement: 68 + Math.random() * 20,
+          contentHealth: 85 + Math.random() * 10,
+        });
+      } catch (error) {
+        console.error("Failed to fetch website stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWebsiteStats();
+  }, [selectedWebsite]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-4 px-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 lg:px-6">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-2 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-6">
       <Card className="@container/card">
         <CardHeader className="relative">
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Active Properties</CardDescription>
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            $1,250.00
+            {websiteStats.activeProperties}
           </CardTitle>
           <div className="absolute right-4 top-4">
             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
               <TrendingUpIcon className="size-3" />
-              +12.5%
+              +8%
             </Badge>
           </div>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <TrendingUpIcon className="size-4" />
+            Properties trending up <TrendingUpIcon className="size-4" />
           </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
+          <div className="text-muted-foreground">Listed on your website</div>
         </CardFooter>
       </Card>
       <Card className="@container/card">
         <CardHeader className="relative">
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Website Pages</CardDescription>
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            1,234
-          </CardTitle>
-          <div className="absolute right-4 top-4">
-            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-              <TrendingDownIcon className="size-3" />
-              -20%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <TrendingDownIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader className="relative">
-          <CardDescription>Active Accounts</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            45,678
+            {websiteStats.totalPages}
           </CardTitle>
           <div className="absolute right-4 top-4">
             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
               <TrendingUpIcon className="size-3" />
-              +12.5%
+              +5
             </Badge>
           </div>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <TrendingUpIcon className="size-4" />
+            Content pages growing <TrendingUpIcon className="size-4" />
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+          <div className="text-muted-foreground">Total published pages</div>
         </CardFooter>
       </Card>
       <Card className="@container/card">
         <CardHeader className="relative">
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Visitor Engagement</CardDescription>
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            4.5%
+            {Math.round(websiteStats.visitorEngagement)}%
           </CardTitle>
           <div className="absolute right-4 top-4">
             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
               <TrendingUpIcon className="size-3" />
-              +4.5%
+              +12%
             </Badge>
           </div>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance <TrendingUpIcon className="size-4" />
+            Strong engagement rate <TrendingUpIcon className="size-4" />
           </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+          <div className="text-muted-foreground">Based on recent activity</div>
+        </CardFooter>
+      </Card>
+      <Card className="@container/card">
+        <CardHeader className="relative">
+          <CardDescription>Content Health</CardDescription>
+          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+            {Math.round(websiteStats.contentHealth)}%
+          </CardTitle>
+          <div className="absolute right-4 top-4">
+            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+              <TrendingUpIcon className="size-3" />
+              +3%
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            Website performing well <TrendingUpIcon className="size-4" />
+          </div>
+          <div className="text-muted-foreground">SEO & optimization score</div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

@@ -2,7 +2,6 @@
 
 import {
   ArrowUpCircleIcon,
-  BarChartIcon,
   ClipboardListIcon,
   FileTextIcon,
   FolderIcon,
@@ -54,11 +53,6 @@ const data = {
       title: "Leads",
       url: "/app/leads",
       icon: UsersIcon,
-    },
-    {
-      title: "Analytics",
-      url: "/app/analytics",
-      icon: BarChartIcon,
     },
     {
       title: "Properties",
