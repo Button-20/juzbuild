@@ -43,7 +43,8 @@ class WebsiteDeletionService {
           deletedResources.vercel = true;
           console.log(`✅ Vercel project deleted`);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
           console.error("Failed to delete Vercel project:", errorMsg);
           errors.push(`Vercel deletion failed: ${errorMsg}`);
           // Continue with other deletions even if Vercel fails
@@ -63,7 +64,8 @@ class WebsiteDeletionService {
           deletedResources.github = true;
           console.log(`✅ GitHub repository deleted`);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
           console.error("Failed to delete GitHub repository:", errorMsg);
           errors.push(`GitHub deletion failed: ${errorMsg}`);
           // Continue with other deletions even if GitHub fails
@@ -73,13 +75,19 @@ class WebsiteDeletionService {
       // Step 4: Delete Google Analytics property
       if (options.ga4PropertyId) {
         try {
-          console.log(`🗑️ Deleting Google Analytics property: ${options.ga4PropertyId}`);
+          console.log(
+            `🗑️ Deleting Google Analytics property: ${options.ga4PropertyId}`
+          );
           await this.deleteGoogleAnalyticsProperty(options.ga4PropertyId);
           deletedResources.googleAnalytics = true;
           console.log(`✅ Google Analytics property deleted`);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          console.error("Failed to delete Google Analytics property:", errorMsg);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            "Failed to delete Google Analytics property:",
+            errorMsg
+          );
           errors.push(`Google Analytics deletion failed: ${errorMsg}`);
           // Continue with other deletions even if GA4 fails
         }
@@ -93,7 +101,8 @@ class WebsiteDeletionService {
           deletedResources.namecheap = true;
           console.log(`✅ Namecheap subdomain deleted`);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
           console.error("Failed to delete Namecheap domain:", errorMsg);
           errors.push(`Namecheap deletion failed: ${errorMsg}`);
           // Continue with other deletions even if Namecheap fails
@@ -108,7 +117,8 @@ class WebsiteDeletionService {
           deletedResources.customDatabase = true;
           console.log(`✅ Custom database deleted`);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
           console.error("Failed to delete custom database:", errorMsg);
           errors.push(`Custom database deletion failed: ${errorMsg}`);
           // Continue with other deletions even if custom database fails
@@ -183,7 +193,9 @@ class WebsiteDeletionService {
           return;
         }
         throw new Error(
-          `Vercel API error ${response.status}: ${responseText || response.statusText}`
+          `Vercel API error ${response.status}: ${
+            responseText || response.statusText
+          }`
         );
       }
 
@@ -203,19 +215,25 @@ class WebsiteDeletionService {
     const token = process.env.GITHUB_TOKEN;
 
     if (!token) {
-      throw new Error("GitHub token not configured in GITHUB_TOKEN environment variable");
+      throw new Error(
+        "GitHub token not configured in GITHUB_TOKEN environment variable"
+      );
     }
 
     if (!owner || !repo) {
-      throw new Error(`Invalid GitHub repository: owner=${owner}, repo=${repo}`);
+      throw new Error(
+        `Invalid GitHub repository: owner=${owner}, repo=${repo}`
+      );
     }
 
     try {
       // Validate token format
       const trimmedToken = token.trim();
-      
+
       if (trimmedToken.length < 20) {
-        throw new Error(`GitHub token appears invalid (too short): ${trimmedToken.length} characters. Make sure GITHUB_TOKEN is set correctly in your environment.`);
+        throw new Error(
+          `GitHub token appears invalid (too short): ${trimmedToken.length} characters. Make sure GITHUB_TOKEN is set correctly in your environment.`
+        );
       }
 
       // GitHub API v3 expects: token <token> for personal access tokens
@@ -223,13 +241,15 @@ class WebsiteDeletionService {
       const authHeader = `token ${trimmedToken}`;
 
       const response = await fetch(
-        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+        `https://api.github.com/repos/${encodeURIComponent(
+          owner
+        )}/${encodeURIComponent(repo)}`,
         {
           method: "DELETE",
           headers: {
             Authorization: authHeader,
             "X-GitHub-Api-Version": "2022-11-28",
-            "Accept": "application/vnd.github+json",
+            Accept: "application/vnd.github+json",
             "User-Agent": "Juzbuild/1.0",
             "Content-Type": "application/json",
           },
@@ -242,19 +262,21 @@ class WebsiteDeletionService {
         if (response.status === 404) {
           return;
         }
-        
+
         // Better error message for 401
         if (response.status === 401) {
           const errorDetail = responseText ? JSON.parse(responseText) : {};
           throw new Error(
             `GitHub authentication failed (401 Unauthorized). ` +
-            `Token may be invalid, expired, or lack required permissions (delete_repo, admin:repo_hook). ` +
-            `Error: ${errorDetail.message || 'Bad credentials'}`
+              `Token may be invalid, expired, or lack required permissions (delete_repo, admin:repo_hook). ` +
+              `Error: ${errorDetail.message || "Bad credentials"}`
           );
         }
-        
+
         throw new Error(
-          `GitHub API error ${response.status}: ${responseText || response.statusText}`
+          `GitHub API error ${response.status}: ${
+            responseText || response.statusText
+          }`
         );
       }
 
@@ -281,8 +303,13 @@ class WebsiteDeletionService {
 
       console.log(`✓ Database ${dbName} deleted`);
     } catch (error) {
-      if (error instanceof Error && error.message.includes("database not found")) {
-        console.log(`Database ${dbName} not found (may have been deleted already)`);
+      if (
+        error instanceof Error &&
+        error.message.includes("database not found")
+      ) {
+        console.log(
+          `Database ${dbName} not found (may have been deleted already)`
+        );
         return;
       }
       throw error;
@@ -328,7 +355,9 @@ class WebsiteDeletionService {
   /**
    * Delete Google Analytics property
    */
-  private async deleteGoogleAnalyticsProperty(propertyId: string): Promise<void> {
+  private async deleteGoogleAnalyticsProperty(
+    propertyId: string
+  ): Promise<void> {
     const serviceAccountKeyEnv = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 
     if (!serviceAccountKeyEnv) {
@@ -344,10 +373,13 @@ class WebsiteDeletionService {
 
       // Decode base64 service account key if needed
       let serviceAccountKeyStr = serviceAccountKeyEnv;
-      
+
       if (!serviceAccountKeyStr.startsWith("{")) {
         try {
-          serviceAccountKeyStr = Buffer.from(serviceAccountKeyStr, "base64").toString("utf-8");
+          serviceAccountKeyStr = Buffer.from(
+            serviceAccountKeyStr,
+            "base64"
+          ).toString("utf-8");
         } catch (e) {
           // Service account key is not base64 encoded, using as-is
         }
@@ -358,7 +390,11 @@ class WebsiteDeletionService {
       try {
         serviceAccount = JSON.parse(serviceAccountKeyStr);
       } catch (e) {
-        throw new Error(`Failed to parse service account key: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(
+          `Failed to parse service account key: ${
+            e instanceof Error ? e.message : String(e)
+          }`
+        );
       }
 
       // Get OAuth access token using JWT bearer flow
@@ -371,7 +407,9 @@ class WebsiteDeletionService {
       // Call the Google Analytics Admin API v1beta to delete the property
       // API: DELETE https://analyticsadmin.googleapis.com/v1beta/properties/{propertyId}
       const response = await fetch(
-        `https://analyticsadmin.googleapis.com/v1beta/properties/${encodeURIComponent(propertyId)}`,
+        `https://analyticsadmin.googleapis.com/v1beta/properties/${encodeURIComponent(
+          propertyId
+        )}`,
         {
           method: "DELETE",
           headers: {
@@ -387,20 +425,24 @@ class WebsiteDeletionService {
         if (response.status === 404) {
           return;
         }
-        
+
         if (response.status === 401 || response.status === 403) {
           throw new Error(
             `GA4 API authentication failed (${response.status}). ` +
-            `Service account may not have 'analytics.edit' permission or token may be invalid.`
+              `Service account may not have 'analytics.edit' permission or token may be invalid.`
           );
         }
 
         throw new Error(
-          `GA4 Admin API error ${response.status}: ${responseText || response.statusText}`
+          `GA4 Admin API error ${response.status}: ${
+            responseText || response.statusText
+          }`
         );
       }
 
-      console.log(`✓ Google Analytics property ${propertyId} deleted successfully`);
+      console.log(
+        `✓ Google Analytics property ${propertyId} deleted successfully`
+      );
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error(`Failed to delete GA4 property:`, errorMsg);
@@ -435,8 +477,12 @@ class WebsiteDeletionService {
       };
 
       // Encode JWT parts
-      const headerB64 = Buffer.from(JSON.stringify(header)).toString("base64url");
-      const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+      const headerB64 = Buffer.from(JSON.stringify(header)).toString(
+        "base64url"
+      );
+      const payloadB64 = Buffer.from(JSON.stringify(payload)).toString(
+        "base64url"
+      );
 
       // Sign JWT with private key
       const sign = crypto.createSign("RSA-SHA256");
@@ -462,11 +508,13 @@ class WebsiteDeletionService {
         }).toString(),
       });
 
-      const tokenData = await tokenResponse.json() as any;
+      const tokenData = (await tokenResponse.json()) as any;
 
       if (!tokenResponse.ok) {
         throw new Error(
-          `Failed to get Google OAuth token: ${tokenData.error || "Unknown error"}`
+          `Failed to get Google OAuth token: ${
+            tokenData.error || "Unknown error"
+          }`
         );
       }
 
@@ -500,7 +548,9 @@ class WebsiteDeletionService {
       // Expected format: subdomain.onjuzbuild.com
       const parts = domain.split(".");
       if (parts.length < 3) {
-        throw new Error(`Invalid subdomain format: ${domain}. Expected: subdomain.onjuzbuild.com`);
+        throw new Error(
+          `Invalid subdomain format: ${domain}. Expected: subdomain.onjuzbuild.com`
+        );
       }
 
       // For onjuzbuild.com subdomains: extract parts
@@ -508,7 +558,9 @@ class WebsiteDeletionService {
       const sld = parts[1];
       const tld = parts.slice(2).join(".");
 
-      console.log(`[Namecheap] Domain parts - subdomain: ${subdomain}, sld: ${sld}, tld: ${tld}`);
+      console.log(
+        `[Namecheap] Domain parts - subdomain: ${subdomain}, sld: ${sld}, tld: ${tld}`
+      );
 
       // Step 1: Get existing DNS records for this domain
       const getParams = new URLSearchParams({
@@ -541,7 +593,10 @@ class WebsiteDeletionService {
 
       // Parse XML response to find subdomain records
       // We'll look for records that match our subdomain
-      const subdomainRecordIds = this.parseNamecheapSubdomainRecords(getResponseText, subdomain);
+      const subdomainRecordIds = this.parseNamecheapSubdomainRecords(
+        getResponseText,
+        subdomain
+      );
 
       if (subdomainRecordIds.length === 0) {
         // Still return without throwing - the records may already be deleted
@@ -551,8 +606,8 @@ class WebsiteDeletionService {
       // Step 2: Delete the DNS records for this subdomain
       // Namecheap API requires us to send all DNS records (with subdomain ones removed)
       // Get remaining records by filtering out the ones we want to delete
-      const remainingRecords = allRecords.filter((record: any) => 
-        !subdomainRecordIds.includes(record.HostId)
+      const remainingRecords = allRecords.filter(
+        (record: any) => !subdomainRecordIds.includes(record.HostId)
       );
 
       // Build the delete request with remaining records
@@ -580,7 +635,9 @@ class WebsiteDeletionService {
         }
       });
 
-      console.log(`[Namecheap] Sending setHosts request to delete subdomain records...`);
+      console.log(
+        `[Namecheap] Sending setHosts request to delete subdomain records...`
+      );
 
       const deleteResponse = await fetch(
         `https://api.namecheap.com/xml.response?${deleteParams.toString()}`,
@@ -590,8 +647,15 @@ class WebsiteDeletionService {
       );
 
       const deleteResponseText = await deleteResponse.text();
-      console.log(`[Namecheap] Delete response status: ${deleteResponse.status}`);
-      console.log(`[Namecheap] Delete response preview: ${deleteResponseText.substring(0, 500)}`);
+      console.log(
+        `[Namecheap] Delete response status: ${deleteResponse.status}`
+      );
+      console.log(
+        `[Namecheap] Delete response preview: ${deleteResponseText.substring(
+          0,
+          500
+        )}`
+      );
 
       if (!deleteResponse.ok) {
         throw new Error(
@@ -601,8 +665,10 @@ class WebsiteDeletionService {
 
       // Check if the API response indicates success
       if (deleteResponseText.includes('Status="OK"')) {
-        console.log(`✓ Namecheap subdomain ${domain} DNS records deleted successfully`);
-      } else if (deleteResponseText.includes('Errors')) {
+        console.log(
+          `✓ Namecheap subdomain ${domain} DNS records deleted successfully`
+        );
+      } else if (deleteResponseText.includes("Errors")) {
         throw new Error(`Namecheap API returned errors: ${deleteResponseText}`);
       } else {
         console.log(`✓ Namecheap subdomain ${domain} DNS records processed`);
@@ -619,37 +685,46 @@ class WebsiteDeletionService {
    * Parse Namecheap XML response to find subdomain record IDs
    * Handles attributes in any order
    */
-  private parseNamecheapSubdomainRecords(xmlResponse: string, subdomain: string): string[] {
+  private parseNamecheapSubdomainRecords(
+    xmlResponse: string,
+    subdomain: string
+  ): string[] {
     const recordIds: string[] = [];
-    
+
     try {
-      console.log(`[Namecheap] Looking for records matching subdomain: "${subdomain}"`);
-      
+      console.log(
+        `[Namecheap] Looking for records matching subdomain: "${subdomain}"`
+      );
+
       // Find all <host ... /> tags
       const hostTagPattern = /<host[^>]+\/>/g;
       let hostMatch;
-      
+
       while ((hostMatch = hostTagPattern.exec(xmlResponse)) !== null) {
         const hostTag = hostMatch[0];
-        
+
         // Extract attributes from this tag (order-independent)
         const hostIdMatch = hostTag.match(/HostId="([^"]*)"/);
         const nameMatch = hostTag.match(/Name="([^"]*)"/);
-        
+
         if (hostIdMatch && nameMatch) {
           const hostId = hostIdMatch[1];
           const name = nameMatch[1];
-          
+
           // Check if this record is for our subdomain
           // Match exact subdomain or subdomain with prefix (e.g., "devtraco" or "devtraco.www")
           if (name === subdomain || name.startsWith(subdomain + ".")) {
-            console.log(`[Namecheap] Found matching record: "${name}" (HostId: ${hostId})`);
+            console.log(
+              `[Namecheap] Found matching record: "${name}" (HostId: ${hostId})`
+            );
             recordIds.push(hostId);
           }
         }
       }
-      
-      console.log(`[Namecheap] Total matching records found: ${recordIds.length}`);
+
+      console.log(
+        `[Namecheap] Total matching records found: ${recordIds.length}`
+      );
     } catch (e) {
       console.warn(`[Namecheap] Failed to parse subdomain records:`, e);
     }
@@ -663,15 +738,15 @@ class WebsiteDeletionService {
    */
   private getAllNamecheapRecords(xmlResponse: string): any[] {
     const records: any[] = [];
-    
+
     try {
       // Find all <host ... /> tags
       const hostTagPattern = /<host[^>]+\/>/g;
       let hostMatch;
-      
+
       while ((hostMatch = hostTagPattern.exec(xmlResponse)) !== null) {
         const hostTag = hostMatch[0];
-        
+
         // Extract attributes (order-independent)
         const hostIdMatch = hostTag.match(/HostId="([^"]*)"/);
         const nameMatch = hostTag.match(/Name="([^"]*)"/);
@@ -679,7 +754,7 @@ class WebsiteDeletionService {
         const addressMatch = hostTag.match(/Address="([^"]*)"/);
         const ttlMatch = hostTag.match(/TTL="([^"]*)"/);
         const mxPriorityMatch = hostTag.match(/MXPriority="([^"]*)"/);
-        
+
         if (hostIdMatch && nameMatch && typeMatch && addressMatch && ttlMatch) {
           records.push({
             HostId: hostIdMatch[1],
@@ -691,7 +766,7 @@ class WebsiteDeletionService {
           });
         }
       }
-      
+
       console.log(`[Namecheap] Parsed ${records.length} total DNS records`);
     } catch (e) {
       console.warn(`[Namecheap] Failed to parse all records:`, e);
@@ -704,4 +779,9 @@ class WebsiteDeletionService {
 // Export singleton instance
 const deletionService = new WebsiteDeletionService();
 
-export { deletionService, WebsiteDeletionService, type DeletionOptions, type DeletionResult };
+export {
+  deletionService,
+  WebsiteDeletionService,
+  type DeletionOptions,
+  type DeletionResult,
+};
