@@ -22,6 +22,7 @@ import {
   Info,
   Zap,
   Activity,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnalyticsCharts } from "./analytics-charts";
@@ -79,6 +80,9 @@ export function ComprehensiveAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -114,9 +118,39 @@ export function ComprehensiveAnalytics() {
     fetchAnalytics();
   }, [selectedWebsite]);
 
+  const handleDeleteWebsite = async () => {
+    if (!selectedWebsite?.id) return;
+
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+
+      const response = await fetch(`/api/sites/${selectedWebsite.id}/delete`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to delete website");
+      }
+
+      // Show success message and redirect
+      alert("Website deleted successfully. Redirecting to dashboard...");
+      window.location.href = "/app/dashboard";
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to delete website";
+      setDeleteError(errorMsg);
+      console.error("Website deletion error:", err);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="space-y-6 px-4 lg:px-6">
+      <div className="space-y-6 px-4 lg:px-6 mt-7">
         {[...Array(3)].map((_, i) => (
           <Skeleton key={i} className="h-64" />
         ))}
@@ -126,7 +160,7 @@ export function ComprehensiveAnalytics() {
 
   if (!analytics) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 p-8 text-center">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 p-8 text-center md:mx-12 mt-7">
         <AlertCircle className="mb-2 h-12 w-12 text-muted-foreground/50" />
         <p className="text-sm text-muted-foreground">
           {error || "No analytics data available"}
@@ -519,6 +553,21 @@ export function ComprehensiveAnalytics() {
                 </p>
               </div>
             </div>
+
+            {/* Delete Website Button */}
+            <div className="mt-6 border-t pt-6">
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Website
+              </button>
+              <p className="text-xs text-muted-foreground mt-2">
+                This action will remove the website from Vercel, GitHub, and all
+                databases. This cannot be undone.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -606,6 +655,77 @@ export function ComprehensiveAnalytics() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-md text-white">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2 text-red-400">
+                <Trash2 className="h-5 w-5" />
+                Delete Website
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-2">
+                <p className="font-semibold text-white">
+                  Are you sure you want to delete "{analytics?.website.name}"?
+                </p>
+                <p className="text-sm text-slate-400">
+                  This will permanently remove:
+                </p>
+                <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
+                  <li>Vercel deployment and project</li>
+                  <li>GitHub repository</li>
+                  <li>Google Analytics property</li>
+                  <li>Namecheap domain records</li>
+                  <li>Custom website database</li>
+                  <li>All website data and configuration</li>
+                </ul>
+                <p className="text-sm text-red-400 font-semibold mt-4">
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              {deleteError && (
+                <div className="rounded-lg bg-red-950/50 border border-red-900 p-3">
+                  <p className="text-sm text-red-300">{deleteError}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteError(null);
+                  }}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 text-sm font-medium border border-slate-600 rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteWebsite}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      Delete Website
+                    </>
+                  )}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
