@@ -62,14 +62,22 @@ export default function MarketingSetupStep({
   isStepValid,
 }: WizardStepProps) {
   const handleAdsToggle = (platformId: string) => {
-    const currentConnections = data.adsConnections || [];
+    const currentConnections = (data.adsConnections || []) as string[];
     if (currentConnections.includes(platformId)) {
       updateData({
-        adsConnections: currentConnections.filter((c) => c !== platformId),
+        adsConnections: currentConnections.filter((c) => c !== platformId) as (
+          | "facebook"
+          | "google"
+          | "instagram"
+        )[],
       });
     } else {
       updateData({
-        adsConnections: [...currentConnections, platformId],
+        adsConnections: [...currentConnections, platformId] as (
+          | "facebook"
+          | "google"
+          | "instagram"
+        )[],
       });
     }
   };
@@ -107,7 +115,9 @@ export default function MarketingSetupStep({
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {ADS_PLATFORMS.map((platform) => {
-              const isSelected = data.adsConnections?.includes(platform.id);
+              const isSelected = (data.adsConnections || []).includes(
+                platform.id as any
+              );
               return (
                 <div
                   key={platform.id}

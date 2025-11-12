@@ -30,6 +30,7 @@ export interface User {
   selectedPlan: string;
   billingCycle: string;
   phoneNumber?: string;
+  adsConnections?: string[];
   createdAt: Date;
   updatedAt: Date;
   isActive?: boolean;

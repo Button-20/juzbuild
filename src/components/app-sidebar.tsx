@@ -16,8 +16,10 @@ import {
   UsersIcon,
 } from "lucide-react";
 import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { NavBlog } from "@/components/nav-documents";
+import { NavAds } from "@/components/nav-ads";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -126,6 +128,63 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [adsItems, setAdsItems] = useState<
+    Array<{ name: string; url: string; icon: any }>
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSelectedAds = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const { user } = await response.json();
+          console.log("User from /api/auth/me:", user);
+          console.log("adsConnections:", user?.adsConnections);
+
+          // Get adsConnections from user profile
+          const selectedAds = user?.adsConnections || [];
+          console.log("Selected ads:", selectedAds);
+
+          // Map selected ads to sidebar items with icons
+          const items = selectedAds.map((platformId: string) => {
+            let platformName = "";
+            let icon: any = null;
+
+            if (platformId === "facebook") {
+              platformName = "Facebook Ads";
+              const { Facebook } = require("lucide-react");
+              icon = Facebook;
+            } else if (platformId === "google") {
+              platformName = "Google Ads";
+              const { Search } = require("lucide-react");
+              icon = Search;
+            } else if (platformId === "instagram") {
+              platformName = "Instagram Ads";
+              const { Camera } = require("lucide-react");
+              icon = Camera;
+            }
+
+            return {
+              name: platformName,
+              url: `/app/ads/${platformId}`,
+              icon,
+            };
+          });
+
+          console.log("Mapped ads items:", items);
+          setAdsItems(items);
+        }
+      } catch (error) {
+        console.error("Failed to fetch selected ads:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSelectedAds();
+  }, []);
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -145,6 +204,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        {!isLoading && adsItems.length > 0 && (
+          <NavAds items={adsItems} title="Advertising" />
+        )}
         <NavBlog items={data.content} title="Content" />
         <NavBlog items={data.blog} title="Blog" />
         <NavBlog items={data.legal} title="Legal" />

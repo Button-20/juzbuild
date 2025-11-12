@@ -24,6 +24,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    // Get adsConnections - check user collection first, then onboarding collection
+    let adsConnections = user.adsConnections || [];
+    if (!user.adsConnections || user.adsConnections.length === 0) {
+      try {
+        const onboardingCollection = await getCollection("onboarding");
+        const onboardingRecord = await onboardingCollection.findOne({
+          userId: tokenPayload.userId,
+        });
+        if (onboardingRecord?.adsConnections) {
+          adsConnections = onboardingRecord.adsConnections;
+        }
+      } catch (e) {
+        // Silently continue if onboarding lookup fails
+      }
+    }
+
     // Return user data (without password)
     const userData = {
       id: user._id,
@@ -33,10 +49,14 @@ export async function GET(request: NextRequest) {
       companyName: user.companyName,
       domainName: user.domainName,
       selectedPlan: user.selectedPlan,
+      billingCycle: user.billingCycle,
       country: user.country,
       city: user.city,
+      phoneNumber: user.phoneNumber,
       tagline: user.tagline,
       aboutSection: user.aboutSection,
+      selectedTheme: user.selectedTheme,
+      adsConnections: adsConnections,
     };
 
     return NextResponse.json({

@@ -24,6 +24,7 @@ interface User {
   selectedPlan: "starter" | "pro" | "agency";
   billingCycle: string;
   phoneNumber?: string;
+  adsConnections?: string[];
 }
 
 interface AuthContextType {

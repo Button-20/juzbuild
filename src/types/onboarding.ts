@@ -53,8 +53,16 @@ export interface OnboardingSpecificData {
   geminiApiKey?: string; // Required if AI Chatbot is selected
 
   // Marketing setup (used for integrations)
-  adsConnections: string[];
+  adsConnections: ("facebook" | "google" | "instagram")[];
   preferredContactMethod: ("Phone" | "Email" | "WhatsApp")[];
+
+  // Ads integrations (optional, only if user selected during onboarding)
+  facebookAdsEnabled?: boolean;
+  facebookAdsAccountId?: string;
+  googleAdsEnabled?: boolean;
+  googleAdsAccountId?: string;
+  instagramAdsEnabled?: boolean;
+  instagramAdsAccountId?: string;
 
   // Payment and legal (onboarding workflow only)
   agreeToTerms: boolean;

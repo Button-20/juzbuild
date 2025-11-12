@@ -165,6 +165,7 @@ export async function POST(req: NextRequest) {
         selectedTheme: data.selectedTheme,
         selectedPlan: data.selectedPlan,
         billingCycle: data.billingCycle,
+        adsConnections: data.adsConnections,
         createdAt: new Date(),
         updatedAt: new Date(),
         isActive: true,
