@@ -51,7 +51,7 @@ export default function DeploymentPage() {
     status: "in-progress",
     currentStep: "Initializing website creation...",
     progress: 15,
-    estimatedCompletion: "5-8 minutes",
+    estimatedCompletion: "5-5.5 minutes",
   });
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
@@ -138,6 +138,7 @@ export default function DeploymentPage() {
 
   const stepIcons = {
     "Database Setup": Database,
+    "Google Analytics": Zap,
     "Template Configuration": Settings,
     "GitHub Repository": CloudUpload,
     "Vercel Deployment": Zap,
@@ -146,17 +147,19 @@ export default function DeploymentPage() {
   };
 
   const stepEstimates = {
-    "Database Setup": "1-2 min",
-    "Template Configuration": "1-2 min",
-    "GitHub Repository": "30 sec",
-    "Vercel Deployment": "2-3 min",
-    "Domain Configuration": "1-2 min",
-    "Final Testing": "30 sec",
+    "Database Setup": "~10 sec",
+    "Google Analytics": "~15 sec",
+    "Template Configuration": "~20 sec",
+    "GitHub Repository": "~8 sec",
+    "Vercel Deployment": "~3-4 min",
+    "Domain Configuration": "~10 sec",
+    "Final Testing": "~5 sec",
   };
 
   // Use actual steps from API response, fallback to estimated steps
   const displaySteps = deploymentStatus.steps || [
     { name: "Database Setup", status: "pending" as const },
+    { name: "Google Analytics", status: "pending" as const },
     { name: "Template Configuration", status: "pending" as const },
     { name: "GitHub Repository", status: "pending" as const },
     { name: "Vercel Deployment", status: "pending" as const },
