@@ -169,11 +169,11 @@ const ContactForm = () => {
                 transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
                 className="flex items-start space-x-4 p-6 rounded-2xl bg-background/20 border border-foreground/10 hover:border-foreground/20 transition-all duration-300 hover:bg-background/30 group"
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                   <item.icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg group-hover:text-blue-400 transition-colors">
+                  <h3 className="font-semibold text-lg group-hover:text-blue-500 transition-colors">
                     {item.title}
                   </h3>
                   <p className="text-muted-foreground">{item.description}</p>
@@ -185,7 +185,7 @@ const ContactForm = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="p-6 rounded-2xl bg-gradient-to-r from-blue-600/10 to-blue-700/10 border border-blue-500/20 relative overflow-hidden"
+              className="p-6 rounded-2xl bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20 relative overflow-hidden"
             >
               <Particles
                 refresh
@@ -331,7 +331,7 @@ const ContactForm = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-800 text-white font-semibold transition-all duration-300 transform hover:scale-[1.02]"
+                  className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all duration-300 transform hover:scale-[1.02]"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">

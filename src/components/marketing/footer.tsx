@@ -1,183 +1,158 @@
 import Link from "next/link";
 import Container from "../global/container";
 import Icons from "../global/icons";
+import { Mail, Github, Linkedin, Twitter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const Footer = () => {
+  const socialLinks = [
+    { icon: Twitter, href: "https://twitter.com/juzbuild", label: "Twitter" },
+    {
+      icon: Linkedin,
+      href: "https://linkedin.com/company/juzbuild",
+      label: "LinkedIn",
+    },
+    { icon: Github, href: "https://github.com/juzbuild", label: "GitHub" },
+  ];
+
   return (
     <footer className="flex flex-col relative items-center justify-center border-t border-foreground/5 pt-16 pb-8 px-6 lg:px-8 w-full max-w-6xl mx-auto lg:pt-32">
-      <div className="grid gap-8 xl:grid-cols-3 xl:gap-8 w-full">
-        <Container>
-          <div className="flex flex-col items-start justify-start md:max-w-[200px]">
-            <div className="flex items-center gap-2">
-              <Icons.icon className="w-auto h-5" />
-              <span className="text-base md:text-lg font-medium text-foreground">
-                Juzbuild
-              </span>
-            </div>
-            <p className="text-muted-foreground mt-4 text-sm text-start">
-              AI-powered platform that transforms your marketing workflow in
-              seconds.
-            </p>
+      <div className="grid gap-12 md:gap-16 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 w-full">
+        {/* Logo Column */}
+        <div className="flex flex-col items-start justify-start">
+          <div className="flex items-center gap-2">
+            <Icons.icon className="w-auto h-5" />
+            <span className="text-base md:text-lg font-medium text-foreground">
+              Juzbuild
+            </span>
           </div>
-        </Container>
+          <p className="text-muted-foreground mt-4 text-sm text-start">
+            AI-powered platform that transforms your marketing workflow in
+            seconds.
+          </p>
+        </div>
 
-        <div className="grid-cols-2 gap-8 grid mt-16 xl:col-span-2 xl:mt-0">
-          <div className="md:grid md:grid-cols-2 md:gap-8">
-            <Container delay={0.1} className="h-auto">
-              <h3 className="text-base font-medium text-foreground">Product</h3>
-              <ul className="mt-4 text-sm text-muted-foreground space-y-4">
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
+        {/* Product Column */}
+        <div className="flex flex-col">
+          <h3 className="text-base font-medium text-foreground">Product</h3>
+          <ul className="mt-4 text-sm text-muted-foreground space-y-3">
+            <li>
+              <Link
+                href="/#features"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Features
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/#pricing"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Pricing
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/blog"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Blog
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Support Column */}
+        <div className="flex flex-col">
+          <h3 className="text-base font-medium text-foreground">Support</h3>
+          <ul className="mt-4 text-sm text-muted-foreground space-y-3">
+            <li>
+              <Link
+                href="/#contact"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Contact Us
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/about"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/privacy-policy"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/terms-of-service"
+                className="link hover:text-foreground transition-all duration-300"
+              >
+                Terms of Service
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Connect Column */}
+        <div className="flex flex-col">
+          <h3 className="text-base font-medium text-foreground">Connect</h3>
+          <div className="mt-4 space-y-4">
+            <div className="flex gap-3">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                    aria-label={social.label}
                   >
-                    Features
-                  </Link>
-                </li>
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Pricing
-                  </Link>
-                </li>
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Testimonials
-                  </Link>
-                </li>
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Supported Languages
-                  </Link>
-                </li>
-              </ul>
-            </Container>
-            <Container delay={0.2} className="h-auto">
-              <div className="mt-10 md:mt-0 flex flex-col">
-                <h3 className="text-base font-medium text-foreground">
-                  Solutions
-                </h3>
-                <ul className="mt-4 text-sm text-muted-foreground space-y-4">
-                  <li>
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Content Creators
-                    </Link>
-                  </li>
-                  <li className="mt-2">
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Businesses
-                    </Link>
-                  </li>
-                  <li className="mt-2">
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Education
-                    </Link>
-                  </li>
-                  <li className="mt-2">
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Enterprise
-                    </Link>
-                  </li>
-                </ul>
+                    <Icon className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  </a>
+                );
+              })}
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Stay updated
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  className="h-9 text-sm"
+                />
+                <Button
+                  size="sm"
+                  className="bg-blue-500 hover:bg-blue-600 px-3"
+                >
+                  <Mail className="w-4 h-4" />
+                </Button>
               </div>
-            </Container>
-          </div>
-          <div className="md:grid md:grid-cols-2 md:gap-8">
-            <Container delay={0.3} className="h-auto">
-              <h3 className="text-base font-medium text-foreground">
-                Resources
-              </h3>
-              <ul className="mt-4 text-sm text-muted-foreground space-y-4">
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Blog
-                  </Link>
-                </li>
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Translation Guides
-                  </Link>
-                </li>
-                <li className="mt-2">
-                  <Link
-                    href="#"
-                    className="link hover:text-foreground transition-all duration-300"
-                  >
-                    Support
-                  </Link>
-                </li>
-              </ul>
-            </Container>
-            <Container delay={0.4} className="h-auto">
-              <div className="mt-10 md:mt-0 flex flex-col">
-                <h3 className="text-base font-medium text-foreground">
-                  Company
-                </h3>
-                <ul className="mt-4 text-sm text-muted-foreground space-y-4">
-                  <li>
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      About Us
-                    </Link>
-                  </li>
-                  <li className="mt-2">
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Privacy Policy
-                    </Link>
-                  </li>
-                  <li className="mt-2">
-                    <Link
-                      href="#"
-                      className="link hover:text-foreground transition-all duration-300"
-                    >
-                      Terms & Conditions
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </Container>
+            </div>
           </div>
         </div>
       </div>
 
-      <Container delay={0.5} className="w-full relative mt-12 lg:mt-20">
-        <div className="mt-8 md:flex md:items-center justify-center footer w-full">
-          <p className="text-sm text-muted-foreground mt-8 md:mt-0">
+      <div className="w-full mt-12 lg:mt-20 pt-8 border-t border-foreground/5">
+        <div className="flex items-center justify-center">
+          <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Juzbuild. All rights reserved.
           </p>
         </div>
-      </Container>
+      </div>
     </footer>
   );
 };
