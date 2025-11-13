@@ -125,9 +125,7 @@ const Footer = () => {
               })}
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-2">
-                Stay updated
-              </p>
+              <p className="text-xs text-muted-foreground mb-2">Stay updated</p>
               <div className="flex gap-2">
                 <Input
                   type="email"
