@@ -51,7 +51,7 @@ export default function DeploymentPage() {
     status: "in-progress",
     currentStep: "Initializing website creation...",
     progress: 15,
-    estimatedCompletion: "5-5.5 minutes",
+    estimatedCompletion: "5-8 minutes",
   });
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
@@ -72,14 +72,17 @@ export default function DeploymentPage() {
 
     setIsChecking(true);
     try {
-      const response = await fetch(`/api/workflow/status/${jobId}`);
+      const response = await fetch(`/api/jobs/${jobId}`);
       const data = await response.json();
 
       if (data.success) {
         console.log("Deployment status update:", data);
+        // The job status is nested under data.status
+        const jobStatus = data.status;
         setDeploymentStatus((prev) => ({
           ...prev,
-          ...data,
+          ...jobStatus,
+          success: true,
           lastChecked: new Date().toISOString(),
         }));
       }
@@ -98,7 +101,7 @@ export default function DeploymentPage() {
       deploymentStatus.status !== "completed" &&
       deploymentStatus.status !== "failed"
     ) {
-      const interval = setInterval(checkStatus, 30000);
+      const interval = setInterval(checkStatus, 3000);
       return () => clearInterval(interval);
     }
   }, [jobId, deploymentStatus.status]);
@@ -297,20 +300,24 @@ export default function DeploymentPage() {
             </div>
           </CardHeader>
 
-          {deploymentStatus.progress &&
-            deploymentStatus.status !== "completed" && (
-              <CardContent>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${deploymentStatus.progress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  {deploymentStatus.progress}% Complete
+          {deploymentStatus.status !== "completed" && (
+            <CardContent>
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${deploymentStatus.progress || 0}%` }}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                {deploymentStatus.progress || 0}% Complete
+              </p>
+              {deploymentStatus.estimatedCompletion && (
+                <p className="text-xs text-muted-foreground text-center mt-1">
+                  Estimated completion: {deploymentStatus.estimatedCompletion}
                 </p>
-              </CardContent>
-            )}
+              )}
+            </CardContent>
+          )}
         </Card>
 
         {/* Deployment Steps */}

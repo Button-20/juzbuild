@@ -44,7 +44,7 @@ interface Author {
 }
 
 export default function AuthorsPage() {
-  const { selectedWebsite } = useWebsite();
+  const { currentWebsite } = useWebsite();
   const { toast } = useToast();
   const [authors, setAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,10 +71,10 @@ export default function AuthorsPage() {
       setLoading(true);
       const params = new URLSearchParams();
 
-      if (selectedWebsite?.id) {
-        params.append("websiteId", selectedWebsite.id);
-      } else if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (currentWebsite?._id) {
+        params.append("websiteId", currentWebsite._id);
+      } else if (currentWebsite?.domainName) {
+        params.append("domain", currentWebsite.domainName);
       }
 
       params.append("page", currentPage.toString());
@@ -108,10 +108,10 @@ export default function AuthorsPage() {
   };
 
   useEffect(() => {
-    if (selectedWebsite) {
+    if (currentWebsite) {
       fetchAuthors();
     }
-  }, [selectedWebsite, currentPage, sortBy, sortDirection]);
+  }, [currentWebsite, currentPage, sortBy, sortDirection]);
 
   // Pagination and sorting handlers
   const handlePageChange = (page: number) => {
@@ -129,9 +129,9 @@ export default function AuthorsPage() {
     setSubmitting(true);
 
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const websiteParam = currentWebsite?._id
+        ? `?websiteId=${currentWebsite._id}`
+        : `?domain=${currentWebsite?.domainName || ""}`;
 
       if (editingAuthor) {
         // Update existing author
@@ -223,9 +223,9 @@ export default function AuthorsPage() {
     }
 
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const websiteParam = currentWebsite?._id
+        ? `?websiteId=${currentWebsite._id}`
+        : `?domain=${currentWebsite?.domainName || ""}`;
 
       const response = await fetch(`/api/authors/${authorId}${websiteParam}`, {
         method: "DELETE",

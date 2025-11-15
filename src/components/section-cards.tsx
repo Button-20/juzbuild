@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function SectionCards() {
-  const { selectedWebsite } = useWebsite();
+  const { currentWebsite } = useWebsite();
   const [websiteStats, setWebsiteStats] = useState({
     activeProperties: 0,
     totalPages: 0,
@@ -24,7 +24,7 @@ export function SectionCards() {
 
   useEffect(() => {
     const fetchWebsiteStats = async () => {
-      if (!selectedWebsite?.id) {
+      if (!currentWebsite?._id) {
         setLoading(false);
         return;
       }
@@ -32,8 +32,8 @@ export function SectionCards() {
       try {
         setLoading(true);
         const [propsRes, pagesRes] = await Promise.all([
-          fetch(`/api/properties?websiteId=${selectedWebsite.id}`),
-          fetch(`/api/pages?websiteId=${selectedWebsite.id}`),
+          fetch(`/api/properties?websiteId=${currentWebsite._id}`),
+          fetch(`/api/pages?websiteId=${currentWebsite._id}`),
         ]);
 
         let properties = 0;
@@ -63,7 +63,7 @@ export function SectionCards() {
     };
 
     fetchWebsiteStats();
-  }, [selectedWebsite]);
+  }, [currentWebsite]);
 
   if (loading) {
     return (

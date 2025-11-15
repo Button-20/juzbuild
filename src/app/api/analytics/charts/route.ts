@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       const db = client.db("Juzbuild");
 
       // Fetch website data
-      const website = await db.collection("sites").findOne({
+      const website = await db.collection("websites").findOne({
         _id: new ObjectId(websiteId),
       });
 
@@ -47,14 +47,18 @@ export async function GET(request: NextRequest) {
         deviceBreakdown: [],
       };
 
-      if (website.ga4PropertyId) {
+      if (website.analytics?.googleAnalytics?.propertyId) {
         try {
           // Fetch all detailed data in parallel
           const [dailyTrends, trafficSources, deviceBreakdown] =
             await Promise.all([
-              fetchGA4DailyTrends(website.ga4PropertyId),
-              fetchGA4TrafficSources(website.ga4PropertyId),
-              fetchGA4DeviceBreakdown(website.ga4PropertyId),
+              fetchGA4DailyTrends(website.analytics.googleAnalytics.propertyId),
+              fetchGA4TrafficSources(
+                website.analytics.googleAnalytics.propertyId
+              ),
+              fetchGA4DeviceBreakdown(
+                website.analytics.googleAnalytics.propertyId
+              ),
             ]);
 
           chartData = {
@@ -66,14 +70,20 @@ export async function GET(request: NextRequest) {
           console.error("Failed to fetch detailed GA4 data:", error);
           // Continue without chart data
         }
-      } else if (website.ga4MeasurementId) {
+      } else if (website.analytics?.googleAnalytics?.measurementId) {
         try {
           // Fetch all detailed data in parallel
           const [dailyTrends, trafficSources, deviceBreakdown] =
             await Promise.all([
-              fetchGA4DailyTrends(website.ga4MeasurementId),
-              fetchGA4TrafficSources(website.ga4MeasurementId),
-              fetchGA4DeviceBreakdown(website.ga4MeasurementId),
+              fetchGA4DailyTrends(
+                website.analytics.googleAnalytics.measurementId
+              ),
+              fetchGA4TrafficSources(
+                website.analytics.googleAnalytics.measurementId
+              ),
+              fetchGA4DeviceBreakdown(
+                website.analytics.googleAnalytics.measurementId
+              ),
             ]);
 
           chartData = {

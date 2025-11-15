@@ -32,8 +32,8 @@ export async function DELETE(
     const userId = decoded.userId;
 
     // Get site details to verify ownership and collect resource info
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const websitesCollection = await getCollection("websites");
+    const site = await websitesCollection.findOne({
       _id: new ObjectId(siteId),
       userId: userId,
     });
@@ -64,7 +64,7 @@ export async function DELETE(
       githubRepo: githubRepo,
       githubOwner: githubOwner,
       dbName: site.dbName,
-      ga4PropertyId: site.ga4PropertyId,
+      ga4PropertyId: site.analytics?.googleAnalytics?.propertyId,
       domain: site.domain,
     };
 
@@ -75,7 +75,7 @@ export async function DELETE(
     const deletionResult = await deletionService.deleteWebsite(deletionOptions);
 
     // Mark site as deleted instead of removing it completely (for history)
-    await sitesCollection.updateOne(
+    await websitesCollection.updateOne(
       { _id: new ObjectId(siteId) },
       {
         $set: {

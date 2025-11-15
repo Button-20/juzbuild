@@ -388,7 +388,7 @@ export default function PropertiesPage() {
 
   // Handle view details - opens property on the generated website
   const handleViewDetails = (property: Property) => {
-    if (!selectedWebsite || !selectedWebsite.domain) {
+    if (!selectedWebsite || !selectedWebsite.domainName) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -398,7 +398,7 @@ export default function PropertiesPage() {
     }
 
     const propertyTypeSlug = getPropertyTypeSlug(property.propertyType);
-    const propertyUrl = `https://${selectedWebsite.domain}/properties/${propertyTypeSlug}/${property.slug}`;
+    const propertyUrl = `https://${selectedWebsite.domainName}/properties/${propertyTypeSlug}/${property.slug}`;
 
     // Open in new tab
     window.open(propertyUrl, "_blank");

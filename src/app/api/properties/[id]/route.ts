@@ -35,8 +35,8 @@ export async function GET(
       // Get the specific website's database name
       const { getCollection } = await import("@/lib/mongodb");
       const { ObjectId } = require("mongodb");
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const websitesCollection = await getCollection("websites");
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });
@@ -103,8 +103,8 @@ export async function PUT(
       // Get the specific website's database name
       const { getCollection } = await import("@/lib/mongodb");
       const { ObjectId } = require("mongodb");
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const websitesCollection = await getCollection("websites");
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });
@@ -188,8 +188,8 @@ export async function DELETE(
       // Get the specific website's database name
       const { getCollection } = await import("@/lib/mongodb");
       const { ObjectId } = require("mongodb");
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const websitesCollection = await getCollection("websites");
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });

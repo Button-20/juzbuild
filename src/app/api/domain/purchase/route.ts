@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's active website
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const websitesCollection = await getCollection("websites");
+    const site = await websitesCollection.findOne({
       userId: userId,
       status: "active",
     });
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the site record with the custom domain
-    await sitesCollection.updateOne(
+    await websitesCollection.updateOne(
       { _id: site._id },
       {
         $set: {

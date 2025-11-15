@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
 
     if (domain) {
       // Get the specific website's database name by domain
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
-        domain: domain,
+      const websitesCollection = await getCollection("websites");
+      const website = await websitesCollection.findOne({
+        domainName: domain,
       });
 
       if (website) {

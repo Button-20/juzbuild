@@ -76,7 +76,7 @@ interface AnalyticsData {
 }
 
 export function ComprehensiveAnalytics() {
-  const { selectedWebsite } = useWebsite();
+  const { currentWebsite } = useWebsite();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export function ComprehensiveAnalytics() {
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      if (!selectedWebsite?.id) {
+      if (!currentWebsite?._id) {
         setLoading(false);
         return;
       }
@@ -96,7 +96,7 @@ export function ComprehensiveAnalytics() {
         setError(null);
 
         const response = await fetch(
-          `/api/analytics?websiteId=${selectedWebsite.id}`
+          `/api/analytics?websiteId=${currentWebsite._id}`
         );
 
         if (!response.ok) {
@@ -116,17 +116,20 @@ export function ComprehensiveAnalytics() {
     };
 
     fetchAnalytics();
-  }, [selectedWebsite]);
+  }, [currentWebsite]);
 
   const handleDeleteWebsite = async () => {
-    if (!selectedWebsite?.id) return;
+    if (!currentWebsite?._id) return;
 
     try {
       setIsDeleting(true);
       setDeleteError(null);
 
-      const response = await fetch(`/api/sites/${selectedWebsite.id}/delete`, {
+      const response = await fetch(`/api/websites?id=${currentWebsite._id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) {

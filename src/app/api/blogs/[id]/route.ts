@@ -32,9 +32,9 @@ export async function PUT(
     let websiteDatabaseName = null;
 
     if (websiteId) {
-      const sitesCollection = await getCollection("sites");
+      const websitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });
@@ -170,9 +170,9 @@ export async function DELETE(
     let websiteDatabaseName = null;
 
     if (websiteId) {
-      const sitesCollection = await getCollection("sites");
+      const websitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });

@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
 
     if (websiteId) {
       // Get the specific website's database name
-      const sitesCollection = await getCollection("sites");
+      const webwebsitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await webwebsitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });
@@ -132,9 +132,9 @@ export async function POST(request: NextRequest) {
 
     if (websiteId) {
       // Get the specific website's database name
-      const sitesCollection = await getCollection("sites");
+      const webwebsitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await webwebsitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });

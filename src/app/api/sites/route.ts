@@ -21,8 +21,8 @@ export async function GET(req: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's sites
-    const sitesCollection = await getCollection("sites");
-    const userSites = await sitesCollection
+    const webwebsitesCollection = await getCollection("websites");
+    const userSites = await webwebsitesCollection
       .find({ userId })
       .sort({ createdAt: -1 })
       .toArray();
@@ -86,11 +86,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { action, siteId, data } = body;
 
-    const sitesCollection = await getCollection("sites");
+    const webwebsitesCollection = await getCollection("websites");
 
     switch (action) {
       case "update-status":
-        await sitesCollection.updateOne(
+        await webwebsitesCollection.updateOne(
           { _id: siteId, userId: decoded.userId },
           {
             $set: {
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         });
 
       case "update-settings":
-        await sitesCollection.updateOne(
+        await webwebsitesCollection.updateOne(
           { _id: siteId, userId: decoded.userId },
           {
             $set: {
@@ -167,10 +167,10 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const sitesCollection = await getCollection("sites");
+    const webwebsitesCollection = await getCollection("websites");
 
     // Mark site as inactive instead of deleting
-    await sitesCollection.updateOne(
+    await webwebsitesCollection.updateOne(
       { _id: siteId, userId: decoded.userId },
       {
         $set: {

@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     let websiteDatabaseName: string;
 
     if (websiteId) {
-      // Get website database name from sites collection
-      const sitesCollection = await getCollection("sites");
+      // Get website database name from websites collection
+      const websitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });

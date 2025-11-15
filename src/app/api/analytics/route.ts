@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       const db = client.db("Juzbuild");
 
       // Fetch website data
-      const website = await db.collection("sites").findOne({
+      const website = await db.collection("websites").findOne({
         _id: new ObjectId(websiteId),
       });
 
@@ -44,16 +44,16 @@ export async function GET(request: NextRequest) {
 
       // Fetch GA4 metrics if property ID or measurement ID exists
       let gaMetrics: any = null;
-      if (website.ga4PropertyId) {
+      if (website.analytics?.googleAnalytics?.propertyId) {
         try {
-          gaMetrics = await fetchGA4Report(website.ga4PropertyId);
+          gaMetrics = await fetchGA4Report(website.analytics.googleAnalytics.propertyId);
         } catch (error) {
           console.error("Failed to fetch GA4 metrics:", error);
           // Continue without GA metrics
         }
-      } else if (website.ga4MeasurementId) {
+      } else if (website.analytics?.googleAnalytics?.measurementId) {
         try {
-          gaMetrics = await fetchGA4Report(website.ga4MeasurementId);
+          gaMetrics = await fetchGA4Report(website.analytics.googleAnalytics.measurementId);
         } catch (error) {
           console.error(
             "Failed to fetch GA4 metrics: Measurement ID requires Property ID. Please update your site configuration.",
@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
           createdAt: website.createdAt,
         },
         googleAnalytics: {
-          measurementId: website.ga4MeasurementId || null,
-          propertyId: website.ga4PropertyId || null,
+          measurementId: website.analytics?.googleAnalytics?.measurementId || null,
+          propertyId: website.analytics?.googleAnalytics?.propertyId || null,
           ...(gaMetrics && {
             metrics: {
               users: gaMetrics.users,

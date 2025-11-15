@@ -17,21 +17,21 @@ export async function GET(req: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's website URL from the database
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const webwebsitesCollection = await getCollection(\"websites\");
+    const site = await webwebsitesCollection.findOne({
       userId: userId,
-      status: "active",
+      status: \"active\",
     });
 
     if (!site) {
       return NextResponse.json(
-        { error: "No active website found" },
+        { error: \"No active website found\" },
         { status: 404 }
       );
     }
 
     // Use websiteUrl if available, otherwise construct from domain
-    const websiteUrl = site.websiteUrl || `https://${site.domain}`;
+    const websiteUrl = site.websiteUrl || `https://${site.domainName}.onjuzbuild.com`;
 
     const response = await fetch(`${websiteUrl}/api/about`, {
       method: "GET",
@@ -66,8 +66,8 @@ export async function PUT(req: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's website URL from the database
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const websitesCollection = await getCollection("websites");
+    const site = await websitesCollection.findOne({
       userId: userId,
       status: "active",
     });

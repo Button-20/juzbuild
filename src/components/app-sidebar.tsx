@@ -23,6 +23,7 @@ import { NavAds } from "@/components/nav-ads";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import NotificationBell from "@/components/dashboard/notification-bell";
 import {
   Sidebar,
   SidebarContent,
@@ -190,15 +191,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <Link href="/app/dashboard">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Juzbuild</span>
-              </Link>
-            </SidebarMenuButton>
+            <div className="flex items-center justify-between w-full">
+              <SidebarMenuButton
+                asChild
+                className="data-[slot=sidebar-menu-button]:!p-1.5 flex-1"
+              >
+                <Link href="/app/dashboard">
+                  <ArrowUpCircleIcon className="h-5 w-5" />
+                  <span className="text-base font-semibold">Juzbuild</span>
+                </Link>
+              </SidebarMenuButton>
+              <div className="pr-2">
+                <NotificationBell />
+              </div>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

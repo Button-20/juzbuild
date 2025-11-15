@@ -212,68 +212,72 @@ export async function POST(req: NextRequest) {
       try {
         console.log(`Triggering website creation for user: ${userId}`);
 
-        // Prepare website creation data
-        const websiteData = {
-          userId: userId,
-          websiteName: data.domainName, // Using domain name as website name
-          userEmail: data.email,
-          fullName: data.fullName,
-          companyName: data.companyName,
-          domainName: data.domainName,
-          logoUrl: data.logoUrl,
-          brandColors: data.brandColors,
-          tagline: data.tagline,
-          aboutSection: data.aboutSection,
-          selectedTheme: data.selectedTheme,
-          propertyTypes: data.propertyTypes,
-          includedPages: data.includedPages,
-          preferredContactMethod: data.preferredContactMethod,
-          leadCaptureMethods: data.leadCaptureMethods,
-          geminiApiKey: data.geminiApiKey,
+        // Website creation will be handled by the new multi-site API
+        console.log(
+          `Preparing website creation for: ${data.companyName} (${data.domainName})`
+        );
 
-          // Contact Information
-          phoneNumber: data.phoneNumber,
-          supportEmail: data.supportEmail,
-          whatsappNumber: data.whatsappNumber,
-          address: data.address,
-
-          // Social Media Links
-          facebookUrl: data.facebookUrl,
-          twitterUrl: data.twitterUrl,
-          instagramUrl: data.instagramUrl,
-          linkedinUrl: data.linkedinUrl,
-          youtubeUrl: data.youtubeUrl,
-        };
-
-        // Create website and get jobId for tracking
+        // Create website using the new multi-site API
         try {
           const websiteResponse = await fetch(
             `${
               process.env.NEXTAUTH_URL || "http://localhost:3000"
-            }/api/workflow/create-site`,
+            }/api/websites`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                Cookie: `auth-token=${session.token}`,
               },
-              body: JSON.stringify(websiteData),
+              body: JSON.stringify({
+                companyName: data.companyName,
+                domainName: data.domainName,
+                tagline: data.tagline || "",
+                aboutSection: data.aboutSection || "",
+                selectedTheme: data.selectedTheme,
+                selectedPlan: data.selectedPlan || "starter",
+                billingCycle: data.billingCycle || "monthly",
+                includedPages: data.includedPages || [
+                  "home",
+                  "about",
+                  "contact",
+                ],
+                propertyTypes: data.propertyTypes || ["houses"],
+                preferredContactMethod: data.preferredContactMethod || [
+                  "email",
+                ],
+                // Pass user's actual onboarding data
+                brandColors: data.brandColors || [
+                  "#3B82F6",
+                  "#EF4444",
+                  "#10B981",
+                  "#F3F4F6",
+                ],
+                phoneNumber: data.phoneNumber || "",
+                supportEmail: data.supportEmail || data.email,
+                whatsappNumber: data.whatsappNumber || "",
+                address: data.address || "",
+                facebookUrl: data.facebookUrl || "",
+                twitterUrl: data.twitterUrl || "",
+                instagramUrl: data.instagramUrl || "",
+                linkedinUrl: data.linkedinUrl || "",
+                youtubeUrl: data.youtubeUrl || "",
+              }),
             }
           );
 
           if (websiteResponse.ok) {
             const websiteResult = await websiteResponse.json();
-            websiteJobId = websiteResult.jobId;
+            websiteJobId = websiteResult.website.jobId; // Capture the jobId for tracking
             console.log(
-              `Website creation initiated for: ${data.domainName} with jobId: ${websiteJobId}`
+              `Website creation initiated for: ${data.domainName} with website ID: ${websiteResult.website._id}, jobId: ${websiteJobId}`
             );
           } else {
-            console.error(
-              "Website creation request failed:",
-              await websiteResponse.text()
-            );
+            const errorText = await websiteResponse.text();
+            console.error("Website creation request failed:", errorText);
           }
         } catch (error) {
-          console.error("Background website creation failed:", error);
+          console.error("Website creation failed:", error);
           // Don't fail the signup if website creation fails - user can retry later
         }
       } catch (workflowError) {

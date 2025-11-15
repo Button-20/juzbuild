@@ -518,7 +518,9 @@ export default function LeadsPage() {
         ...(statusFilter !== "all" && { status: statusFilter }),
         ...(sourceFilter !== "all" && { source: sourceFilter }),
         ...(priorityFilter !== "all" && { priority: priorityFilter }),
-        ...(selectedWebsite?.domain && { domain: selectedWebsite.domain }),
+        ...(selectedWebsite?.domainName && {
+          domain: selectedWebsite.domainName,
+        }),
       });
 
       const response = await fetch(`/api/leads?${params}`);
@@ -551,8 +553,8 @@ export default function LeadsPage() {
   const fetchStats = async () => {
     try {
       const params = new URLSearchParams();
-      if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (selectedWebsite?.domainName) {
+        params.append("domain", selectedWebsite.domainName);
       }
       const response = await fetch(`/api/leads/stats?${params}`);
       if (!response.ok) {
@@ -592,8 +594,8 @@ export default function LeadsPage() {
   const handleStatusUpdate = async (leadId: string, newStatus: LeadStatus) => {
     try {
       const params = new URLSearchParams();
-      if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (selectedWebsite?.domainName) {
+        params.append("domain", selectedWebsite.domainName);
       }
       const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "PATCH",
@@ -637,8 +639,8 @@ export default function LeadsPage() {
 
     try {
       const params = new URLSearchParams();
-      if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (selectedWebsite?.domainName) {
+        params.append("domain", selectedWebsite.domainName);
       }
       const response = await fetch(`/api/leads/${leadId}?${params}`, {
         method: "DELETE",
@@ -696,8 +698,8 @@ export default function LeadsPage() {
 
     try {
       const params = new URLSearchParams();
-      if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (selectedWebsite?.domainName) {
+        params.append("domain", selectedWebsite.domainName);
       }
       const response = await fetch(`/api/leads?${params}`, {
         method: "POST",
@@ -1121,8 +1123,8 @@ export default function LeadsPage() {
                   onSave={async (updatedLead: Partial<Lead>) => {
                     try {
                       const params = new URLSearchParams();
-                      if (selectedWebsite?.domain) {
-                        params.append("domain", selectedWebsite.domain);
+                      if (selectedWebsite?.domainName) {
+                        params.append("domain", selectedWebsite.domainName);
                       }
                       const response = await fetch(
                         `/api/leads/${selectedLead._id}?${params}`,

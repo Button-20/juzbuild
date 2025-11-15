@@ -62,8 +62,8 @@ export async function GET(request: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's website URL from the database
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const webwebsitesCollection = await getCollection("websites");
+    const site = await webwebsitesCollection.findOne({
       userId: userId,
       status: "active",
     });
@@ -131,8 +131,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get user's website URL from the database
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const webwebsitesCollection = await getCollection("websites");
+    const site = await webwebsitesCollection.findOne({
       userId: userId,
       status: "active",
     });

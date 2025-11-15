@@ -1,59 +1,175 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-
-interface Website {
-  id: string;
-  websiteName: string;
-  companyName: string;
-  domain: string;
-  status: string;
-  theme: string;
-}
+import { Website } from "@/types/website";
 
 interface WebsiteContextType {
-  selectedWebsiteId: string | null;
-  selectedWebsite: Website | null;
   websites: Website[];
-  setSelectedWebsiteId: (id: string) => void;
+  currentWebsite: Website | null;
+  isLoading: boolean;
+  switchWebsite: (websiteId: string) => void;
+  refreshWebsites: () => Promise<void>;
+  createWebsite: (params: any) => Promise<Website | null>;
+  updateWebsite: (
+    websiteId: string,
+    updates: Partial<Website>
+  ) => Promise<void>;
+  deleteWebsite: (websiteId: string) => Promise<void>;
+
+  // Backward compatibility (deprecated - use currentWebsite instead)
+  selectedWebsite: Website | null;
+  selectedWebsiteId: string | null;
   loading: boolean;
-  refetchWebsites: () => Promise<void>;
 }
 
-const WebsiteContext = createContext<WebsiteContextType | null>(null);
+const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
 
-export function WebsiteProvider({ children }: { children: React.ReactNode }) {
+interface WebsiteProviderProps {
+  children: React.ReactNode;
+}
+
+export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [websites, setWebsites] = useState<Website[]>([]);
-  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
+  const [currentWebsite, setCurrentWebsite] = useState<Website | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchWebsites = async () => {
     try {
-      const response = await fetch("/api/sites");
+      const response = await fetch("/api/websites", {
+        credentials: "include", // Use HTTP-only cookies for authentication
+      });
 
       if (response.ok) {
         const data = await response.json();
+        setWebsites(data.websites || []);
 
-        if (data.success) {
-          setWebsites(data.sites);
+        // Set current website from localStorage or first website
+        const savedWebsiteId = localStorage.getItem("currentWebsiteId");
+        let current = null;
 
-          // Auto-select the first website if none is selected and we have websites
-          if (data.sites.length > 0 && !selectedWebsiteId) {
-            const savedWebsiteId = localStorage.getItem("selectedWebsite");
-            const websiteToSelect = savedWebsiteId
-              ? data.sites.find((site: Website) => site.id === savedWebsiteId)
-                  ?.id || data.sites[0].id
-              : data.sites[0].id;
-            setSelectedWebsiteId(websiteToSelect);
+        if (savedWebsiteId) {
+          current = data.websites.find(
+            (w: Website) => w._id === savedWebsiteId
+          );
+        }
+
+        if (!current && data.websites.length > 0) {
+          current = data.websites[0];
+          localStorage.setItem("currentWebsiteId", current._id);
+        }
+
+        setCurrentWebsite(current);
+      }
+    } catch (error) {
+      console.error("Failed to fetch websites:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const switchWebsite = (websiteId: string) => {
+    const website = websites.find((w) => w._id === websiteId);
+    if (website) {
+      setCurrentWebsite(website);
+      localStorage.setItem("currentWebsiteId", websiteId);
+    }
+  };
+
+  const createWebsite = async (params: any): Promise<Website | null> => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+
+      const response = await fetch("/api/websites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newWebsite = data.website;
+
+        setWebsites((prev) => [newWebsite, ...prev]);
+
+        // If this is the first website, make it current
+        if (websites.length === 0) {
+          setCurrentWebsite(newWebsite);
+          localStorage.setItem("currentWebsiteId", newWebsite._id);
+        }
+
+        return newWebsite;
+      } else {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error("Failed to create website:", error);
+      throw error;
+    }
+  };
+
+  const updateWebsite = async (
+    websiteId: string,
+    updates: Partial<Website>
+  ) => {
+    try {
+      const response = await fetch(`/api/websites/${websiteId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Use HTTP-only cookies
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const updatedWebsite = data.website;
+
+        setWebsites((prev) =>
+          prev.map((w) => (w._id === websiteId ? updatedWebsite : w))
+        );
+
+        if (currentWebsite?._id === websiteId) {
+          setCurrentWebsite(updatedWebsite);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update website:", error);
+      throw error;
+    }
+  };
+
+  const deleteWebsite = async (websiteId: string) => {
+    try {
+      const response = await fetch(`/api/websites?id=${websiteId}`, {
+        method: "DELETE",
+        credentials: "include", // Use HTTP-only cookies
+      });
+
+      if (response.ok) {
+        setWebsites((prev) => prev.filter((w) => w._id !== websiteId));
+
+        // If deleted website was current, switch to another one
+        if (currentWebsite?._id === websiteId) {
+          const remainingWebsites = websites.filter((w) => w._id !== websiteId);
+          const newCurrent = remainingWebsites[0] || null;
+          setCurrentWebsite(newCurrent);
+
+          if (newCurrent) {
+            localStorage.setItem("currentWebsiteId", newCurrent._id);
+          } else {
+            localStorage.removeItem("currentWebsiteId");
           }
         }
       }
     } catch (error) {
-      // Silently handle errors - you can add proper error handling here if needed
-    } finally {
-      setLoading(false);
+      console.error("Failed to delete website:", error);
+      throw error;
     }
   };
 
@@ -61,28 +177,22 @@ export function WebsiteProvider({ children }: { children: React.ReactNode }) {
     fetchWebsites();
   }, []);
 
-  useEffect(() => {
-    if (selectedWebsiteId) {
-      localStorage.setItem("selectedWebsite", selectedWebsiteId);
-    }
-  }, [selectedWebsiteId]);
-
-  const selectedWebsite =
-    websites.find((w) => w.id === selectedWebsiteId) || null;
-
-  const handleSetSelectedWebsiteId = (id: string) => {
-    setSelectedWebsiteId(id);
-  };
-
   return (
     <WebsiteContext.Provider
       value={{
-        selectedWebsiteId,
-        selectedWebsite,
         websites,
-        setSelectedWebsiteId: handleSetSelectedWebsiteId,
-        loading,
-        refetchWebsites: fetchWebsites,
+        currentWebsite,
+        isLoading,
+        switchWebsite,
+        refreshWebsites: fetchWebsites,
+        createWebsite,
+        updateWebsite,
+        deleteWebsite,
+
+        // Backward compatibility (deprecated)
+        selectedWebsite: currentWebsite,
+        selectedWebsiteId: currentWebsite?._id || null,
+        loading: isLoading,
       }}
     >
       {children}
@@ -92,7 +202,7 @@ export function WebsiteProvider({ children }: { children: React.ReactNode }) {
 
 export function useWebsite() {
   const context = useContext(WebsiteContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useWebsite must be used within a WebsiteProvider");
   }
   return context;

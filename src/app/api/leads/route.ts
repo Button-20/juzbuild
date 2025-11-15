@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
 
     if (domain) {
       // Get the specific website's database name by domain
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const webwebsitesCollection = await getCollection("websites");
+      const website = await webwebsitesCollection.findOne({
         domain: domain,
       });
 
@@ -134,8 +134,8 @@ export async function POST(request: NextRequest) {
 
     if (domain) {
       // Get the specific website's database name by domain
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const webwebsitesCollection = await getCollection("websites");
+      const website = await webwebsitesCollection.findOne({
         domain: domain,
       });
 

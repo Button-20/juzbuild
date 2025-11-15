@@ -27,13 +27,13 @@ interface WebsiteStats {
 }
 
 export function DashboardAnalytics() {
-  const { selectedWebsite } = useWebsite();
+  const { currentWebsite } = useWebsite();
   const [stats, setStats] = useState<WebsiteStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!selectedWebsite?.id) {
+      if (!currentWebsite?._id) {
         setLoading(false);
         return;
       }
@@ -43,10 +43,10 @@ export function DashboardAnalytics() {
         // Fetch data for current website
         const [pagesRes, propertiesRes, testimonialsRes, contactsRes] =
           await Promise.all([
-            fetch(`/api/pages?websiteId=${selectedWebsite.id}`),
-            fetch(`/api/properties?websiteId=${selectedWebsite.id}`),
-            fetch(`/api/testimonials?websiteId=${selectedWebsite.id}`),
-            fetch(`/api/contact?websiteId=${selectedWebsite.id}`),
+            fetch(`/api/pages?websiteId=${currentWebsite._id}`),
+            fetch(`/api/properties?websiteId=${currentWebsite._id}`),
+            fetch(`/api/testimonials?websiteId=${currentWebsite._id}`),
+            fetch(`/api/contact?websiteId=${currentWebsite._id}`),
           ]);
 
         let pages = 0;
@@ -80,7 +80,7 @@ export function DashboardAnalytics() {
           testimonials,
           contacts,
           blog: 0,
-          domainStatus: selectedWebsite?.domain ? "Connected" : "Not Set",
+          domainStatus: currentWebsite?.domainName ? "Connected" : "Not Set",
           seoStatus: "Optimized",
           lastUpdated: new Date().toLocaleDateString(),
         });
@@ -92,7 +92,7 @@ export function DashboardAnalytics() {
     };
 
     fetchStats();
-  }, [selectedWebsite]);
+  }, [currentWebsite]);
 
   if (loading) {
     return (
@@ -104,7 +104,7 @@ export function DashboardAnalytics() {
     );
   }
 
-  if (!selectedWebsite) {
+  if (!currentWebsite) {
     return (
       <Card className="mx-4 lg:mx-6">
         <CardContent className="pt-6">
@@ -202,22 +202,18 @@ export function DashboardAnalytics() {
             <CardContent className="space-y-3">
               <div>
                 <p className="text-sm text-muted-foreground">Website Name</p>
-                <p className="font-medium">{selectedWebsite.websiteName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Company</p>
-                <p className="font-medium">{selectedWebsite.companyName}</p>
+                <p className="font-medium">{currentWebsite.companyName}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Domain</p>
                 <p className="font-medium font-mono text-sm">
-                  {selectedWebsite.domain}
+                  {currentWebsite.domainName}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
                 <Badge className="mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  {selectedWebsite.status}
+                  {currentWebsite.status}
                 </Badge>
               </div>
             </CardContent>
@@ -234,7 +230,7 @@ export function DashboardAnalytics() {
               <div>
                 <p className="text-sm text-muted-foreground">Current Theme</p>
                 <p className="font-medium capitalize">
-                  {selectedWebsite.theme}
+                  {currentWebsite.selectedTheme}
                 </p>
               </div>
               <div>

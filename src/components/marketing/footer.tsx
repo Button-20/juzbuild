@@ -1,11 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import Container from "../global/container";
 import Icons from "../global/icons";
-import { Mail, Github, Linkedin, Twitter } from "lucide-react";
+import { Mail, Github, Linkedin, Twitter, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const socialLinks = [
     { icon: Twitter, href: "https://twitter.com/juzbuild", label: "Twitter" },
     {
@@ -15,6 +22,41 @@ const Footer = () => {
     },
     { icon: Github, href: "https://github.com/juzbuild", label: "GitHub" },
   ];
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message);
+        setEmail(""); // Clear the input
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      toast.error("Failed to subscribe. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <footer className="flex flex-col relative items-center justify-center border-t border-foreground/5 pt-16 pb-8 px-6 lg:px-8 w-full max-w-6xl mx-auto lg:pt-32">
@@ -126,19 +168,28 @@ const Footer = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-2">Stay updated</p>
-              <div className="flex gap-2">
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
                 <Input
                   type="email"
                   placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="h-9 text-sm"
+                  disabled={isLoading}
                 />
                 <Button
+                  type="submit"
                   size="sm"
                   className="bg-blue-500 hover:bg-blue-600 px-3"
+                  disabled={isLoading}
                 >
-                  <Mail className="w-4 h-4" />
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
                 </Button>
-              </div>
+              </form>
             </div>
           </div>
         </div>

@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's active website
-    const sitesCollection = await getCollection("sites");
-    const site = await sitesCollection.findOne({
+    const websitesCollection = await getCollection("websites");
+    const site = await websitesCollection.findOne({
       userId: userId,
       status: "active",
     });

@@ -63,7 +63,7 @@ interface Author {
 }
 
 export default function BlogsPage() {
-  const { selectedWebsite } = useWebsite();
+  const { currentWebsite } = useWebsite();
   const { toast } = useToast();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
@@ -92,10 +92,10 @@ export default function BlogsPage() {
     try {
       const params = new URLSearchParams();
 
-      if (selectedWebsite?.id) {
-        params.append("websiteId", selectedWebsite.id);
-      } else if (selectedWebsite?.domain) {
-        params.append("domain", selectedWebsite.domain);
+      if (currentWebsite?._id) {
+        params.append("websiteId", currentWebsite._id);
+      } else if (currentWebsite?.domainName) {
+        params.append("domain", currentWebsite.domainName);
       }
 
       params.append("page", currentPage.toString());
@@ -128,9 +128,9 @@ export default function BlogsPage() {
 
   const fetchAuthors = async () => {
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const websiteParam = currentWebsite?._id
+        ? `?websiteId=${currentWebsite._id}`
+        : `?domain=${currentWebsite?.domainName || ""}`;
 
       const response = await fetch(`/api/authors${websiteParam}`);
       if (response.ok) {
@@ -151,18 +151,18 @@ export default function BlogsPage() {
   };
 
   useEffect(() => {
-    if (selectedWebsite) {
+    if (currentWebsite) {
       fetchData();
     }
-  }, [selectedWebsite, currentPage, sortBy, sortDirection]);
+  }, [currentWebsite, currentPage, sortBy, sortDirection]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const websiteParam = currentWebsite?._id
+        ? `?websiteId=${currentWebsite._id}`
+        : `?domain=${currentWebsite?.domainName || ""}`;
 
       const blogData = {
         ...formData,
@@ -222,9 +222,9 @@ export default function BlogsPage() {
     if (!confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      const websiteParam = selectedWebsite?.id
-        ? `?websiteId=${selectedWebsite.id}`
-        : `?domain=${selectedWebsite?.domain || ""}`;
+      const websiteParam = currentWebsite?._id
+        ? `?websiteId=${currentWebsite._id}`
+        : `?domain=${currentWebsite?.domainName || ""}`;
 
       const response = await fetch(`/api/blogs/${blogId}${websiteParam}`, {
         method: "DELETE",

@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
     let websiteDatabaseName = null;
 
     if (websiteId) {
-      const sitesCollection = await getCollection("sites");
+      const webwebsitesCollection = await getCollection("websites");
       const { ObjectId } = require("mongodb");
-      const website = await sitesCollection.findOne({
+      const website = await webwebsitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: userId,
       });

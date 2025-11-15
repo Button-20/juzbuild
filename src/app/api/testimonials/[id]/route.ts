@@ -56,8 +56,8 @@ export async function PUT(
 
     if (websiteId) {
       // Get the specific website's database name
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const webwebsitesCollection = await getCollection("websites");
+      const website = await webwebsitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: decoded.userId,
       });
@@ -164,8 +164,8 @@ export async function DELETE(
 
     if (websiteId) {
       // Get the specific website's database name
-      const sitesCollection = await getCollection("sites");
-      const website = await sitesCollection.findOne({
+      const webwebsitesCollection = await getCollection("websites");
+      const website = await webwebsitesCollection.findOne({
         _id: new ObjectId(websiteId),
         userId: decoded.userId,
       });

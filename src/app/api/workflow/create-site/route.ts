@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const createSiteSchema = z.object({
   userId: z.string(),
+  websiteId: z.string(), // Add websiteId for multi-site architecture
   websiteName: z.string().min(2),
   userEmail: z.string().email(),
   fullName: z.string().min(2),
