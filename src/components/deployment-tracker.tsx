@@ -164,7 +164,7 @@ export function DeploymentTracker({
 
         {/* Current Step */}
         {status?.currentStep && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+          <div className="flex items-center gap-2 p-3 bg-blue-950/20 rounded-lg">
             <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
             <span className="text-sm font-medium">{status.currentStep}</span>
           </div>
@@ -223,14 +223,14 @@ export function DeploymentTracker({
 
         {/* Error State */}
         {(status?.status === "failed" || error) && (
-          <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              <h4 className="font-medium text-red-800 dark:text-red-200">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <h4 className="font-medium text-destructive">
                 Deployment Failed
               </h4>
             </div>
-            <p className="text-sm text-red-700 dark:text-red-300">
+            <p className="text-sm text-destructive/80">
               {status?.error || error || "An error occurred during deployment"}
             </p>
           </div>

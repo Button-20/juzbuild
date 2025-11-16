@@ -26,10 +26,19 @@ interface WebsiteStats {
   lastUpdated: string;
 }
 
+interface WebsiteTheme {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
 export function DashboardAnalytics() {
   const { currentWebsite } = useWebsite();
   const [stats, setStats] = useState<WebsiteStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [themes, setThemes] = useState<WebsiteTheme[]>([]);
+  const [themesLoading, setThemesLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -93,6 +102,32 @@ export function DashboardAnalytics() {
 
     fetchStats();
   }, [currentWebsite]);
+
+  // Fetch themes
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const response = await fetch("/api/themes");
+        if (response.ok) {
+          const result = await response.json();
+          setThemes(result.themes || []);
+        } else {
+          console.error("Failed to fetch themes");
+        }
+      } catch (error) {
+        console.error("Error fetching themes:", error);
+      } finally {
+        setThemesLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, []);
+
+  const getThemeName = (themeId: string) => {
+    const theme = themes.find((t) => t.id === themeId);
+    return theme ? theme.name : themeId;
+  };
 
   if (loading) {
     return (
@@ -230,7 +265,9 @@ export function DashboardAnalytics() {
               <div>
                 <p className="text-sm text-muted-foreground">Current Theme</p>
                 <p className="font-medium capitalize">
-                  {currentWebsite.selectedTheme}
+                  {themesLoading
+                    ? currentWebsite.selectedTheme
+                    : getThemeName(currentWebsite.selectedTheme)}
                 </p>
               </div>
               <div>

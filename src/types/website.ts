@@ -21,6 +21,7 @@ export interface Website {
   vercelProjectId?: string;
   databaseUrl?: string;
   dbName?: string;
+  jobId?: string;
 
   // Website content configuration
   includedPages?: string[];
@@ -101,4 +102,18 @@ export interface CreateWebsiteParams {
   includedPages?: string[];
   propertyTypes?: string[];
   preferredContactMethod?: string[];
+  // New fields from onboarding
+  logoUrl?: string;
+  brandColors?: string[];
+  leadCaptureMethods?: ("AI Chatbot" | "Contact Form" | "Inquiry Form")[];
+  geminiApiKey?: string;
+  phoneNumber?: string;
+  supportEmail?: string;
+  whatsappNumber?: string;
+  address?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
 }

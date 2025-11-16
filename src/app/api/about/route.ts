@@ -17,15 +17,15 @@ export async function GET(req: NextRequest) {
     const userId = decoded.userId;
 
     // Get user's website URL from the database
-    const webwebsitesCollection = await getCollection(\"websites\");
+    const webwebsitesCollection = await getCollection("websites");
     const site = await webwebsitesCollection.findOne({
       userId: userId,
-      status: \"active\",
+      status: "active",
     });
 
     if (!site) {
       return NextResponse.json(
-        { error: \"No active website found\" },
+        { error: "No active website found" },
         { status: 404 }
       );
     }

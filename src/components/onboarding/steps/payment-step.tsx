@@ -25,6 +25,7 @@ export default function PaymentStep({
   onBack,
   isSubmitting,
   isStepValid,
+  isFirst,
 }: WizardStepProps) {
   const selectedPlan =
     PRICING_PLANS.find((plan) => plan.id === data.selectedPlan) ||
@@ -64,16 +65,18 @@ export default function PaymentStep({
     });
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Plan Selection */}
-      <div className="space-y-6">
-        <div className="border-l-4 border-primary pl-4">
-          <h3 className="text-lg font-semibold mb-1">Choose Your Plan</h3>
-          <p className="text-sm text-muted-foreground">
-            Select the perfect plan for your real estate business
-          </p>
-        </div>
+  // If this is the first step, only show plan selection
+  if (isFirst) {
+    return (
+      <div className="space-y-8">
+        {/* Plan Selection */}
+        <div className="space-y-6">
+          <div className="border-l-4 border-primary pl-4">
+            <h3 className="text-lg font-semibold mb-1">Choose Your Plan</h3>
+            <p className="text-sm text-muted-foreground">
+              Select the perfect plan for your real estate business
+            </p>
+          </div>
 
         <RadioGroup
           value={data.selectedPlan || "pro"}
@@ -88,6 +91,7 @@ export default function PaymentStep({
                   ? "ring-2 ring-primary border-primary"
                   : "hover:border-primary/50"
               } ${plan.popular ? "border-primary" : ""}`}
+              onClick={() => handlePlanChange(plan.id)}
             >
               {plan.popular && (
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-nowrap">
@@ -96,11 +100,9 @@ export default function PaymentStep({
               )}
 
               <CardHeader className="text-center pb-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value={plan.id} id={plan.id} />
-                  <Label htmlFor={plan.id} className="cursor-pointer">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  </Label>
+                <div className="flex items-center justify-center space-x-2">
+                  <RadioGroupItem value={plan.id} id={plan.id} className="pointer-events-none" />
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
                 </div>
                 <CardDescription className="text-sm">
                   {plan.targetAudience}
@@ -167,10 +169,11 @@ export default function PaymentStep({
                 ? "ring-2 ring-primary"
                 : "hover:border-primary/50"
             }`}
+            onClick={() => handleBillingChange("monthly")}
           >
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <RadioGroupItem value="monthly" id="monthly" />
+                <RadioGroupItem value="monthly" id="monthly" className="pointer-events-none" />
                 <div className="flex-1">
                   <Label
                     htmlFor="monthly"
@@ -197,10 +200,205 @@ export default function PaymentStep({
                 ? "ring-2 ring-primary"
                 : "hover:border-primary/50"
             }`}
+            onClick={() => handleBillingChange("yearly")}
           >
             <CardContent className="p-6">
               <div className="flex items-center space-x-3">
-                <RadioGroupItem value="yearly" id="yearly" />
+                <RadioGroupItem value="yearly" id="yearly" className="pointer-events-none" />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="yearly"
+                    className="cursor-pointer font-medium"
+                  >
+                    Yearly Billing
+                    <Badge variant="secondary" className="ml-2">
+                      Save 17%
+                    </Badge>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Get 2 months free with annual payment
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold">
+                    ${Math.round(selectedPlan.yearlyPrice / 12)}/mo
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    ${selectedPlan.yearlyPrice}/year
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </RadioGroup>
+        {errors.billingCycle && (
+          <p className="text-destructive text-sm">{errors.billingCycle}</p>
+        )}
+      </div>
+
+      {/* Navigation for first step */}
+      <div className="flex justify-between pt-6 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onBack} 
+          size="lg" 
+          className="px-8"
+          disabled={true}
+        >
+          Back
+        </Button>
+        <Button
+          onClick={onNext}
+          size="lg"
+          className="px-8"
+          disabled={!isStepValid}
+        >
+          Continue
+        </Button>
+      </div>
+    </div>
+    );
+  }
+
+  // Full payment step for when it's not the first step
+  return (
+    <div className="space-y-8">
+      {/* Plan Selection */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">Choose Your Plan</h3>
+          <p className="text-sm text-muted-foreground">
+            Select the perfect plan for your real estate business
+          </p>
+        </div>
+
+        <RadioGroup
+          value={data.selectedPlan || "pro"}
+          onValueChange={handlePlanChange}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          {PRICING_PLANS.map((plan) => (
+            <Card
+              key={plan.id}
+              className={`relative cursor-pointer transition-all ${
+                data.selectedPlan === plan.id
+                  ? "ring-2 ring-primary border-primary"
+                  : "hover:border-primary/50"
+              } ${plan.popular ? "border-primary" : ""}`}
+              onClick={() => handlePlanChange(plan.id)}
+            >
+              {plan.popular && (
+                <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-nowrap">
+                  Most Popular
+                </Badge>
+              )}
+
+              <CardHeader className="text-center pb-2">
+                <div className="flex items-center justify-center space-x-2">
+                  <RadioGroupItem value={plan.id} id={plan.id} className="pointer-events-none" />
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                </div>
+                <CardDescription className="text-sm">
+                  {plan.targetAudience}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="pt-0">
+                <div className="text-center mb-4">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-3xl font-bold">
+                      $
+                      {isYearly
+                        ? Math.round(plan.yearlyPrice / 12)
+                        : plan.monthlyPrice}
+                    </span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  {isYearly && (
+                    <div className="text-xs text-primary mt-1">
+                      Billed yearly (${plan.yearlyPrice}) • Save 2 months
+                    </div>
+                  )}
+                </div>
+
+                <ul className="space-y-2 text-sm">
+                  {plan.features.slice(0, 4).map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                  {plan.features.length > 4 && (
+                    <li className="text-muted-foreground text-xs">
+                      +{plan.features.length - 4} more features
+                    </li>
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </RadioGroup>
+        {errors.selectedPlan && (
+          <p className="text-destructive text-sm">{errors.selectedPlan}</p>
+        )}
+      </div>
+
+      {/* Billing Cycle */}
+      <div className="space-y-6">
+        <div className="border-l-4 border-primary pl-4">
+          <h3 className="text-lg font-semibold mb-1">Billing Cycle</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose how you'd like to be billed
+          </p>
+        </div>
+
+        <RadioGroup
+          value={data.billingCycle || "monthly"}
+          onValueChange={handleBillingChange}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <Card
+            className={`cursor-pointer transition-all ${
+              data.billingCycle === "monthly"
+                ? "ring-2 ring-primary"
+                : "hover:border-primary/50"
+            }`}
+            onClick={() => handleBillingChange("monthly")}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <RadioGroupItem value="monthly" id="monthly" className="pointer-events-none" />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="monthly"
+                    className="cursor-pointer font-medium"
+                  >
+                    Monthly Billing
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Pay month-to-month, cancel anytime
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold">
+                    ${selectedPlan.monthlyPrice}/mo
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className={`cursor-pointer transition-all ${
+              data.billingCycle === "yearly"
+                ? "ring-2 ring-primary"
+                : "hover:border-primary/50"
+            }`}
+            onClick={() => handleBillingChange("yearly")}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <RadioGroupItem value="yearly" id="yearly" className="pointer-events-none" />
                 <div className="flex-1">
                   <Label
                     htmlFor="yearly"

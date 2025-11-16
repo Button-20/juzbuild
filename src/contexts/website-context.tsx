@@ -77,15 +77,12 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
 
   const createWebsite = async (params: any): Promise<Website | null> => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return null;
-
       const response = await fetch("/api/websites", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include", // Include HTTP-only cookies
         body: JSON.stringify(params),
       });
 

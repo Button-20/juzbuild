@@ -20,36 +20,55 @@ import PaymentStep from "./steps/payment-step";
 import SignupStep from "./steps/signup-step";
 import WebsiteSetupStep from "./steps/website-setup-new-step";
 
+// Helper function to check if a feature is available for the selected plan
+const isFeatureAvailable = (feature: string, selectedPlan: string): boolean => {
+  const planHierarchy = ["starter", "pro", "agency"];
+  const currentPlanIndex = planHierarchy.indexOf(selectedPlan);
+  
+  // AI Chatbot is only available for Pro and Agency plans
+  if (feature === "AI Chatbot") {
+    return currentPlanIndex >= 1; // Pro (index 1) and above
+  }
+  
+  // Advanced marketing features for Agency plans
+  if (feature === "Advanced Marketing") {
+    return currentPlanIndex >= 2; // Agency (index 2) only
+  }
+  
+  // Default: feature is available for all plans
+  return true;
+};
+
 const WIZARD_STEPS: WizardStep[] = [
   {
     id: 1,
+    title: "Choose Plan & Payment",
+    description: "Select your plan and complete payment",
+    component: PaymentStep,
+  },
+  {
+    id: 2,
     title: "Account Setup",
     description: "Create your account and business name",
     component: SignupStep,
   },
   {
-    id: 2,
+    id: 3,
     title: "Business Profile",
     description: "Tell us about your business and brand",
     component: BusinessInfoStep,
   },
   {
-    id: 3,
+    id: 4,
     title: "Website Setup",
     description: "Configure your website layout and features",
     component: WebsiteSetupStep,
   },
   {
-    id: 4,
+    id: 5,
     title: "Marketing Setup",
     description: "Set up your marketing preferences",
     component: MarketingSetupStep,
-  },
-  {
-    id: 5,
-    title: "Choose Plan & Payment",
-    description: "Select your plan and complete payment",
-    component: PaymentStep,
   },
 ];
 
@@ -64,7 +83,7 @@ export default function OnboardingWizard({
 }: OnboardingWizardProps) {
   // Filter steps based on user type - skip signup step for existing users
   const activeSteps = isExistingUser
-    ? WIZARD_STEPS.filter((step) => step.id !== 1) // Remove signup step
+    ? WIZARD_STEPS.filter((step) => step.id !== 2) // Remove signup step (now id 2)
     : WIZARD_STEPS;
 
   // If existing user, start at first step (Business Profile, formerly step 2)
@@ -120,7 +139,16 @@ export default function OnboardingWizard({
       let isValid = true;
 
       switch (currentStep) {
-        case 0: // Account Setup Step - All fields are required
+        case 0: // Choose Plan & Payment Step - Plan selection required
+          isValid = !!(
+            data.selectedPlan &&
+            data.selectedPlan.trim() &&
+            data.billingCycle &&
+            data.billingCycle.trim()
+          );
+          break;
+
+        case 1: // Account Setup Step - All fields are required
           isValid = !!(
             // Personal Information
             (
@@ -151,7 +179,7 @@ export default function OnboardingWizard({
           );
           break;
 
-        case 1: // Business Profile Step - Tagline and About section required, contact/social optional
+        case 2: // Business Profile Step - Tagline and About section required, contact/social optional
           isValid = !!(
             data.tagline?.trim() &&
             data.tagline.trim().length >= 2 &&
@@ -171,7 +199,7 @@ export default function OnboardingWizard({
           );
           break;
 
-        case 2: // Website Setup Step - All fields are required
+        case 3: // Website Setup Step - All fields are required
           isValid = !!(
             data.propertyTypes?.length &&
             data.propertyTypes.length > 0 &&
@@ -192,7 +220,7 @@ export default function OnboardingWizard({
           );
           break;
 
-        case 3: // Marketing Setup Step - Only preferred contact method is required
+        case 4: // Marketing Setup Step - Only preferred contact method is required
           isValid = !!(
             // adsConnections is optional (marked as such in UI)
             (
@@ -245,7 +273,14 @@ export default function OnboardingWizard({
     const newErrors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0: // Account Setup Step - All fields are required
+      case 0: // Choose Plan & Payment Step - Plan selection required
+        if (!formData.selectedPlan?.trim())
+          newErrors.selectedPlan = "Please select a plan";
+        if (!formData.billingCycle?.trim())
+          newErrors.billingCycle = "Please select a billing cycle";
+        break;
+
+      case 1: // Account Setup Step - All fields are required
         // Personal Information
         if (!formData.fullName?.trim())
           newErrors.fullName = "Full name is required";
@@ -288,7 +323,26 @@ export default function OnboardingWizard({
           newErrors.city = "City must be at least 2 characters";
         break;
 
-      case 1: // Business Profile Step - Tagline and About section required, contact/social optional but validated
+      case 1: // Account Setup Step - All fields are required
+        if (!formData.fullName?.trim())
+          newErrors.fullName = "Full name is required";
+        else if (formData.fullName.trim().length < 2)
+          newErrors.fullName = "Name must be at least 2 characters";
+        if (!formData.email?.trim()) newErrors.email = "Email is required";
+        else if (!/\S+@\S+\.\S+/.test(formData.email))
+          newErrors.email = "Please enter a valid email address";
+        if (!formData.phoneNumber?.trim())
+          newErrors.phoneNumber = "Phone number is required";
+        else if (!/^\+[1-9]\d{6,14}$/.test(formData.phoneNumber))
+          newErrors.phoneNumber =
+            "Please enter a valid phone number with country code";
+        if (!formData.country?.trim()) newErrors.country = "Country is required";
+        if (!formData.city?.trim()) newErrors.city = "City is required";
+        else if (formData.city.trim().length < 2)
+          newErrors.city = "City must be at least 2 characters";
+        break;
+
+      case 2: // Business Profile Step - Tagline and About section required, contact/social optional but validated
         if (!formData.tagline?.trim())
           newErrors.tagline = "Tagline/Slogan is required";
         else if (formData.tagline.trim().length < 2)
@@ -352,7 +406,7 @@ export default function OnboardingWizard({
             "Please enter a valid URL starting with http:// or https://";
         break;
 
-      case 2: // Website Setup Step - All fields are required
+      case 3: // Website Setup Step - All fields are required
         if (!formData.propertyTypes?.length)
           newErrors.propertyTypes = "Select at least one property type";
 
@@ -375,14 +429,14 @@ export default function OnboardingWizard({
             "Gemini API key is required when AI Chatbot is selected";
         break;
 
-      case 3: // Marketing Setup Step - Only preferred contact method is required
+      case 4: // Marketing Setup Step - Only preferred contact method is required
         // adsConnections is optional (marked as optional in UI)
         if (!formData.preferredContactMethod?.length)
           newErrors.preferredContactMethod =
             "Select at least one preferred contact method";
         break;
 
-      case 4: // Payment Step - Plan and billing required, payment details optional but if provided must be complete
+      case 5: // Payment Step - Plan and billing required, payment details optional but if provided must be complete
         if (!formData.selectedPlan)
           newErrors.selectedPlan = "Please select a plan";
         if (!formData.billingCycle)
@@ -582,7 +636,19 @@ export default function OnboardingWizard({
   const getStepIllustration = (stepIndex: number) => {
     const illustrations = [
       {
-        // Step 1 - Signup
+        // Step 1 - Payment
+        emoji: "💳",
+        title: "Choose Your Plan",
+        description:
+          "Select the perfect plan for your business needs and start building your success.",
+        features: [
+          "Flexible pricing",
+          "All features included",
+          "Cancel anytime",
+        ],
+      },
+      {
+        // Step 2 - Signup
         emoji: "👋",
         title: "Welcome!",
         description:
@@ -594,7 +660,7 @@ export default function OnboardingWizard({
         ],
       },
       {
-        // Step 2 - Business Info
+        // Step 3 - Business Info
         emoji: "🏢",
         title: "Brand Identity",
         description:
@@ -603,18 +669,6 @@ export default function OnboardingWizard({
           "Custom branding",
           "Logo integration",
           "Professional appearance",
-        ],
-      },
-      {
-        // Step 3 - Property Preferences
-        emoji: "🏠",
-        title: "Property Focus",
-        description:
-          "Configure what types of properties you work with and your typical price ranges.",
-        features: [
-          "Property filtering",
-          "Price optimization",
-          "Market targeting",
         ],
       },
       {
@@ -632,14 +686,6 @@ export default function OnboardingWizard({
         description:
           "Set up your marketing preferences to attract more leads and grow your business.",
         features: ["Lead generation", "Social media", "Ad management"],
-      },
-      {
-        // Step 6 - Property Upload
-        emoji: "📊",
-        title: "Property Import",
-        description:
-          "Optionally upload your existing properties to get your website populated quickly.",
-        features: ["Bulk import", "Easy management", "Quick setup"],
       },
     ];
 
@@ -724,6 +770,7 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
+                        isFeatureAvailable={(feature: string) => isFeatureAvailable(feature, formData.selectedPlan || "pro")}
                       />
                     </motion.div>
                   </AnimatePresence>
@@ -849,6 +896,7 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
+                        isFeatureAvailable={(feature: string) => isFeatureAvailable(feature, formData.selectedPlan || "pro")}
                       />
                     </motion.div>
                   </AnimatePresence>

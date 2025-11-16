@@ -5,6 +5,7 @@ export interface PricingPlan {
   monthlyPrice: number;
   yearlyPrice: number;
   yearlyDiscount: string;
+  websiteLimit: number;
   features: string[];
   popular?: boolean;
   targetAudience: string;
@@ -19,8 +20,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     monthlyPrice: 29,
     yearlyPrice: 290,
     yearlyDiscount: "2 months free",
+    websiteLimit: 1,
     features: [
-      "Professional real estate website",
+      "1 Professional Website",
       "Unlimited property uploads",
       "Lead capture forms",
       "Basic templates",
@@ -37,8 +39,10 @@ export const PRICING_PLANS: PricingPlan[] = [
     monthlyPrice: 59,
     yearlyPrice: 590,
     yearlyDiscount: "2 months free",
+    websiteLimit: 3,
     popular: true,
     features: [
+      "Up to 3 Websites",
       "Everything in Starter",
       "Facebook & Google ads integration",
       "Marketing automation tools",
@@ -57,7 +61,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     monthlyPrice: 99,
     yearlyPrice: 990,
     yearlyDiscount: "2 months free",
+    websiteLimit: 10,
     features: [
+      "Up to 10 Websites",
       "Everything in Pro",
       "Multiple team member logins",
       "Premium design templates",
