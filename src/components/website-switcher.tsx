@@ -12,13 +12,48 @@ import { Badge } from "@/components/ui/badge";
 import { useWebsite } from "@/contexts/website-context";
 import { Globe, Plus, ExternalLink, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+
+interface WebsiteTheme {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
 
 export function WebsiteSwitcher() {
   const { websites, currentWebsite, isLoading, switchWebsite } = useWebsite();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
+  const [themes, setThemes] = useState<WebsiteTheme[]>([]);
+  const [themesLoading, setThemesLoading] = useState(true);
+
+  // Fetch themes on component mount
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const response = await fetch("/api/themes");
+        if (response.ok) {
+          const result = await response.json();
+          setThemes(result.themes || []);
+        } else {
+          console.error("Failed to fetch themes");
+        }
+      } catch (error) {
+        console.error("Error fetching themes:", error);
+      } finally {
+        setThemesLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, []);
+
+  const getThemeName = (themeId: string) => {
+    const theme = themes.find((t) => t.id === themeId);
+    return theme ? theme.name : themeId;
+  };
 
   const handleWebsiteChange = (websiteId: string) => {
     switchWebsite(websiteId);
@@ -26,7 +61,7 @@ export function WebsiteSwitcher() {
   };
 
   const handleCreateNew = () => {
-    router.push("/app/create-website");
+    router.push("/app/onboarding");
   };
 
   const getStatusColor = (status: string) => {
@@ -136,34 +171,29 @@ export function WebsiteSwitcher() {
 
       {currentWebsite && (
         <div className="flex items-center justify-between px-1">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground truncate flex-1 min-w-0 mr-2">
             {websites.length} website{websites.length !== 1 ? "s" : ""} •{" "}
-            {currentWebsite.selectedTheme}
+            <span className="truncate">
+              {themesLoading
+                ? currentWebsite.selectedTheme
+                : getThemeName(currentWebsite.selectedTheme)}
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            {currentWebsite.status === "active" && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={() =>
-                  window.open(`https://${currentWebsite.domainName}`, "_blank")
-                }
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                View
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              onClick={() =>
-                router.push(`/app/websites/${currentWebsite._id}/settings`)
-              }
-            >
-              <Settings className="h-3 w-3" />
-            </Button>
+            {currentWebsite.status === "active" &&
+              currentWebsite.websiteUrl && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() =>
+                    window.open(currentWebsite.websiteUrl, "_blank")
+                  }
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  View
+                </Button>
+              )}
           </div>
         </div>
       )}

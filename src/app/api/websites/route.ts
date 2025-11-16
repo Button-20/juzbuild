@@ -227,7 +227,6 @@ export async function POST(request: NextRequest) {
         },
       },
       seo: {},
-      branding: {},
     };
 
     const result = await websitesCollection.insertOne(website);
@@ -288,9 +287,6 @@ export async function POST(request: NextRequest) {
             instagramUrl: instagramUrl || "",
             linkedinUrl: linkedinUrl || "",
             youtubeUrl: youtubeUrl || "",
-            instagramUrl: "",
-            linkedinUrl: "",
-            youtubeUrl: "",
           }),
         }
       );
@@ -318,7 +314,16 @@ export async function POST(request: NextRequest) {
         );
 
         // Update the newWebsite object to include jobId for response
-        newWebsite.jobId = workflowResult.jobId;
+        const response = {
+          ...newWebsite,
+          jobId: workflowResult.jobId,
+        };
+
+        return NextResponse.json({
+          success: true,
+          website: response,
+          message: "Website creation started successfully",
+        });
       } else {
         const errorText = await workflowResponse.text();
         console.error("Background processor error:", errorText);
@@ -336,6 +341,13 @@ export async function POST(request: NextRequest) {
           },
         }
       );
+
+      return NextResponse.json({
+        success: true,
+        website: newWebsite,
+        message:
+          "Website creation started (background job failed, but website was created)",
+      });
     }
 
     return NextResponse.json({
