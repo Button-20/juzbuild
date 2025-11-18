@@ -1261,11 +1261,14 @@ export default function OnboardingPage() {
                               return (
                                 <div
                                   key={page.id}
-                                  className={`p-3 border rounded-lg flex items-start justify-between ${
+                                  className={`p-3 border rounded-lg flex items-start justify-between cursor-pointer transition-all hover:border-primary/50 ${
                                     isSelected
                                       ? "border-primary bg-primary/5"
                                       : "border-border"
-                                  } ${isRequired ? "opacity-75" : ""}`}
+                                  } ${isRequired ? "opacity-75 cursor-not-allowed" : ""}`}
+                                  onClick={() =>
+                                    !isRequired && handlePageToggle(page.id)
+                                  }
                                 >
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">

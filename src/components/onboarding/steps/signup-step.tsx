@@ -13,6 +13,7 @@ import {
 import { WizardStepProps } from "@/types/onboarding";
 import { debounce } from "@/utils/helpers";
 import {
+  ArrowLeft,
   Building,
   Eye,
   EyeOff,
@@ -55,6 +56,7 @@ export default function SignupStep({
   updateData,
   errors,
   onNext,
+  onBack,
   isFirst,
   isStepValid,
   isValidatingEmail,
@@ -391,7 +393,10 @@ export default function SignupStep({
 
       {/* Navigation */}
       <div className="flex justify-between pt-6 border-t">
-        <div></div>
+        <Button variant="outline" onClick={onBack} size="lg" className="px-8">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
         <Button
           onClick={onNext}
           size="lg"

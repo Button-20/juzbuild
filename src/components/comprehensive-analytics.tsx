@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWebsite } from "@/contexts/website-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { PRICING_PLANS, getPlanById } from "@/constants/pricing";
 import {
   AlertCircle,
   CheckCircle,
@@ -23,8 +26,11 @@ import {
   Zap,
   Activity,
   Trash2,
+  Crown,
+  ArrowRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnalyticsCharts } from "./analytics-charts";
 
 interface AnalyticsData {
@@ -76,13 +82,21 @@ interface AnalyticsData {
 }
 
 export function ComprehensiveAnalytics() {
-  const { currentWebsite } = useWebsite();
+  const { currentWebsite, websites } = useWebsite();
+  const { user } = useAuth();
+  const router = useRouter();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Get user plan info
+  const userPlan = getPlanById(user?.selectedPlan || "starter");
+  const websiteLimit = userPlan?.websiteLimit || 1;
+  const isStarterPlan = user?.selectedPlan === "starter";
+  const isNearLimit = websites.length >= websiteLimit * 0.8; // Show upgrade when 80% of limit reached
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -191,6 +205,41 @@ export function ComprehensiveAnalytics() {
           </p>
         </div>
       </div>
+
+      {/* Upgrade Prompt for Starter Users */}
+      {(isStarterPlan || isNearLimit) && (
+        <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <CardHeader className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-amber-100 p-2">
+                  <Crown className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold text-amber-900">
+                    {isStarterPlan
+                      ? "Unlock More Websites"
+                      : "Approaching Plan Limit"}
+                  </CardTitle>
+                  <p className="text-sm text-amber-700">
+                    {isStarterPlan
+                      ? "You're on the Starter plan (1 website). Upgrade to create multiple websites and unlock premium features."
+                      : `You have ${websites.length}/${websiteLimit} websites. Consider upgrading for more capacity.`}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push("/app/settings")}
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                <ArrowRight className="h-4 w-4 mr-1" />
+                Upgrade Plan
+              </Button>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Google Analytics Status Alert - Compact */}
       {!analytics.googleAnalytics.measurementId && (

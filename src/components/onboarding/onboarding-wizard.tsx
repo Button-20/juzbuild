@@ -17,6 +17,7 @@ import React, { useCallback, useState } from "react";
 import BusinessInfoStep from "./steps/business-info-step";
 import MarketingSetupStep from "./steps/marketing-setup-step";
 import PaymentStep from "./steps/payment-step";
+import ReviewStep from "./steps/review-step";
 import SignupStep from "./steps/signup-step";
 import WebsiteSetupStep from "./steps/website-setup-new-step";
 
@@ -24,17 +25,17 @@ import WebsiteSetupStep from "./steps/website-setup-new-step";
 const isFeatureAvailable = (feature: string, selectedPlan: string): boolean => {
   const planHierarchy = ["starter", "pro", "agency"];
   const currentPlanIndex = planHierarchy.indexOf(selectedPlan);
-  
+
   // AI Chatbot is only available for Pro and Agency plans
   if (feature === "AI Chatbot") {
     return currentPlanIndex >= 1; // Pro (index 1) and above
   }
-  
+
   // Advanced marketing features for Agency plans
   if (feature === "Advanced Marketing") {
     return currentPlanIndex >= 2; // Agency (index 2) only
   }
-  
+
   // Default: feature is available for all plans
   return true;
 };
@@ -42,8 +43,8 @@ const isFeatureAvailable = (feature: string, selectedPlan: string): boolean => {
 const WIZARD_STEPS: WizardStep[] = [
   {
     id: 1,
-    title: "Choose Plan & Payment",
-    description: "Select your plan and complete payment",
+    title: "Choose Plan",
+    description: "Select your subscription plan",
     component: PaymentStep,
   },
   {
@@ -69,6 +70,12 @@ const WIZARD_STEPS: WizardStep[] = [
     title: "Marketing Setup",
     description: "Set up your marketing preferences",
     component: MarketingSetupStep,
+  },
+  {
+    id: 6,
+    title: "Review Details",
+    description: "Review your information and proceed to payment",
+    component: ReviewStep,
   },
 ];
 
@@ -273,10 +280,10 @@ export default function OnboardingWizard({
     const newErrors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0: // Choose Plan & Payment Step - Plan selection required
-        if (!formData.selectedPlan?.trim())
+      case 0: // Choose Plan - Plan selection required
+        if (!formData.selectedPlan)
           newErrors.selectedPlan = "Please select a plan";
-        if (!formData.billingCycle?.trim())
+        if (!formData.billingCycle)
           newErrors.billingCycle = "Please select a billing cycle";
         break;
 
@@ -318,25 +325,6 @@ export default function OnboardingWizard({
         // Location Information
         if (!formData.country?.trim())
           newErrors.country = "Country is required";
-        if (!formData.city?.trim()) newErrors.city = "City is required";
-        else if (formData.city.trim().length < 2)
-          newErrors.city = "City must be at least 2 characters";
-        break;
-
-      case 1: // Account Setup Step - All fields are required
-        if (!formData.fullName?.trim())
-          newErrors.fullName = "Full name is required";
-        else if (formData.fullName.trim().length < 2)
-          newErrors.fullName = "Name must be at least 2 characters";
-        if (!formData.email?.trim()) newErrors.email = "Email is required";
-        else if (!/\S+@\S+\.\S+/.test(formData.email))
-          newErrors.email = "Please enter a valid email address";
-        if (!formData.phoneNumber?.trim())
-          newErrors.phoneNumber = "Phone number is required";
-        else if (!/^\+[1-9]\d{6,14}$/.test(formData.phoneNumber))
-          newErrors.phoneNumber =
-            "Please enter a valid phone number with country code";
-        if (!formData.country?.trim()) newErrors.country = "Country is required";
         if (!formData.city?.trim()) newErrors.city = "City is required";
         else if (formData.city.trim().length < 2)
           newErrors.city = "City must be at least 2 characters";
@@ -436,42 +424,9 @@ export default function OnboardingWizard({
             "Select at least one preferred contact method";
         break;
 
-      case 5: // Payment Step - Plan and billing required, payment details optional but if provided must be complete
-        if (!formData.selectedPlan)
-          newErrors.selectedPlan = "Please select a plan";
-        if (!formData.billingCycle)
-          newErrors.billingCycle = "Please select a billing cycle";
-
-        // Payment method validation - if any payment field is filled, all must be filled
-        if (
-          formData.paymentMethod &&
-          (formData.paymentMethod.cardNumber ||
-            formData.paymentMethod.expiryDate ||
-            formData.paymentMethod.cvv ||
-            formData.paymentMethod.cardholderName)
-        ) {
-          if (!formData.paymentMethod.cardholderName?.trim())
-            newErrors.cardholderName = "Cardholder name is required";
-
-          if (!formData.paymentMethod.cardNumber?.trim())
-            newErrors.cardNumber = "Card number is required";
-          else if (
-            formData.paymentMethod.cardNumber.replace(/\s/g, "").length < 13
-          )
-            newErrors.cardNumber = "Card number is invalid";
-
-          if (!formData.paymentMethod.expiryDate?.trim())
-            newErrors.expiryDate = "Expiry date is required";
-          else if (
-            !/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.paymentMethod.expiryDate)
-          )
-            newErrors.expiryDate = "Expiry date must be in MM/YY format";
-
-          if (!formData.paymentMethod.cvv?.trim())
-            newErrors.cvv = "CVC is required";
-          else if (!/^\d{3,4}$/.test(formData.paymentMethod.cvv))
-            newErrors.cvv = "CVC must be 3 or 4 digits";
-        }
+      case 5: // Review Details Step - No validation needed, just review
+        // This step is just for reviewing the information before payment
+        // All validation should have been done in previous steps
         break;
     }
 
@@ -687,6 +642,14 @@ export default function OnboardingWizard({
           "Set up your marketing preferences to attract more leads and grow your business.",
         features: ["Lead generation", "Social media", "Ad management"],
       },
+      {
+        // Step 6 - Review
+        emoji: "📋",
+        title: "Review & Payment",
+        description:
+          "Review your details and complete payment to activate your subscription.",
+        features: ["Secure payment", "Order summary", "Easy checkout"],
+      },
     ];
 
     return illustrations[stepIndex] || illustrations[0];
@@ -770,7 +733,12 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
-                        isFeatureAvailable={(feature: string) => isFeatureAvailable(feature, formData.selectedPlan || "pro")}
+                        isFeatureAvailable={(feature: string) =>
+                          isFeatureAvailable(
+                            feature,
+                            formData.selectedPlan || "pro"
+                          )
+                        }
                       />
                     </motion.div>
                   </AnimatePresence>
@@ -896,7 +864,12 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
-                        isFeatureAvailable={(feature: string) => isFeatureAvailable(feature, formData.selectedPlan || "pro")}
+                        isFeatureAvailable={(feature: string) =>
+                          isFeatureAvailable(
+                            feature,
+                            formData.selectedPlan || "pro"
+                          )
+                        }
                       />
                     </motion.div>
                   </AnimatePresence>

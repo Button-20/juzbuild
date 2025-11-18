@@ -9,7 +9,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useWebsite } from "@/contexts/website-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { PRICING_PLANS, getPlanById } from "@/constants/pricing";
 import { Globe, Plus, ExternalLink, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -24,10 +32,17 @@ interface WebsiteTheme {
 
 export function WebsiteSwitcher() {
   const { websites, currentWebsite, isLoading, switchWebsite } = useWebsite();
+  const { user } = useAuth();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [themes, setThemes] = useState<WebsiteTheme[]>([]);
   const [themesLoading, setThemesLoading] = useState(true);
+
+  // Check if user can create more websites
+  const userPlan = getPlanById(user?.selectedPlan || "starter");
+  const websiteLimit = userPlan?.websiteLimit || 1;
+  const canCreateWebsite = websites.length < websiteLimit;
+  const isStarterPlan = user?.selectedPlan === "starter";
 
   // Fetch themes on component mount
   useEffect(() => {
@@ -61,6 +76,14 @@ export function WebsiteSwitcher() {
   };
 
   const handleCreateNew = () => {
+    if (!canCreateWebsite) {
+      toast.error(
+        `You've reached your plan limit of ${websiteLimit} website${
+          websiteLimit !== 1 ? "s" : ""
+        }. Please upgrade your plan to create more websites.`
+      );
+      return;
+    }
     router.push("/app/onboarding");
   };
 
@@ -96,16 +119,30 @@ export function WebsiteSwitcher() {
     return (
       <div className="flex items-center justify-between gap-2 p-2">
         <span className="text-sm text-muted-foreground">No websites</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCreateNew}
-          className="text-xs"
-          disabled={isCreating}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Create
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCreateNew}
+                className="text-xs"
+                disabled={isCreating || !canCreateWebsite}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Create
+              </Button>
+            </TooltipTrigger>
+            {!canCreateWebsite && (
+              <TooltipContent>
+                <p>
+                  You've reached your plan limit. Upgrade to create more
+                  websites.
+                </p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     );
   }
@@ -157,22 +194,33 @@ export function WebsiteSwitcher() {
           </Select>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCreateNew}
-          className="flex-shrink-0 h-9 w-9"
-          title="Create new website"
-          disabled={isCreating}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCreateNew}
+                className="flex-shrink-0 h-9 w-9"
+                disabled={isCreating || !canCreateWebsite}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {canCreateWebsite
+                ? "Create new website"
+                : `You've reached your plan limit (${websiteLimit}). Upgrade to create more websites.`}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {currentWebsite && (
         <div className="flex items-center justify-between px-1">
           <div className="text-xs text-muted-foreground truncate flex-1 min-w-0 mr-2">
-            {websites.length} website{websites.length !== 1 ? "s" : ""} •{" "}
+            {websites.length}/{websiteLimit} website
+            {websites.length !== 1 ? "s" : ""} •{" "}
             <span className="truncate">
               {themesLoading
                 ? currentWebsite.selectedTheme

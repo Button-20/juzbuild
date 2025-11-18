@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { SiteHeader } from "@/components/site-header";
@@ -13,9 +13,70 @@ function SuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const domainName = searchParams.get("domainName");
-  const websiteName = searchParams.get("websiteName");
-  const websiteUrl = searchParams.get("websiteUrl");
+  const domainName = searchParams.get(\"domainName\");
+  const websiteName = searchParams.get(\"websiteName\");
+  const websiteUrl = searchParams.get(\"websiteUrl\");
+  const sessionId = searchParams.get(\"session_id\");
+  
+  // Check if this is a Stripe payment success
+  const isPaymentSuccess = !!sessionId;
+
+  // Handle post-payment signup completion
+  useEffect(() => {
+    const completeSignup = async () => {
+      if (!sessionId) return;
+      
+      // Get stored signup data from localStorage
+      const pendingSignupData = localStorage.getItem('pendingSignupData');
+      if (!pendingSignupData) {
+        console.error('No pending signup data found');
+        return;
+      }
+
+      try {
+        const signupData = JSON.parse(pendingSignupData);
+        
+        // Complete the signup process
+        const response = await fetch('/api/auth/complete-signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            signupData: signupData,
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Signup completed:', result);
+          
+          // Clean up stored data
+          localStorage.removeItem('pendingSignupData');
+          
+          // Optionally redirect to continue wizard or dashboard
+          if (result.websiteCreated) {
+            // Website was created successfully, can redirect to website success
+            setTimeout(() => {
+              window.location.href = `/app/success?websiteName=${result.website.companyName}&domainName=${result.website.domainName}&websiteUrl=${result.website.websiteUrl}`;
+            }, 2000);
+          } else {
+            // Website creation failed, redirect to dashboard to retry
+            setTimeout(() => {
+              router.push('/app/dashboard');
+            }, 2000);
+          }
+        } else {
+          console.error('Signup completion failed');
+        }
+      } catch (error) {
+        console.error('Error completing signup:', error);
+      }
+    };
+
+    completeSignup();
+  }, [sessionId, router]);
 
   const handleViewWebsite = () => {
     if (websiteUrl) {
@@ -42,19 +103,21 @@ function SuccessPageContent() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              🎉 Your Website is Live!
+            <h1 className=\"text-4xl font-bold text-foreground mb-4\">
+              {isPaymentSuccess ? \"🎉 Payment Successful!\" : \"🎉 Your Website is Live!\"}
             </h1>
-            <p className="text-xl text-muted-foreground mb-2">
-              Congratulations! {websiteName || "Your website"} has been
-              successfully deployed.
+            <p className=\"text-xl text-muted-foreground mb-2\">
+              {isPaymentSuccess 
+                ? \"Thank you! Your subscription is now active. You can now create your website.\"
+                : `Congratulations! ${websiteName || \"Your website\"} has been successfully deployed.`
+              }
             </p>
             {domainName && (
               <p className="text-lg text-primary font-medium">{domainName}</p>
             )}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 mb-8">
+          {/* Payment Success Actions */}\n          {isPaymentSuccess && (\n            <div className=\"text-center mb-8\">\n              <Button\n                onClick={() => router.push('/app/onboarding')}\n                size=\"lg\"\n                className=\"mr-4\"\n              >\n                Create Your Website\n              </Button>\n              <Button\n                variant=\"outline\"\n                onClick={handleGoToDashboard}\n                size=\"lg\"\n              >\n                Go to Dashboard\n              </Button>\n            </div>\n          )}\n\n          {!isPaymentSuccess && (\n          <div className=\"grid gap-6 md:grid-cols-2 mb-8\">
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
