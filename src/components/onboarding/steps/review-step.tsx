@@ -12,16 +12,16 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { PRICING_PLANS } from "@/constants/pricing";
 import { WizardStepProps } from "@/types/onboarding";
-import { 
-  ArrowLeft, 
-  Check, 
-  CreditCard, 
-  Building2, 
-  Globe, 
+import {
+  ArrowLeft,
+  Check,
+  CreditCard,
+  Building2,
+  Globe,
   Palette,
   FileText,
   Users,
-  Target
+  Target,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -45,7 +45,9 @@ export default function ReviewStep({
   const [themes, setThemes] = useState<Theme[]>([]);
   const [themesLoading, setThemesLoading] = useState(true);
 
-  const selectedPlan = PRICING_PLANS.find((plan) => plan.id === data.selectedPlan) || PRICING_PLANS[1];
+  const selectedPlan =
+    PRICING_PLANS.find((plan) => plan.id === data.selectedPlan) ||
+    PRICING_PLANS[1];
   const isYearly = data.billingCycle === "yearly";
   const price = isYearly ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
   const displayPrice = isYearly
@@ -82,38 +84,38 @@ export default function ReviewStep({
 
   const handleProceedToPayment = async () => {
     setIsProcessingPayment(true);
-    
+
     try {
       // Create Stripe checkout session
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           planId: data.selectedPlan,
-          billingCycle: data.billingCycle || 'monthly',
+          billingCycle: data.billingCycle || "monthly",
           isSignup: true, // This is for the signup flow
           customerEmail: data.email, // Pass email for Stripe checkout
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        throw new Error("Failed to create checkout session");
       }
 
       const { url } = await response.json();
-      
+
       if (url) {
         // Store form data in localStorage before redirecting to Stripe
-        localStorage.setItem('pendingSignupData', JSON.stringify(data));
+        localStorage.setItem("pendingSignupData", JSON.stringify(data));
         // Redirect to Stripe checkout
         window.location.href = url;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
-      console.error('Payment setup error:', error);
+      console.error("Payment setup error:", error);
       // Handle error appropriately
     } finally {
       setIsProcessingPayment(false);
@@ -173,7 +175,9 @@ export default function ReviewStep({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Full Name:</span>
-                  <p className="font-medium">{data.fullName || "Not provided"}</p>
+                  <p className="font-medium">
+                    {data.fullName || "Not provided"}
+                  </p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Email:</span>
@@ -181,19 +185,22 @@ export default function ReviewStep({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Company:</span>
-                  <p className="font-medium">{data.companyName || "Not provided"}</p>
+                  <p className="font-medium">
+                    {data.companyName || "Not provided"}
+                  </p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Domain:</span>
-                  <p className="font-medium">{data.domainName || "Not provided"}</p>
+                  <p className="font-medium">
+                    {data.domainName || "Not provided"}
+                  </p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Location:</span>
                   <p className="font-medium">
-                    {data.city && data.country 
-                      ? `${data.city}, ${data.country}` 
-                      : "Not provided"
-                    }
+                    {data.city && data.country
+                      ? `${data.city}, ${data.country}`
+                      : "Not provided"}
                   </p>
                 </div>
               </div>
@@ -213,10 +220,11 @@ export default function ReviewStep({
                 <div>
                   <span className="text-muted-foreground">Selected Theme:</span>
                   <p className="font-medium">
-                    {themesLoading 
-                      ? "Loading..." 
-                      : (data.selectedTheme ? getThemeName(data.selectedTheme) : "Default")
-                    }
+                    {themesLoading
+                      ? "Loading..."
+                      : data.selectedTheme
+                      ? getThemeName(data.selectedTheme)
+                      : "Default"}
                   </p>
                 </div>
                 {data.tagline && (
@@ -242,10 +250,16 @@ export default function ReviewStep({
                 )}
                 {data.propertyTypes && data.propertyTypes.length > 0 && (
                   <div>
-                    <span className="text-muted-foreground">Property Types:</span>
+                    <span className="text-muted-foreground">
+                      Property Types:
+                    </span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {data.propertyTypes.map((type, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {type}
                         </Badge>
                       ))}
@@ -254,8 +268,12 @@ export default function ReviewStep({
                 )}
                 {data.includedPages && data.includedPages.length > 0 && (
                   <div>
-                    <span className="text-muted-foreground">Website Pages:</span>
-                    <p className="font-medium">{data.includedPages.length} pages selected</p>
+                    <span className="text-muted-foreground">
+                      Website Pages:
+                    </span>
+                    <p className="font-medium">
+                      {data.includedPages.length} pages selected
+                    </p>
                   </div>
                 )}
               </div>
@@ -272,24 +290,37 @@ export default function ReviewStep({
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
-                {data.preferredContactMethod && data.preferredContactMethod.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground">Preferred Contact Methods:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {data.preferredContactMethod.map((method, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {method}
-                        </Badge>
-                      ))}
+                {data.preferredContactMethod &&
+                  data.preferredContactMethod.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        Preferred Contact Methods:
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {data.preferredContactMethod.map((method, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {method}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
                 {data.adsConnections && data.adsConnections.length > 0 ? (
                   <div>
-                    <span className="text-muted-foreground">Ad Platform Connections:</span>
+                    <span className="text-muted-foreground">
+                      Ad Platform Connections:
+                    </span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {data.adsConnections.map((platform, index) => (
-                        <Badge key={index} variant="outline" className="text-xs capitalize">
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs capitalize"
+                        >
                           {platform}
                         </Badge>
                       ))}
@@ -297,8 +328,12 @@ export default function ReviewStep({
                   </div>
                 ) : (
                   <div>
-                    <span className="text-muted-foreground">Ad Platform Connections:</span>
-                    <p className="text-xs text-muted-foreground">None selected (optional)</p>
+                    <span className="text-muted-foreground">
+                      Ad Platform Connections:
+                    </span>
+                    <p className="text-xs text-muted-foreground">
+                      None selected (optional)
+                    </p>
                   </div>
                 )}
               </div>
@@ -337,10 +372,11 @@ export default function ReviewStep({
               <div className="flex justify-between items-center">
                 <span>{selectedPlan.name} Plan</span>
                 <span className="font-medium">
-                  ${isYearly ? price : displayPrice}/{isYearly ? "year" : "month"}
+                  ${isYearly ? price : displayPrice}/
+                  {isYearly ? "year" : "month"}
                 </span>
               </div>
-              
+
               {isYearly && (
                 <div className="flex justify-between items-center text-green-600">
                   <span className="text-sm">Yearly Discount</span>
@@ -349,14 +385,14 @@ export default function ReviewStep({
                   </span>
                 </div>
               )}
-              
+
               <Separator />
-              
+
               <div className="flex justify-between items-center text-lg font-bold">
                 <span>Total</span>
                 <span>${isYearly ? price : displayPrice}</span>
               </div>
-              
+
               <div className="text-xs text-center text-muted-foreground">
                 {isYearly ? "Billed annually" : "Billed monthly"}
               </div>

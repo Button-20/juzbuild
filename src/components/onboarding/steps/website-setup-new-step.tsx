@@ -414,11 +414,11 @@ export default function WebsiteSetupStep({
                 <div
                   key={page.id}
                   className={`flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-all hover:border-primary/50 ${
-                    isSelected
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
+                    isSelected ? "border-primary bg-primary/5" : "border-border"
                   } ${
-                    isRequired ? "bg-muted/50 border-muted cursor-not-allowed" : ""
+                    isRequired
+                      ? "bg-muted/50 border-muted cursor-not-allowed"
+                      : ""
                   }`}
                   onClick={() => !isRequired && handlePageToggle(page.id)}
                 >

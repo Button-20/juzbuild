@@ -488,7 +488,7 @@ export default function OnboardingPage() {
   return (
     <ProtectedRoute>
       <SidebarInset>
-      <SiteHeader />
+        <SiteHeader />
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {/* Progress Header */}
           <div className="text-center mb-8">
@@ -1265,7 +1265,11 @@ export default function OnboardingPage() {
                                     isSelected
                                       ? "border-primary bg-primary/5"
                                       : "border-border"
-                                  } ${isRequired ? "opacity-75 cursor-not-allowed" : ""}`}
+                                  } ${
+                                    isRequired
+                                      ? "opacity-75 cursor-not-allowed"
+                                      : ""
+                                  }`}
                                   onClick={() =>
                                     !isRequired && handlePageToggle(page.id)
                                   }
