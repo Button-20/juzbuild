@@ -11,6 +11,8 @@ const publicRoutes = [
   "/login",
   "/signup",
   "/signup/success",
+  "/signup/deployment",
+  "/signup/payment-status",
   "/api/auth/login",
   "/api/auth/logout",
   "/api/signup-onboarding",

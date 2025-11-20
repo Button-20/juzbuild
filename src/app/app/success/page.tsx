@@ -13,11 +13,11 @@ function SuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const domainName = searchParams.get(\"domainName\");
-  const websiteName = searchParams.get(\"websiteName\");
-  const websiteUrl = searchParams.get(\"websiteUrl\");
-  const sessionId = searchParams.get(\"session_id\");
-  
+  const domainName = searchParams.get("domainName");
+  const websiteName = searchParams.get("websiteName");
+  const websiteUrl = searchParams.get("websiteUrl");
+  const sessionId = searchParams.get("session_id");
+
   // Check if this is a Stripe payment success
   const isPaymentSuccess = !!sessionId;
 
@@ -25,22 +25,22 @@ function SuccessPageContent() {
   useEffect(() => {
     const completeSignup = async () => {
       if (!sessionId) return;
-      
+
       // Get stored signup data from localStorage
-      const pendingSignupData = localStorage.getItem('pendingSignupData');
+      const pendingSignupData = localStorage.getItem("pendingSignupData");
       if (!pendingSignupData) {
-        console.error('No pending signup data found');
+        console.error("No pending signup data found");
         return;
       }
 
       try {
         const signupData = JSON.parse(pendingSignupData);
-        
+
         // Complete the signup process
-        const response = await fetch('/api/auth/complete-signup', {
-          method: 'POST',
+        const response = await fetch("/api/auth/complete-signup", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             sessionId: sessionId,
@@ -50,28 +50,24 @@ function SuccessPageContent() {
 
         if (response.ok) {
           const result = await response.json();
-          console.log('Signup completed:', result);
-          
+          console.log("Signup completed:", result);
+
           // Clean up stored data
-          localStorage.removeItem('pendingSignupData');
-          
-          // Optionally redirect to continue wizard or dashboard
-          if (result.websiteCreated) {
-            // Website was created successfully, can redirect to website success
-            setTimeout(() => {
-              window.location.href = `/app/success?websiteName=${result.website.companyName}&domainName=${result.website.domainName}&websiteUrl=${result.website.websiteUrl}`;
-            }, 2000);
-          } else {
-            // Website creation failed, redirect to dashboard to retry
-            setTimeout(() => {
-              router.push('/app/dashboard');
-            }, 2000);
-          }
+          localStorage.removeItem("pendingSignupData");
+
+          // Redirect to signup deployment flow for website creation
+          setTimeout(() => {
+            router.push("/signup/deployment");
+          }, 2000);
         } else {
-          console.error('Signup completion failed');
+          console.error("Signup completion failed");
+          // If signup completion failed, redirect to signup to retry
+          setTimeout(() => {
+            router.push("/signup");
+          }, 2000);
         }
       } catch (error) {
-        console.error('Error completing signup:', error);
+        console.error("Error completing signup:", error);
       }
     };
 
@@ -97,67 +93,100 @@ function SuccessPageContent() {
   return (
     <ProtectedRoute>
       <SidebarInset>
-      <SiteHeader />
+        <SiteHeader />
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className=\"text-4xl font-bold text-foreground mb-4\">
-              {isPaymentSuccess ? \"🎉 Payment Successful!\" : \"🎉 Your Website is Live!\"}
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              {isPaymentSuccess
+                ? "🎉 Payment Successful!"
+                : "🎉 Your Website is Live!"}
             </h1>
-            <p className=\"text-xl text-muted-foreground mb-2\">
-              {isPaymentSuccess 
-                ? \"Thank you! Your subscription is now active. You can now create your website.\"
-                : `Congratulations! ${websiteName || \"Your website\"} has been successfully deployed.`
-              }
+            <p className="text-xl text-muted-foreground mb-2">
+              {isPaymentSuccess
+                ? "Thank you! Your subscription is now active. Redirecting you to complete your website setup..."
+                : `Congratulations! ${
+                    websiteName || "Your website"
+                  } has been successfully deployed.`}
             </p>
             {domainName && (
               <p className="text-lg text-primary font-medium">{domainName}</p>
             )}
           </div>
 
-          {/* Payment Success Actions */}\n          {isPaymentSuccess && (\n            <div className=\"text-center mb-8\">\n              <Button\n                onClick={() => router.push('/app/onboarding')}\n                size=\"lg\"\n                className=\"mr-4\"\n              >\n                Create Your Website\n              </Button>\n              <Button\n                variant=\"outline\"\n                onClick={handleGoToDashboard}\n                size=\"lg\"\n              >\n                Go to Dashboard\n              </Button>\n            </div>\n          )}\n\n          {!isPaymentSuccess && (\n          <div className=\"grid gap-6 md:grid-cols-2 mb-8\">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ExternalLink className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">View Your Website</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Check out your new website and see how it looks to visitors.
+          {/* Payment Success Actions */}
+          {isPaymentSuccess && (
+            <div className="text-center mb-8">
+              <div className="animate-pulse">
+                <p className="text-muted-foreground mb-4">
+                  Setting up your account and preparing website creation...
                 </p>
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+              </div>
+              <div className="mt-6 space-x-4">
                 <Button
-                  onClick={handleViewWebsite}
-                  className="w-full"
-                  disabled={!websiteUrl && !domainName}
+                  onClick={() => router.push("/signup/deployment")}
+                  size="lg"
+                  className="mr-4"
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Visit Website
+                  Continue Setup
                 </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Settings className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold">Manage Your Website</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Add properties, customize settings, and manage your content.
-                </p>
                 <Button
                   variant="outline"
-                  onClick={handleManageWebsite}
-                  className="w-full"
+                  onClick={handleGoToDashboard}
+                  size="lg"
                 >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Go to Dashboard
+                  Skip to Dashboard
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {!isPaymentSuccess && (
+            <div className="grid gap-6 md:grid-cols-2 mb-8">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <ExternalLink className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">View Your Website</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Check out your new website and see how it looks to visitors.
+                  </p>
+                  <Button
+                    onClick={handleViewWebsite}
+                    className="w-full"
+                    disabled={!websiteUrl && !domainName}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Visit Website
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Settings className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">Manage Your Website</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Add properties, customize settings, and manage your content.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={handleManageWebsite}
+                    className="w-full"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Go to Dashboard
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <Card className="mb-8">
             <CardContent className="p-6">

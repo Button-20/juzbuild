@@ -6,8 +6,6 @@ export interface Website {
   tagline: string;
   aboutSection: string;
   selectedTheme: string;
-  selectedPlan: "starter" | "pro" | "agency";
-  billingCycle: "monthly" | "yearly";
   status: "active" | "pending" | "suspended" | "creating" | "failed";
   deploymentStatus: "pending" | "deploying" | "deployed" | "failed";
 
@@ -51,11 +49,6 @@ export interface Website {
       isEnabled: boolean;
     };
   };
-  seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    keywords?: string[];
-  };
 
   // Timestamps
   createdAt: Date;
@@ -97,8 +90,6 @@ export interface CreateWebsiteParams {
   tagline: string;
   aboutSection: string;
   selectedTheme: string;
-  selectedPlan: "starter" | "pro" | "agency";
-  billingCycle: "monthly" | "yearly";
   includedPages?: string[];
   propertyTypes?: string[];
   preferredContactMethod?: string[];

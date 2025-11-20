@@ -18,6 +18,10 @@ export async function GET(
     const backgroundProcessorUrl =
       process.env.BACKGROUND_PROCESSOR_URL || "http://localhost:3001";
 
+    console.log(
+      `Fetching job status for ${jobId} from ${backgroundProcessorUrl}`
+    );
+
     try {
       const response = await fetch(
         `${backgroundProcessorUrl}/job-status/${jobId}`,
@@ -27,6 +31,8 @@ export async function GET(
           },
         }
       );
+
+      console.log(`Background processor response status: ${response.status}`);
 
       if (response.ok) {
         const jobStatus = await response.json();

@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextRequest } from "next/server";
+import { ObjectId } from "mongodb";
 
 const JWT_SECRET =
   process.env.JWT_SECRET ||
@@ -78,6 +79,21 @@ export function getTokenFromRequest(request: NextRequest): string | null {
   // Try to get token from cookies
   const token = request.cookies.get("auth-token")?.value;
   return token || null;
+}
+
+// Safely convert user ID to ObjectId for MongoDB queries
+export function toObjectId(userId: string): ObjectId | string {
+  try {
+    // Check if it's a valid ObjectId string
+    if (typeof userId === "string" && ObjectId.isValid(userId)) {
+      return new ObjectId(userId);
+    }
+    // Return as-is if it's not a valid ObjectId (fallback for legacy IDs)
+    return userId;
+  } catch (error) {
+    // Return as-is if conversion fails
+    return userId;
+  }
 }
 
 // Get user from request

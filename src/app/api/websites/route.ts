@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, toObjectId } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { Website, CreateWebsiteParams } from "@/types/website";
 
@@ -181,8 +181,181 @@ export async function POST(request: NextRequest) {
     // Check if domain already exists
     const existingDomain = await websitesCollection.findOne({ domainName });
     if (existingDomain) {
+      // If it's the same user trying to create the same website, return the existing one
+      if (existingDomain.userId === decoded.userId) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Website already exists for this domain",
+            existingWebsite: {
+              _id: existingDomain._id,
+              domainName: existingDomain.domainName,
+              jobId: existingDomain.jobId,
+              status: existingDomain.status,
+              deploymentStatus: existingDomain.deploymentStatus,
+            },
+          },
+          { status: 409 }
+        );
+      } else {
+        // Different user trying to use same domain
+        return NextResponse.json(
+          { success: false, message: "Domain name already exists" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Check if user already has a website with this exact configuration (prevent duplicates)
+    const existingUserWebsite = await websitesCollection.findOne({
+      userId: decoded.userId,
+      domainName: domainName,
+    });
+
+    if (existingUserWebsite) {
+      // If existing website has a valid jobId, return it
+      if (existingUserWebsite.jobId) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "You already have a website with this domain name",
+            existingWebsite: {
+              _id: existingUserWebsite._id,
+              domainName: existingUserWebsite.domainName,
+              jobId: existingUserWebsite.jobId,
+              status: existingUserWebsite.status,
+              deploymentStatus: existingUserWebsite.deploymentStatus,
+            },
+          },
+          { status: 409 }
+        );
+      } else {
+        // Existing website has no jobId, trigger a new background job
+        try {
+          const backgroundProcessorUrl =
+            process.env.BACKGROUND_PROCESSOR_URL || "http://localhost:3001";
+          const workflowResponse = await fetch(
+            `${backgroundProcessorUrl}/process-website-creation`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-processor-secret":
+                  process.env.BACKGROUND_PROCESSOR_SECRET || "",
+              },
+              body: JSON.stringify({
+                websiteId: existingUserWebsite._id.toString(),
+                userId: decoded.userId,
+                websiteName: companyName,
+                userEmail: decoded.email,
+                fullName: companyName,
+                companyName,
+                domainName,
+                brandColors: brandColors || [
+                  "#3B82F6",
+                  "#EF4444",
+                  "#10B981",
+                  "#F3F4F6",
+                ],
+                tagline: tagline || existingUserWebsite.tagline || "",
+                aboutSection:
+                  aboutSection || existingUserWebsite.aboutSection || "",
+                selectedTheme:
+                  selectedTheme || existingUserWebsite.selectedTheme,
+                propertyTypes: propertyTypes || ["house"],
+                includedPages: includedPages || ["home", "about", "contact"],
+                preferredContactMethod: preferredContactMethod || ["email"],
+              }),
+            }
+          );
+
+          if (workflowResponse.ok) {
+            const workflowResult = await workflowResponse.json();
+
+            // Update the existing website with the new jobId
+            await websitesCollection.updateOne(
+              { _id: existingUserWebsite._id },
+              {
+                $set: {
+                  jobId: workflowResult.jobId,
+                  deploymentStatus: "processing",
+                  status: "creating",
+                  updatedAt: new Date(),
+                },
+              }
+            );
+
+            return NextResponse.json(
+              {
+                success: false,
+                message: "Resuming deployment for existing website",
+                existingWebsite: {
+                  _id: existingUserWebsite._id,
+                  domainName: existingUserWebsite.domainName,
+                  jobId: workflowResult.jobId,
+                  status: "creating",
+                  deploymentStatus: "processing",
+                },
+              },
+              { status: 409 }
+            );
+          } else {
+            console.error(
+              "Failed to start background job for existing website"
+            );
+            // Return existing website info even without jobId
+            return NextResponse.json(
+              {
+                success: false,
+                message: "Website exists but deployment job failed to start",
+                existingWebsite: {
+                  _id: existingUserWebsite._id,
+                  domainName: existingUserWebsite.domainName,
+                  jobId: null,
+                  status: existingUserWebsite.status,
+                  deploymentStatus: "failed",
+                },
+              },
+              { status: 409 }
+            );
+          }
+        } catch (error) {
+          console.error(
+            "Error starting background job for existing website:",
+            error
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Website exists but failed to resume deployment",
+              existingWebsite: {
+                _id: existingUserWebsite._id,
+                domainName: existingUserWebsite.domainName,
+                jobId: null,
+                status: existingUserWebsite.status,
+                deploymentStatus: "failed",
+              },
+            },
+            { status: 409 }
+          );
+        }
+      }
+
+      // If we reach here, we've handled the existing website case
+      // This should not happen due to the return statements above, but let's be safe
+      console.error("Unexpected: existing website case not handled properly");
       return NextResponse.json(
-        { success: false, message: "Domain name already exists" },
+        {
+          success: false,
+          message: "Website already exists but handling failed",
+          existingWebsite: {
+            _id: existingUserWebsite._id,
+            domainName: existingUserWebsite.domainName,
+            jobId: existingUserWebsite.jobId || null,
+            status: existingUserWebsite.status,
+            deploymentStatus: existingUserWebsite.deploymentStatus,
+          },
+        },
         { status: 409 }
       );
     }
@@ -236,7 +409,7 @@ export async function POST(request: NextRequest) {
     if (userWebsites === 0) {
       const usersCollection = await getCollection("users");
       await usersCollection.updateOne(
-        { _id: new ObjectId(decoded.userId) },
+        { _id: toObjectId(decoded.userId) },
         {
           $set: {
             defaultWebsiteId: result.insertedId.toString(),
@@ -250,6 +423,38 @@ export async function POST(request: NextRequest) {
     try {
       const backgroundProcessorUrl =
         process.env.BACKGROUND_PROCESSOR_URL || "http://localhost:3001";
+
+      const requestData = {
+        websiteId: result.insertedId.toString(),
+        userId: decoded.userId,
+        websiteName: companyName,
+        userEmail: decoded.email,
+        fullName: companyName,
+        companyName,
+        domainName,
+        brandColors: brandColors || [
+          "#3B82F6",
+          "#EF4444",
+          "#10B981",
+          "#F3F4F6",
+        ],
+        tagline: tagline || "",
+        aboutSection: aboutSection || "",
+        selectedTheme,
+        propertyTypes: propertyTypes || ["house"],
+        includedPages: includedPages || ["home", "about", "contact"],
+        preferredContactMethod: preferredContactMethod || ["email"],
+        phoneNumber: phoneNumber || "",
+        supportEmail: supportEmail || decoded.email,
+        whatsappNumber: whatsappNumber || "",
+        address: address || "",
+        facebookUrl: facebookUrl || "",
+        twitterUrl: twitterUrl || "",
+        instagramUrl: instagramUrl || "",
+        linkedinUrl: linkedinUrl || "",
+        youtubeUrl: youtubeUrl || "",
+      };
+
       const workflowResponse = await fetch(
         `${backgroundProcessorUrl}/process-website-creation`,
         {
@@ -258,48 +463,13 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             "x-processor-secret": process.env.BACKGROUND_PROCESSOR_SECRET || "",
           },
-          body: JSON.stringify({
-            websiteId: result.insertedId.toString(),
-            userId: decoded.userId,
-            websiteName: companyName,
-            userEmail: decoded.email,
-            fullName: companyName,
-            companyName,
-            domainName,
-            brandColors: brandColors || [
-              "#3B82F6",
-              "#EF4444",
-              "#10B981",
-              "#F3F4F6",
-            ],
-            tagline: tagline || "",
-            aboutSection: aboutSection || "",
-            selectedTheme,
-            propertyTypes: propertyTypes || ["house"],
-            includedPages: includedPages || ["home", "about", "contact"],
-            preferredContactMethod: preferredContactMethod || ["email"],
-            phoneNumber: phoneNumber || "",
-            supportEmail: supportEmail || decoded.email,
-            whatsappNumber: whatsappNumber || "",
-            address: address || "",
-            facebookUrl: facebookUrl || "",
-            twitterUrl: twitterUrl || "",
-            instagramUrl: instagramUrl || "",
-            linkedinUrl: linkedinUrl || "",
-            youtubeUrl: youtubeUrl || "",
-          }),
+          body: JSON.stringify(requestData),
         }
       );
 
       // Handle background processor response
       if (workflowResponse.ok) {
         const workflowResult = await workflowResponse.json();
-        console.log(
-          `Background process started with job ID: ${workflowResult.jobId}`
-        );
-        console.log(
-          `Website creation initiated for: ${domainName} with website ID: ${result.insertedId.toString()}`
-        );
 
         // Update website with job tracking info
         await websitesCollection.updateOne(
@@ -322,15 +492,31 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           website: response,
+          jobId: workflowResult.jobId,
           message: "Website creation started successfully",
         });
       } else {
         const errorText = await workflowResponse.text();
-        console.error("Background processor error:", errorText);
-        throw new Error(`Background processor failed: ${errorText}`);
+        console.error(
+          "Background processor HTTP error:",
+          workflowResponse.status,
+          errorText
+        );
+        console.error(
+          "Response headers:",
+          Object.fromEntries(workflowResponse.headers.entries())
+        );
+        throw new Error(
+          `Background processor failed with status ${workflowResponse.status}: ${errorText}`
+        );
       }
     } catch (bgError) {
       console.error("Failed to trigger background process:", bgError);
+      console.error("Error details:", {
+        name: bgError instanceof Error ? bgError.name : "Unknown",
+        message: bgError instanceof Error ? bgError.message : String(bgError),
+        stack: bgError instanceof Error ? bgError.stack : undefined,
+      });
       // Update website status to failed
       await websitesCollection.updateOne(
         { _id: result.insertedId },

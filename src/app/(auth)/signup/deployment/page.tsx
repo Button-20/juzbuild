@@ -55,20 +55,297 @@ export default function DeploymentPage() {
   });
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
+  const [companyName, setCompanyName] = useState<string>("");
+  const [domainName, setDomainName] = useState<string>("");
+  const [isCreatingWebsite, setIsCreatingWebsite] = useState(false);
+  const [creationAttempted, setCreationAttempted] = useState(false);
 
   // Get jobId from URL params or result data
   const jobId = searchParams.get("jobId");
   const websiteName = searchParams.get("websiteName") || "your website";
-  const domainName = searchParams.get("domainName");
+  const urlDomainName = searchParams.get("domainName");
+
+  // Clear any stuck session locks on page load (for debugging)
+  const existingLock = sessionStorage.getItem("website-creation-lock");
+  if (existingLock) {
+    const lockTime = parseInt(existingLock);
+    const timeDiff = Date.now() - lockTime;
+    if (timeDiff > 30000) {
+      // Clear locks older than 30 seconds
+      sessionStorage.removeItem("website-creation-lock");
+    }
+  }
 
   // Redirect to waitlist if app is not live
   if (!isLive) {
     return <WaitingList />;
   }
 
+  // Create website if we have creation data but no jobId
+  const createWebsite = async (retryCount = 0) => {
+    // Prevent duplicate website creation with multiple checks
+    if (isCreatingWebsite || creationAttempted) {
+      return;
+    }
+
+    // Check sessionStorage for creation lock (survives page refreshes)
+    const creationLock = sessionStorage.getItem("website-creation-lock");
+    if (creationLock) {
+      const lockTime = parseInt(creationLock);
+      const timeDiff = Date.now() - lockTime;
+      if (timeDiff < 60000) {
+        // 1 minute lock
+
+        return;
+      } else {
+        // Lock expired, remove it
+        sessionStorage.removeItem("website-creation-lock");
+      }
+    }
+
+    // First check if we have jobId from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlJobId = urlParams.get("jobId");
+    const urlWebsiteName = urlParams.get("websiteName");
+    const urlDomainName = urlParams.get("domainName");
+
+    if (urlJobId) {
+      // Update company info if provided in URL
+      if (urlWebsiteName) {
+        setCompanyName(decodeURIComponent(urlWebsiteName));
+      }
+      if (urlDomainName) {
+        setDomainName(decodeURIComponent(urlDomainName));
+      }
+
+      // Store jobId for persistence and clean up creation data
+      localStorage.setItem("currentJobId", urlJobId);
+      localStorage.removeItem("websiteCreationData");
+
+      // Start status polling immediately
+      setDeploymentStatus((prev) => ({
+        ...prev,
+        currentStep: "Website creation in progress...",
+        progress: 30,
+        jobId: urlJobId,
+        status: "in-progress",
+      }));
+
+      return;
+    }
+
+    const websiteCreationData = localStorage.getItem("websiteCreationData");
+
+    // If we already have a jobId, don't create another website
+    if (jobId) {
+      return;
+    }
+
+    // Try to use stored signup data, or fallback to creating with minimal data
+    let signupData;
+    if (websiteCreationData) {
+      signupData = JSON.parse(websiteCreationData);
+    } else {
+      // Fallback: check if user has an active session and needs website creation
+
+      try {
+        const userResponse = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+        if (!userResponse.ok) {
+          return;
+        }
+        const userData = await userResponse.json();
+
+        // Use user data to create minimal website configuration
+        signupData = {
+          companyName: userData.companyName || "My Company",
+          domainName: userData.domainName || "mywebsite",
+          selectedTheme: "homely",
+          brandColors: ["#3B82F6", "#EF4444", "#10B981", "#F3F4F6"],
+          propertyTypes: ["house"],
+          includedPages: ["home", "about", "contact"],
+          tagline: userData.tagline || "Welcome to our website",
+          aboutSection: "About our company",
+          leadCaptureMethods: ["email"],
+          preferredContactMethod: ["email"],
+          selectedPlan: userData.selectedPlan || "starter",
+          billingCycle: "monthly",
+        };
+      } catch (error) {
+        console.error(
+          "❌ Failed to get user data for fallback creation:",
+          error
+        );
+        return;
+      }
+    }
+
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
+    try {
+      // Set multiple flags and locks to prevent duplicate calls
+      setIsCreatingWebsite(true);
+      setCreationAttempted(true);
+      sessionStorage.setItem("website-creation-lock", Date.now().toString());
+
+      const signupData = JSON.parse(websiteCreationData);
+
+      setDeploymentStatus((prev) => ({
+        ...prev,
+        currentStep:
+          retryCount > 0
+            ? `Retrying website creation (${retryCount + 1}/${
+                maxRetries + 1
+              })...`
+            : "Creating your website...",
+        progress: 20,
+      }));
+
+      const websiteData = {
+        companyName: signupData.companyName,
+        domainName: signupData.domainName,
+        selectedTheme: signupData.selectedTheme || "homely",
+        brandColors: signupData.brandColors || [],
+        propertyTypes: signupData.propertyTypes || [],
+        includedPages: signupData.includedPages || [],
+        tagline: signupData.tagline,
+        aboutSection: signupData.aboutSection,
+        leadCaptureMethods: signupData.leadCaptureMethods || [],
+        preferredContactMethod: signupData.preferredContactMethod || [],
+        geminiApiKey: signupData.geminiApiKey,
+        selectedPlan: signupData.selectedPlan,
+        billingCycle: signupData.billingCycle,
+      };
+
+      const response = await fetch("/api/websites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Ensure cookies are sent
+        body: JSON.stringify(websiteData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        // Update URL with jobId to continue tracking
+        const jobId = result.website?.jobId || result.jobId;
+
+        if (jobId) {
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set("jobId", jobId);
+          newUrl.searchParams.set("websiteName", signupData.companyName);
+          newUrl.searchParams.set("domainName", signupData.domainName);
+
+          window.history.replaceState({}, "", newUrl.toString());
+
+          // Clean up creation data since we now have a job
+          localStorage.removeItem("websiteCreationData");
+        } else {
+          console.error("❌ No jobId received in website creation response");
+        }
+
+        setDeploymentStatus((prev) => ({
+          ...prev,
+          jobId: jobId,
+          currentStep: "Website creation in progress...",
+          progress: 30,
+        }));
+
+        // Clear all flags and locks since creation was successful
+        setIsCreatingWebsite(false);
+        sessionStorage.removeItem("website-creation-lock");
+        // Keep creationAttempted as true to prevent further attempts
+      } else if (response.status === 409) {
+        // Website already exists - this is actually OK, get the existing job info
+        const error = await response.json();
+
+        if (error.existingWebsite?.jobId) {
+          // Use the existing website's jobId
+          const existingJobId = error.existingWebsite.jobId;
+
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set("jobId", existingJobId);
+          newUrl.searchParams.set("websiteName", signupData.companyName);
+          newUrl.searchParams.set("domainName", signupData.domainName);
+
+          window.history.replaceState({}, "", newUrl.toString());
+
+          setDeploymentStatus((prev) => ({
+            ...prev,
+            jobId: existingJobId,
+            currentStep: "Resuming existing website deployment...",
+            progress: 50,
+            status: "in-progress", // Explicitly set status to in-progress
+          }));
+
+          // Clean up creation data
+          localStorage.removeItem("websiteCreationData");
+        } else {
+          // If no jobId, we might need to create a new deployment job
+          // For now, let's try to get user data and create a fresh deployment
+        }
+
+        // Clear the flag - we handled the conflict
+        setIsCreatingWebsite(false);
+        sessionStorage.removeItem("website-creation-lock");
+        // Keep creationAttempted as true since we handled the existing website
+      } else {
+        const error = await response.json();
+        console.error("Website creation failed:", error);
+
+        // If unauthorized and we haven't exhausted retries, try again
+        // But don't retry on 409 conflicts (website already exists)
+        if (response.status === 401 && retryCount < maxRetries) {
+          setIsCreatingWebsite(false); // Clear flag before retry
+          setTimeout(() => createWebsite(retryCount + 1), retryDelay);
+          return;
+        }
+
+        // Don't retry on 409 - it means website already exists
+        if (response.status === 409) {
+          setIsCreatingWebsite(false);
+          return;
+        }
+
+        setDeploymentStatus((prev) => ({
+          ...prev,
+          status: "failed",
+          currentStep: `Creation failed: ${error.message || "Unknown error"}`,
+        }));
+
+        // Clear the flag on failure too
+        setIsCreatingWebsite(false);
+      }
+    } catch (error) {
+      console.error("Error creating website:", error);
+
+      // If network error and we haven't exhausted retries, try again
+      if (retryCount < maxRetries) {
+        setIsCreatingWebsite(false); // Clear flag before retry
+        setTimeout(() => createWebsite(retryCount + 1), retryDelay);
+        return;
+      }
+
+      setDeploymentStatus((prev) => ({
+        ...prev,
+        status: "failed",
+        currentStep: "Failed to start website creation",
+      }));
+
+      // Clear the flag on error too
+      setIsCreatingWebsite(false);
+    }
+  };
+
   // Check deployment status
   const checkStatus = async () => {
-    if (!jobId) return;
+    if (!jobId) {
+      return;
+    }
 
     setIsChecking(true);
     try {
@@ -76,7 +353,6 @@ export default function DeploymentPage() {
       const data = await response.json();
 
       if (data.success) {
-        console.log("Deployment status update:", data);
         // The job status is nested under data.status
         const jobStatus = data.status;
         setDeploymentStatus((prev) => ({
@@ -85,6 +361,8 @@ export default function DeploymentPage() {
           success: true,
           lastChecked: new Date().toISOString(),
         }));
+      } else {
+        console.error("Job status API returned error:", data);
       }
     } catch (error) {
       console.error("Failed to check status:", error);
@@ -106,12 +384,31 @@ export default function DeploymentPage() {
     }
   }, [jobId, deploymentStatus.status]);
 
-  // Initial status check
+  // Cleanup on component unmount - but keep creation lock for page refreshes
+  useEffect(() => {
+    return () => {
+      // Only clear in-memory flags, keep sessionStorage lock
+      setIsCreatingWebsite(false);
+    };
+  }, []);
+
+  // Initial status check or website creation
   useEffect(() => {
     if (jobId) {
       checkStatus();
+    } else if (!isCreatingWebsite && !creationAttempted) {
+      // Only create if no jobId and no creation in progress or attempted
+      const creationLock = sessionStorage.getItem("website-creation-lock");
+      const websiteCreationData = localStorage.getItem("websiteCreationData");
+
+      if (!creationLock && websiteCreationData) {
+        createWebsite();
+      } else if (!websiteCreationData) {
+      } else if (creationLock) {
+      }
+    } else {
     }
-  }, [jobId]);
+  }, [jobId, isCreatingWebsite, creationAttempted]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -202,10 +499,11 @@ export default function DeploymentPage() {
                   href={(() => {
                     // Priority: Use domain from response first (e.g., devtraco.onjuzbuild.com)
                     // This is the custom domain configured on Namecheap + Vercel
-                    let url = domainName
-                      ? `${domainName}.onjuzbuild.com`
-                      : deploymentStatus.websiteUrl ||
-                        deploymentStatus.aliasUrl;
+                    let url =
+                      domainName || urlDomainName
+                        ? `${domainName || urlDomainName}.onjuzbuild.com`
+                        : deploymentStatus.websiteUrl ||
+                          deploymentStatus.aliasUrl;
 
                     // Return empty string if no URL is available
                     if (!url) return "";
@@ -238,11 +536,14 @@ export default function DeploymentPage() {
                     View Your Website
                   </Button>
                 </a>
-                <Link href="/app/dashboard">
-                  <Button variant="outline" size="lg" className="px-8">
-                    Go to Dashboard
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-8"
+                  onClick={() => (window.location.href = "/app/dashboard")}
+                >
+                  Go to Dashboard
+                </Button>
               </div>
             )}
         </div>
@@ -414,11 +715,11 @@ export default function DeploymentPage() {
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
                 <span className="text-sm">Professional business pages</span>
               </div>
-              {domainName && (
+              {(domainName || urlDomainName) && (
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span className="text-sm">
-                    Custom domain: {domainName}.onjuzbuild.com
+                    Custom domain: {domainName || urlDomainName}.onjuzbuild.com
                   </span>
                 </div>
               )}

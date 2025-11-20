@@ -1,4 +1,4 @@
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, toObjectId } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -67,8 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Get user information for domain registration
     const usersCollection = await getCollection("users");
-    const { ObjectId } = require("mongodb");
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    const user = await usersCollection.findOne({ _id: toObjectId(userId) });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, toObjectId } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 
 export async function GET(
@@ -182,7 +182,7 @@ export async function DELETE(
 
     // If this was the default website, update user's defaultWebsiteId
     const user = await usersCollection.findOne({
-      _id: new ObjectId(decoded.userId),
+      _id: toObjectId(decoded.userId),
     });
     if (user?.defaultWebsiteId === id) {
       // Find another active website to set as default
@@ -193,7 +193,7 @@ export async function DELETE(
       });
 
       await usersCollection.updateOne(
-        { _id: new ObjectId(decoded.userId) },
+        { _id: toObjectId(decoded.userId) },
         {
           $set: {
             defaultWebsiteId: activeWebsite?._id?.toString() || null,

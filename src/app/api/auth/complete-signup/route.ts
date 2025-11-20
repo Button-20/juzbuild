@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
+import { getDatabase } from "@/lib/mongodb";
 import { hash } from "bcryptjs";
-import { nanoid } from "nanoid";
+import { ObjectId } from "mongodb";
 import { sign } from "jsonwebtoken";
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Connect to database
-    const { db } = await connectDB();
+    const db = await getDatabase();
 
     // Verify the Stripe session and get payment info
     const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hash(signupData.password, 12);
 
     // Create user document
-    const userId = nanoid();
+    const userId = new ObjectId();
     const userDoc = {
       _id: userId,
       fullName: signupData.fullName,
@@ -61,81 +61,111 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date(),
     };
 
-    // Save user to database
+    // Save or update user in database using upsert
     const usersCollection = db.collection("users");
-    await usersCollection.insertOne(userDoc);
+
+    let finalUserId = userId;
+
+    try {
+      // Try to find existing user first
+      const existingUser = await usersCollection.findOne({
+        email: signupData.email,
+      });
+
+      if (existingUser) {
+        console.log("User already exists, updating with subscription info");
+        // Update existing user with subscription info
+        await usersCollection.updateOne(
+          { email: signupData.email },
+          {
+            $set: {
+              stripeCustomerId: session.customer,
+              stripeSubscriptionId: session.subscription,
+              subscriptionStatus: "active",
+              selectedPlan: planId || signupData.selectedPlan,
+              billingCycle: billingCycle || signupData.billingCycle,
+              updatedAt: new Date(),
+            },
+          }
+        );
+        finalUserId = existingUser._id;
+      } else {
+        // Create new user
+        await usersCollection.insertOne(userDoc);
+      }
+    } catch (error: any) {
+      if (error.code === 11000) {
+        // Duplicate key error - user was created between our check and insert
+        console.log(
+          "Duplicate user detected, attempting to update existing user"
+        );
+
+        // Wait a bit and try again to avoid race conditions
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const existingUser = await usersCollection.findOne({
+          email: signupData.email,
+        });
+        if (existingUser) {
+          console.log("Found existing user, updating subscription info");
+          await usersCollection.updateOne(
+            { email: signupData.email },
+            {
+              $set: {
+                stripeCustomerId: session.customer,
+                stripeSubscriptionId: session.subscription,
+                subscriptionStatus: "active",
+                selectedPlan: planId || signupData.selectedPlan,
+                billingCycle: billingCycle || signupData.billingCycle,
+                updatedAt: new Date(),
+              },
+            }
+          );
+          finalUserId = existingUser._id;
+        } else {
+          // This shouldn't happen, but let's handle it gracefully
+          console.error(
+            "User exists but could not be found after duplicate error"
+          );
+          throw new Error(
+            "User account creation conflict - please try again or contact support"
+          );
+        }
+      } else {
+        throw error; // Re-throw other errors
+      }
+    }
 
     // Create JWT token
     const token = sign(
       {
-        userId: userId,
+        userId: finalUserId.toString(),
         email: signupData.email,
-        fullName: signupData.fullName,
+        companyName: signupData.companyName,
       },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" }
     );
 
-    // Create website creation payload
-    const websiteData = {
-      companyName: signupData.companyName,
-      domainName: signupData.domainName,
-      selectedTheme: signupData.selectedTheme || "homely",
-      brandColors: signupData.brandColors || [],
-      propertyTypes: signupData.propertyTypes || [],
-      includedPages: signupData.includedPages || [],
-      tagline: signupData.tagline,
-      aboutSection: signupData.aboutSection,
-      leadCaptureMethods: signupData.leadCaptureMethods || [],
-      preferredContactMethod: signupData.preferredContactMethod || [],
-      geminiApiKey: signupData.geminiApiKey,
-    };
-
-    // Create the website (similar to existing website creation logic)
-    const websiteResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/websites`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(websiteData),
-      }
-    );
-
-    if (!websiteResponse.ok) {
-      console.error("Website creation failed:", await websiteResponse.text());
-      // User is created but website failed - they can retry from dashboard
-      return NextResponse.json({
-        success: true,
-        user: { id: userId, email: signupData.email },
-        token: token,
-        websiteCreated: false,
-        message:
-          "Account created successfully. Website creation can be retried from dashboard.",
-      });
-    }
-
-    const websiteResult = await websiteResponse.json();
-
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie and return success
+    // Website creation will be handled by the frontend on the deployment page
     const response = NextResponse.json({
       success: true,
       user: {
-        id: userId,
+        id: finalUserId.toString(),
         email: signupData.email,
         fullName: signupData.fullName,
         selectedPlan: planId || signupData.selectedPlan,
       },
-      website: websiteResult,
-      websiteCreated: true,
+      signupData: signupData, // Pass signup data so frontend can create website
+      accountCreated: true,
     });
 
     response.cookies.set("auth-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
+      path: "/",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 

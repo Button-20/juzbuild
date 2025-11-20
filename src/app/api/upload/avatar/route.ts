@@ -87,10 +87,9 @@ export async function POST(request: NextRequest) {
 
     // Update user avatar in database
     const usersCollection = await getCollection("users");
-    const { ObjectId } = require("mongodb");
 
     await usersCollection.updateOne(
-      { _id: new ObjectId(tokenPayload.userId) },
+      { _id: toObjectId(tokenPayload.userId) },
       {
         $set: {
           avatar: result.secure_url,
@@ -124,9 +123,8 @@ export async function DELETE(request: NextRequest) {
 
     // Get user from database
     const usersCollection = await getCollection("users");
-    const { ObjectId } = require("mongodb");
     const user = await usersCollection.findOne({
-      _id: new ObjectId(tokenPayload.userId),
+      _id: toObjectId(tokenPayload.userId),
     });
 
     if (!user) {
@@ -140,7 +138,7 @@ export async function DELETE(request: NextRequest) {
 
     // Remove avatar from database
     await usersCollection.updateOne(
-      { _id: new ObjectId(tokenPayload.userId) },
+      { _id: toObjectId(tokenPayload.userId) },
       {
         $unset: {
           avatar: "",

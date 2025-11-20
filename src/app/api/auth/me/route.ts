@@ -1,4 +1,4 @@
-import { getUserFromRequest } from "@/lib/auth";
+import { getUserFromRequest, toObjectId } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,10 +14,9 @@ export async function GET(request: NextRequest) {
     // Get users collection
     const usersCollection = await getCollection("users");
 
-    // Find user by ID - Convert string ID to ObjectId for MongoDB query
-    const { ObjectId } = require("mongodb");
+    // Find user by ID using safe ObjectId conversion
     const user = await usersCollection.findOne({
-      _id: new ObjectId(tokenPayload.userId),
+      _id: toObjectId(tokenPayload.userId),
     });
 
     if (!user) {
