@@ -100,6 +100,70 @@ export const NotificationTemplates = {
     message: "Your website has been successfully deployed and is now live.",
     type: "success" as const,
     category: "system" as const,
+    actionText: "View Website",
+  },
+
+  PLAN_UPGRADED: {
+    title: "Plan Upgraded Successfully! ⭐",
+    message: "Your subscription has been upgraded. You now have access to new features and increased limits.",
+    type: "success" as const,
+    category: "billing" as const,
+    actionUrl: "/app/settings",
+    actionText: "View Settings",
+  },
+
+  PAYMENT_FAILED: {
+    title: "Payment Failed ⚠️",
+    message: "Your latest payment could not be processed. Please update your payment method to avoid service interruption.",
+    type: "error" as const,
+    category: "billing" as const,
+    actionUrl: "/app/settings",
+    actionText: "Update Payment",
+  },
+
+  SUBSCRIPTION_CANCELED: {
+    title: "Subscription Canceled",
+    message: "Your subscription has been canceled. You still have access to premium features until your billing period ends.",
+    type: "warning" as const,
+    category: "billing" as const,
+    actionUrl: "/app/settings",
+    actionText: "Reactivate",
+  },
+
+  WEBSITE_CREATION_STARTED: {
+    title: "Website Creation Started 🔧",
+    message: "We're building your website! This usually takes 2-3 minutes. We'll notify you when it's ready.",
+    type: "info" as const,
+    category: "system" as const,
+  },
+
+  DOMAIN_SETUP_REQUIRED: {
+    title: "Domain Setup Required",
+    message: "Your website is ready! Complete the domain setup to make it live on the internet.",
+    type: "reminder" as const,
+    category: "system" as const,
+    actionUrl: "/app/domain",
+    actionText: "Setup Domain",
+  },
+
+  ONBOARDING_INCOMPLETE: {
+    title: "Complete Your Setup",
+    message: "You're almost done! Complete your website setup to get it live.",
+    type: "reminder" as const,
+    category: "system" as const,
+    actionUrl: "/app/onboarding",
+    actionText: "Continue Setup",
+  },
+
+  WEBSITE_LIMIT_REACHED: {
+    title: "Website Limit Reached",
+    message: "You've reached your plan's website limit. Upgrade to create more websites.",
+    type: "warning" as const,
+    category: "billing" as const,
+    actionUrl: "/app/settings",
+    actionText: "Upgrade Plan",
+    type: "success" as const,
+    category: "system" as const,
   },
 
   SECURITY_ALERT: {

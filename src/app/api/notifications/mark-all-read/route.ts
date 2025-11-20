@@ -4,8 +4,7 @@ import { verifyToken } from "@/lib/auth";
 
 export async function PATCH(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    const token = request.cookies.get("auth-token")?.value;
 
     if (!token) {
       return NextResponse.json(

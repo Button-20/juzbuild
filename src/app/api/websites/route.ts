@@ -3,6 +3,7 @@ import { getCollection } from "@/lib/mongodb";
 import { verifyToken, toObjectId } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import { Website, CreateWebsiteParams } from "@/types/website";
+import { createNotification, NotificationTemplates } from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -371,6 +372,17 @@ export async function POST(request: NextRequest) {
       userPlan === "starter" ? 1 : userPlan === "pro" ? 5 : 20; // agency plan
 
     if (userWebsites >= websiteLimit) {
+      // Create notification about website limit reached
+      try {
+        await createNotification({
+          ...NotificationTemplates.WEBSITE_LIMIT_REACHED,
+          userId: decoded.userId,
+          message: `You've reached your ${userPlan} plan limit of ${websiteLimit} website${websiteLimit > 1 ? 's' : ''}. Upgrade to create more websites.`,
+        });
+      } catch (notifError) {
+        console.error("Failed to create website limit notification:", notifError);
+      }
+
       return NextResponse.json(
         {
           success: false,
@@ -483,6 +495,17 @@ export async function POST(request: NextRequest) {
             },
           }
         );
+
+        // Create notification for website creation started
+        try {
+          await createNotification({
+            ...NotificationTemplates.WEBSITE_CREATION_STARTED,
+            userId: decoded.userId,
+            message: `We're building your ${companyName} website! This usually takes 2-3 minutes. We'll notify you when it's ready.`,
+          });
+        } catch (notifError) {
+          console.error("Failed to create website creation notification:", notifError);
+        }
 
         // Update the newWebsite object to include jobId for response
         const response = {

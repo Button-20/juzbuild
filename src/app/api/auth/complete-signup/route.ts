@@ -3,6 +3,7 @@ import { getDatabase } from "@/lib/mongodb";
 import { hash } from "bcryptjs";
 import { ObjectId } from "mongodb";
 import { sign } from "jsonwebtoken";
+import { createNotification, NotificationTemplates } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -185,6 +186,17 @@ export async function POST(request: NextRequest) {
     } catch (onboardingError) {
       console.error("Failed to handle onboarding record:", onboardingError);
       // Don't fail the whole process, but log the error
+    }
+
+    // Create welcome notification for new user
+    try {
+      await createNotification({
+        ...NotificationTemplates.WELCOME,
+        userId: finalUserId.toString(),
+        message: `Welcome to Juzbuild, ${signupData.fullName}! 🎉 Your account has been successfully created. Start by completing your onboarding to get your website live.`,
+      });
+    } catch (notifError) {
+      console.error("Failed to create welcome notification:", notifError);
     }
 
     // Create JWT token

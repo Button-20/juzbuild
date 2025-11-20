@@ -62,16 +62,8 @@ export default function NotificationBell() {
   const fetchNotifications = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
       const response = await fetch("/api/notifications?limit=10", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include", // Include HTTP-only cookies
       });
       const data: NotificationResponse = await response.json();
 
@@ -96,15 +88,12 @@ export default function NotificationBell() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify({ isRead: true }),
       });
 
@@ -130,17 +119,9 @@ export default function NotificationBell() {
   const markAllAsRead = async () => {
     setIsMarkingAllRead(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsMarkingAllRead(false);
-        return;
-      }
-
       const response = await fetch("/api/notifications/mark-all-read", {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -164,14 +145,9 @@ export default function NotificationBell() {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -246,20 +222,20 @@ export default function NotificationBell() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="end"
-        className="w-80 p-0 max-h-96 overflow-hidden"
+        align="start"
+        className="w-80 p-0 max-h-96 overflow-hidden bg-black border-gray-800"
         sideOffset={8}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold text-sm">Notifications</h3>
+        <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black">
+          <h3 className="font-semibold text-sm text-white">Notifications</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
               disabled={isMarkingAllRead}
-              className="h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+              className="h-auto p-1 text-xs text-gray-400 hover:text-white hover:bg-gray-800"
             >
               {isMarkingAllRead ? (
                 <Loader2 className="w-3 h-3 animate-spin mr-1" />
@@ -272,15 +248,15 @@ export default function NotificationBell() {
         </div>
 
         {/* Notifications List */}
-        <div className="overflow-y-auto max-h-80">
+        <div className="overflow-y-auto max-h-80 bg-black">
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center p-8 bg-black">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Bell className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col items-center justify-center p-8 text-center bg-black">
+              <Bell className="w-8 h-8 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-400">
                 No notifications yet
               </p>
             </div>
@@ -289,20 +265,20 @@ export default function NotificationBell() {
               <div
                 key={notification._id}
                 className={cn(
-                  "p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors",
-                  !notification.isRead && "bg-blue-50/50 dark:bg-blue-950/20"
+                  "p-4 border-b border-gray-800 last:border-b-0 hover:bg-gray-900 transition-colors bg-black",
+                  !notification.isRead && "bg-gray-950"
                 )}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-sm font-medium truncate">
+                      <h4 className="text-sm font-medium truncate text-white">
                         {notification.title}
                       </h4>
                       <Badge
                         variant="secondary"
                         className={cn(
-                          "text-xs px-1.5 py-0.5",
+                          "text-xs px-1.5 py-0.5 pointer-events-none",
                           getTypeColor(notification.type)
                         )}
                       >
@@ -310,12 +286,12 @@ export default function NotificationBell() {
                       </Badge>
                     </div>
 
-                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                    <p className="text-xs text-gray-300 mb-2 line-clamp-2">
                       {notification.message}
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-gray-500">
                         {formatTime(notification.createdAt)}
                       </span>
 
@@ -324,7 +300,7 @@ export default function NotificationBell() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-xs"
+                            className="h-6 px-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-gray-800"
                             onClick={() => {
                               window.open(notification.actionUrl!, "_blank");
                               if (!notification.isRead) {
@@ -341,7 +317,7 @@ export default function NotificationBell() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0"
+                            className="h-6 w-6 p-0 text-green-400 hover:text-green-300 hover:bg-gray-800"
                             onClick={() => markAsRead(notification._id)}
                           >
                             <Check className="w-3 h-3" />
@@ -351,7 +327,7 @@ export default function NotificationBell() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 hover:text-destructive"
+                          className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-gray-800"
                           onClick={() => deleteNotification(notification._id)}
                         >
                           <Trash2 className="w-3 h-3" />
@@ -361,7 +337,7 @@ export default function NotificationBell() {
                   </div>
 
                   {!notification.isRead && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-1 flex-shrink-0" />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-1 flex-shrink-0" />
                   )}
                 </div>
               </div>
@@ -371,10 +347,10 @@ export default function NotificationBell() {
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="p-3 border-t bg-muted/20">
+          <div className="p-3 border-t border-gray-800 bg-black">
             <Button
               variant="ghost"
-              className="w-full h-8 text-xs justify-center"
+              className="w-full h-8 text-xs justify-center text-gray-400 hover:text-white hover:bg-gray-800"
               onClick={() => {
                 // Navigate to full notifications page (can be implemented later)
                 setIsOpen(false);

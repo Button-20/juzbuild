@@ -1,8 +1,9 @@
-import { headers } from "next/headers";
+import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { createNotification, NotificationTemplates } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-12-18.acacia",
@@ -71,6 +72,17 @@ export async function POST(request: NextRequest) {
                 console.error(
                   `Failed to update user ${userId} - user not found`
                 );
+              } else {
+                // Create notification for successful plan upgrade
+                try {
+                  await createNotification({
+                    ...NotificationTemplates.PLAN_UPGRADED,
+                    userId: userId,
+                    message: `Your subscription has been upgraded to ${planId} plan. You now have access to new features and increased limits.`,
+                  });
+                } catch (notifError) {
+                  console.error("Failed to create upgrade notification:", notifError);
+                }
               }
             } catch (dbError) {
               console.error(
@@ -178,7 +190,7 @@ export async function POST(request: NextRequest) {
 
         if (subscriptionId) {
           // Update subscription status to past_due
-          await usersCollection.updateOne(
+          const result = await usersCollection.updateOne(
             { stripeSubscriptionId: subscriptionId },
             {
               $set: {
@@ -187,6 +199,21 @@ export async function POST(request: NextRequest) {
               },
             }
           );
+
+          // Create notification for payment failure
+          if (result.modifiedCount > 0) {
+            try {
+              const user = await usersCollection.findOne({ stripeSubscriptionId: subscriptionId });
+              if (user) {
+                await createNotification({
+                  ...NotificationTemplates.PAYMENT_FAILED,
+                  userId: user._id.toString(),
+                });
+              }
+            } catch (notifError) {
+              console.error("Failed to create payment failed notification:", notifError);
+            }
+          }
         }
         break;
       }
@@ -206,10 +233,52 @@ export async function POST(request: NextRequest) {
           updateData.subscriptionCanceledAt = new Date();
         }
 
-        await usersCollection.updateOne(
+        const result = await usersCollection.updateOne(
           { stripeCustomerId: customerId },
           { $set: updateData }
         );
+
+        // Get the user to create personalized notification
+        const user = await usersCollection.findOne({ stripeCustomerId: customerId });
+        
+        if (user && result.matchedCount > 0) {
+          // Create notification for subscription update
+          if (subscription.status === "active") {
+            // Determine the plan based on subscription items
+            let planName = "Pro";
+            if (subscription.items.data.length > 0) {
+              const priceId = subscription.items.data[0].price.id;
+              // Map price ID to plan name (adjust based on your pricing)
+              if (priceId.includes("starter")) planName = "Starter";
+              else if (priceId.includes("pro")) planName = "Pro";
+              else if (priceId.includes("premium")) planName = "Premium";
+            }
+
+            await createNotification({
+              ...NotificationTemplates.PLAN_UPGRADED,
+              userId: user._id.toString(),
+              message: `Great news, ${user.fullName}! Your subscription to the ${planName} plan is now active. Enjoy your enhanced features!`,
+              actionUrl: "/app/dashboard",
+              actionText: "View Dashboard",
+              metadata: { 
+                planName,
+                subscriptionId: subscription.id,
+                customerId: customerId 
+              },
+            });
+          } else if (subscription.status === "canceled") {
+            await createNotification({
+              ...NotificationTemplates.PAYMENT_FAILED,
+              userId: user._id.toString(),
+              title: "Subscription Canceled",
+              message: `Hi ${user.fullName}, your subscription has been canceled. You can reactivate it anytime from your settings.`,
+              type: "warning" as const,
+              category: "billing" as const,
+              actionUrl: "/app/settings",
+              actionText: "Manage Subscription",
+            });
+          }
+        }
 
         console.log(
           `Subscription updated for customer ${customerId}: ${subscription.status}`
@@ -266,16 +335,40 @@ export async function POST(request: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
 
         // Update user's subscription status
-        await usersCollection.updateOne(
+        const result = await usersCollection.updateOne(
           { stripeSubscriptionId: subscription.id },
           {
             $set: {
-              subscriptionStatus: "cancelled",
+              selectedPlan: "starter",
+              subscriptionStatus: "canceled",
+              subscriptionCanceledAt: new Date(),
               updatedAt: new Date(),
+            },
+            $unset: {
+              stripeSubscriptionId: "",
             },
           }
         );
 
+        // Create notification for subscription cancellation
+        if (result.modifiedCount > 0) {
+          try {
+            const user = await usersCollection.findOne({ 
+              $or: [
+                { stripeSubscriptionId: subscription.id },
+                { stripeCustomerId: subscription.customer }
+              ]
+            });
+            if (user) {
+              await createNotification({
+                ...NotificationTemplates.SUBSCRIPTION_CANCELED,
+                userId: user._id.toString(),
+              });
+            }
+          } catch (notifError) {
+            console.error("Failed to create cancellation notification:", notifError);
+          }
+        }
         break;
       }
 
