@@ -25,6 +25,12 @@ interface User {
   billingCycle: string;
   phoneNumber?: string;
   adsConnections?: string[];
+  // Stripe integration fields
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  subscriptionStatus?: "active" | "past_due" | "canceled" | "incomplete";
+  lastPaymentAt?: Date;
+  subscriptionCanceledAt?: Date;
 }
 
 interface AuthContextType {

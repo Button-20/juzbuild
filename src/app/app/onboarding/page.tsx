@@ -154,34 +154,29 @@ const isFeatureAvailable = (feature: string, planId: string): boolean => {
 export default function OnboardingPage() {
   const router = useRouter();
   const { createWebsite, websites } = useWebsite();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
     {
       number: 1,
-      title: "Choose Your Plan",
-      description: "Select the right plan for your business",
-    },
-    {
-      number: 2,
       title: "Basic Information",
       description: "Company details and domain",
     },
-    { number: 3, title: "Brand Assets", description: "Logo and color palette" },
+    { number: 2, title: "Brand Assets", description: "Logo and color palette" },
     {
-      number: 4,
+      number: 3,
       title: "Website Configuration",
       description: "Theme, pages, and features",
     },
     {
-      number: 5,
+      number: 4,
       title: "Lead Capture Setup",
       description: "Contact methods and forms",
     },
     {
-      number: 6,
+      number: 5,
       title: "Review & Create",
       description: "Final review and confirmation",
     },
@@ -209,8 +204,8 @@ export default function OnboardingPage() {
     tagline: "",
     aboutSection: "",
     selectedTheme: "",
-    selectedPlan: "pro",
-    billingCycle: "monthly",
+    selectedPlan: "pro", // Will be updated from user data
+    billingCycle: "monthly", // Will be updated from user data
     includedPages: ["home", "listings", "contact"],
     propertyTypes: ["Houses"],
     preferredContactMethod: ["email"],
@@ -234,6 +229,17 @@ export default function OnboardingPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update form data with user's plan when user is loaded
+  useEffect(() => {
+    if (user?.selectedPlan && user?.billingCycle) {
+      setFormData((prev) => ({
+        ...prev,
+        selectedPlan: user.selectedPlan,
+        billingCycle: user.billingCycle,
+      }));
+    }
+  }, [user?.selectedPlan, user?.billingCycle]);
 
   useEffect(() => {
     const fetchThemes = async () => {
@@ -408,7 +414,7 @@ export default function OnboardingPage() {
   const handleCreateWebsite = async () => {
     // Validate required fields
     if (
-      !formData.selectedPlan ||
+      !user?.selectedPlan ||
       !formData.companyName ||
       !formData.domainName ||
       !formData.tagline ||
@@ -482,7 +488,9 @@ export default function OnboardingPage() {
     }
   };
 
-  const selectedPlan = plans.find((p) => p.id === formData.selectedPlan);
+  const selectedPlan = plans.find(
+    (p) => p.id === (user?.selectedPlan || "pro")
+  );
   const selectedTheme = themes.find((t) => t.id === formData.selectedTheme);
 
   return (
@@ -563,171 +571,8 @@ export default function OnboardingPage() {
 
                 <CardContent className="p-8">
                   <form onSubmit={handleFormSubmit} className="space-y-8">
-                    {/* Step 1: Choose Your Plan */}
+                    {/* Step 1: Basic Information */}
                     {currentStep === 1 && (
-                      <div className="space-y-6">
-                        <div className="grid gap-6 md:grid-cols-3">
-                          {plans.map((plan) => {
-                            const isSelected =
-                              formData.selectedPlan === plan.id;
-                            const billingCycle = formData.billingCycle;
-                            const price =
-                              billingCycle === "yearly"
-                                ? plan.yearlyPrice
-                                : plan.monthlyPrice;
-                            const monthlyEquivalent =
-                              billingCycle === "yearly"
-                                ? Math.round(plan.yearlyPrice / 12)
-                                : plan.monthlyPrice;
-
-                            return (
-                              <div
-                                key={plan.id}
-                                className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${
-                                  isSelected
-                                    ? "border-primary bg-primary/5 shadow-lg"
-                                    : "border-border hover:border-primary/50"
-                                } ${
-                                  plan.popular ? "ring-2 ring-primary/20" : ""
-                                }`}
-                                onClick={() =>
-                                  handleInputChange("selectedPlan", plan.id)
-                                }
-                              >
-                                {plan.popular && (
-                                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                    <Badge className="bg-primary text-primary-foreground px-3 py-1">
-                                      Most Popular
-                                    </Badge>
-                                  </div>
-                                )}
-
-                                <div className="text-center">
-                                  <h4 className="text-xl font-bold mb-2">
-                                    {plan.name}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground mb-4">
-                                    {plan.description}
-                                  </p>
-
-                                  <div className="mb-4">
-                                    <div className="text-3xl font-bold">
-                                      ${monthlyEquivalent}
-                                      <span className="text-lg font-normal text-muted-foreground">
-                                        /mo
-                                      </span>
-                                    </div>
-                                    {billingCycle === "yearly" && (
-                                      <p className="text-sm text-muted-foreground">
-                                        Billed ${price}/year •{" "}
-                                        {plan.yearlyDiscount}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  <ul className="text-left space-y-2 text-sm">
-                                    {plan.features
-                                      .slice(0, 6)
-                                      .map((feature, index) => (
-                                        <li
-                                          key={index}
-                                          className="flex items-start"
-                                        >
-                                          <CheckCircle className="w-4 h-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                                          <span>{feature}</span>
-                                        </li>
-                                      ))}
-                                    {plan.features.length > 6 && (
-                                      <li className="text-muted-foreground">
-                                        +{plan.features.length - 6} more
-                                        features
-                                      </li>
-                                    )}
-                                  </ul>
-
-                                  {isSelected && (
-                                    <div className="mt-4 p-3 bg-primary/10 rounded-lg">
-                                      <div className="flex items-center justify-center text-primary">
-                                        <Check className="w-4 h-4 mr-2" />
-                                        <span className="font-medium">
-                                          Selected
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        <div className="flex justify-center mt-6">
-                          <div className="flex items-center space-x-4 p-1 bg-muted rounded-lg">
-                            <button
-                              type="button"
-                              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                                formData.billingCycle === "monthly"
-                                  ? "bg-background text-foreground shadow-sm"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                              onClick={() =>
-                                handleInputChange("billingCycle", "monthly")
-                              }
-                            >
-                              Monthly
-                            </button>
-                            <button
-                              type="button"
-                              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                                formData.billingCycle === "yearly"
-                                  ? "bg-background text-foreground shadow-sm"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                              onClick={() =>
-                                handleInputChange("billingCycle", "yearly")
-                              }
-                            >
-                              <span>Yearly</span>
-                              <Badge
-                                variant="secondary"
-                                className="ml-2 text-xs"
-                              >
-                                Save 16%
-                              </Badge>
-                            </button>
-                          </div>
-                        </div>
-
-                        {formData.selectedPlan && (
-                          <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                            <h4 className="font-semibold text-primary mb-2">
-                              🎉{" "}
-                              {
-                                plans.find(
-                                  (p) => p.id === formData.selectedPlan
-                                )?.name
-                              }{" "}
-                              Plan Selected
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              Your onboarding form will be customized based on
-                              the features included in your plan.
-                            </p>
-                            <div className="mt-2 text-xs text-muted-foreground">
-                              {formData.selectedPlan === "starter" &&
-                                "✓ Basic features included"}
-                              {formData.selectedPlan === "pro" &&
-                                "✓ Advanced features like AI Chatbot available"}
-                              {formData.selectedPlan === "agency" &&
-                                "✓ All premium features unlocked"}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Step 2: Basic Information */}
-                    {currentStep === 2 && (
                       <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
@@ -859,8 +704,8 @@ export default function OnboardingPage() {
                       </div>
                     )}
 
-                    {/* Step 3: Brand Assets */}
-                    {currentStep === 3 && (
+                    {/* Step 2: Brand Assets */}
+                    {currentStep === 2 && (
                       <div className="space-y-6">
                         {/* Logo Upload */}
                         <div className="space-y-2">
@@ -1060,8 +905,8 @@ export default function OnboardingPage() {
                       </div>
                     )}
 
-                    {/* Step 4: Website Configuration */}
-                    {currentStep === 4 && (
+                    {/* Step 3: Website Configuration */}
+                    {currentStep === 3 && (
                       <div className="space-y-6">
                         {/* Theme Selection */}
                         <div className="space-y-3">
@@ -1292,13 +1137,15 @@ export default function OnboardingPage() {
                                       {page.description}
                                     </p>
                                   </div>
-                                  <Checkbox
-                                    checked={isSelected}
-                                    disabled={isRequired}
-                                    onCheckedChange={() =>
-                                      !isRequired && handlePageToggle(page.id)
-                                    }
-                                  />
+                                  <div onClick={(e) => e.stopPropagation()}>
+                                    <Checkbox
+                                      checked={isSelected}
+                                      disabled={isRequired}
+                                      onCheckedChange={() =>
+                                        !isRequired && handlePageToggle(page.id)
+                                      }
+                                    />
+                                  </div>
                                 </div>
                               );
                             })}
@@ -1307,8 +1154,8 @@ export default function OnboardingPage() {
                       </div>
                     )}
 
-                    {/* Step 5: Lead Capture Setup */}
-                    {currentStep === 5 && (
+                    {/* Step 4: Lead Capture Setup */}
+                    {currentStep === 4 && (
                       <div className="space-y-6">
                         {/* Lead Capture Methods */}
                         <div className="space-y-3">
@@ -1320,8 +1167,8 @@ export default function OnboardingPage() {
                             {LEAD_CAPTURE_OPTIONS.filter(
                               (option) =>
                                 option.value !== "AI Chatbot" ||
-                                formData.selectedPlan === "pro" ||
-                                formData.selectedPlan === "agency"
+                                user?.selectedPlan === "pro" ||
+                                user?.selectedPlan === "agency"
                             ).map((option) => {
                               const isSelected =
                                 formData.leadCaptureMethods?.includes(
@@ -1393,7 +1240,7 @@ export default function OnboardingPage() {
                             </div>
                           )}
 
-                          {formData.selectedPlan === "starter" && (
+                          {user?.selectedPlan === "starter" && (
                             <div className="mt-4 p-4 bg-muted/50 border border-border rounded-lg">
                               <div className="flex items-start gap-3">
                                 <div className="text-2xl">🤖</div>
@@ -1451,8 +1298,8 @@ export default function OnboardingPage() {
                       </div>
                     )}
 
-                    {/* Step 6: Review & Create */}
-                    {currentStep === 6 && (
+                    {/* Step 5: Review & Create */}
+                    {currentStep === 5 && (
                       <div className="space-y-6">
                         {/* Order Summary */}
                         <div className="space-y-4">
@@ -1528,7 +1375,7 @@ export default function OnboardingPage() {
                         <Button
                           type="button"
                           onClick={nextStep}
-                          disabled={currentStep === 1 && !formData.selectedPlan}
+                          disabled={false}
                           className="px-6 py-3 font-medium"
                         >
                           Next
@@ -1540,7 +1387,7 @@ export default function OnboardingPage() {
                           onClick={handleCreateWebsite}
                           disabled={
                             isCreating ||
-                            !formData.selectedPlan ||
+                            !user?.selectedPlan ||
                             !formData.companyName ||
                             !formData.domainName ||
                             !formData.tagline ||
@@ -1584,41 +1431,6 @@ export default function OnboardingPage() {
                   <AnimatePresence mode="wait">
                     {currentStep === 1 && (
                       <motion.div
-                        key="step1"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="text-center mb-4">
-                          <span className="text-6xl">💳</span>
-                        </div>
-                        <h3 className="text-xl font-bold mb-2 text-center">
-                          Choose Your Plan
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-4 text-center">
-                          Select the right plan for your business needs.
-                          Different plans unlock different features.
-                        </p>
-                        <ul className="space-y-2">
-                          <li className="flex items-start text-sm">
-                            <span className="text-primary mr-2">✓</span>
-                            <span>Flexible pricing options</span>
-                          </li>
-                          <li className="flex items-start text-sm">
-                            <span className="text-primary mr-2">✓</span>
-                            <span>Feature-based selection</span>
-                          </li>
-                          <li className="flex items-start text-sm">
-                            <span className="text-primary mr-2">✓</span>
-                            <span>Scale as you grow</span>
-                          </li>
-                        </ul>
-                      </motion.div>
-                    )}
-
-                    {currentStep === 2 && (
-                      <motion.div
                         key="step2"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1652,7 +1464,7 @@ export default function OnboardingPage() {
                       </motion.div>
                     )}
 
-                    {currentStep === 3 && (
+                    {currentStep === 2 && (
                       <motion.div
                         key="step3"
                         initial={{ opacity: 0, y: 20 }}
@@ -1687,7 +1499,7 @@ export default function OnboardingPage() {
                       </motion.div>
                     )}
 
-                    {currentStep === 4 && (
+                    {currentStep === 3 && (
                       <motion.div
                         key="step4"
                         initial={{ opacity: 0, y: 20 }}
@@ -1722,7 +1534,7 @@ export default function OnboardingPage() {
                       </motion.div>
                     )}
 
-                    {currentStep === 5 && (
+                    {currentStep === 4 && (
                       <motion.div
                         key="step5"
                         initial={{ opacity: 0, y: 20 }}
@@ -1757,7 +1569,7 @@ export default function OnboardingPage() {
                       </motion.div>
                     )}
 
-                    {currentStep === 6 && (
+                    {currentStep === 5 && (
                       <motion.div
                         key="step6"
                         initial={{ opacity: 0, y: 20 }}

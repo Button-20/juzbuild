@@ -174,14 +174,14 @@ export function WebsiteSwitcher() {
                         <span className="font-medium">
                           {website.companyName}
                         </span>
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${getStatusColor(
-                            website.status
-                          )}`}
-                        >
-                          {website.status}
-                        </Badge>
+                        {currentWebsite?._id === website._id && (
+                          <Badge
+                            variant="default"
+                            className="text-xs bg-primary text-primary-foreground"
+                          >
+                            Current
+                          </Badge>
+                        )}
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {website.domainName}

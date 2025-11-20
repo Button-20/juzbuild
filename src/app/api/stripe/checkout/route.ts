@@ -65,8 +65,12 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup/payment-status?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/signup`,
+      success_url: isSignup
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/signup/payment-status?session_id={CHECKOUT_SESSION_ID}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: isSignup
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/signup`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?canceled=true`,
       metadata: {
         planId: planId,
         billingCycle: billingCycle,

@@ -17,45 +17,116 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { PRICING_PLANS, getPlanById } from "@/constants/pricing";
-import { ArrowUp, Check, Crown, Zap } from "lucide-react";
+import {
+  ArrowUp,
+  Check,
+  Crown,
+  Zap,
+  CreditCard,
+  ExternalLink,
+  AlertCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import getStripe from "@/lib/stripe";
 
 export function AccountUpgrade() {
-  const { user } = useAuth();
+  const { user, refreshAuth } = useAuth();
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("");
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
 
   const currentPlan = getPlanById(user?.selectedPlan || "starter");
   const availableUpgrades = PRICING_PLANS.filter(
     (plan) => plan.id !== user?.selectedPlan
   );
+  const hasActiveSubscription =
+    user?.stripeCustomerId && user?.subscriptionStatus === "active";
 
   const handleUpgrade = async (planId: string) => {
     setIsUpgrading(true);
     try {
-      // TODO: Implement Stripe subscription upgrade
-      toast.success(`Upgrading to ${planId} plan...`);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Refresh user data after upgrade
-      // This would typically update the user's plan in the database
-      toast.success("Plan upgraded successfully!");
+      // Create Stripe checkout session
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planId,
+          billingCycle,
+          isSignup: false,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+
+      // Redirect to Stripe checkout using the modern approach
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received from server");
+      }
     } catch (error) {
       console.error("Upgrade error:", error);
-      toast.error("Failed to upgrade plan. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to start upgrade process. Please try again."
+      );
     } finally {
       setIsUpgrading(false);
     }
   };
 
+  const handleBillingPortal = async () => {
+    if (!hasActiveSubscription) {
+      toast.error("No active subscription found");
+      return;
+    }
+
+    setIsLoadingPortal(true);
+    try {
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to access billing portal");
+      }
+
+      // Redirect to Stripe customer portal
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Billing portal error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to access billing portal. Please try again."
+      );
+    } finally {
+      setIsLoadingPortal(false);
+    }
+  };
+
   const formatPrice = (plan: any, cycle: "monthly" | "yearly") => {
-    const price = cycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice / 12;
+    const price =
+      cycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice / 12;
     return `$${Math.round(price)}/${cycle === "monthly" ? "mo" : "mo"}`;
   };
 
@@ -83,19 +154,55 @@ export function AccountUpgrade() {
           <div className="rounded-lg border p-4 bg-muted/30">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium">
-                  {currentPlan?.name || "Starter"}
-                </h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-medium">
+                    {currentPlan?.name || "Starter"}
+                  </h4>
+                  {hasActiveSubscription && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-green-50 text-green-700 border-green-200"
+                    >
+                      Active Subscription
+                    </Badge>
+                  )}
+                  {user?.subscriptionStatus === "past_due" && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                    >
+                      Payment Due
+                    </Badge>
+                  )}
+                  {user?.subscriptionStatus === "canceled" && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                    >
+                      Canceled
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {currentPlan?.description}
                 </p>
+                {user?.billingCycle && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Billed {user.billingCycle}
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold">
-                  {formatPrice(currentPlan || PRICING_PLANS[0], billingCycle)}
+                  {formatPrice(
+                    currentPlan || PRICING_PLANS[0],
+                    user?.billingCycle || billingCycle
+                  )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  billed {billingCycle}
+                  {user?.billingCycle
+                    ? `billed ${user.billingCycle}`
+                    : `estimated ${billingCycle}`}
                 </p>
               </div>
             </div>
@@ -109,6 +216,34 @@ export function AccountUpgrade() {
                 </div>
               ))}
             </div>
+
+            {/* Billing Management */}
+            {hasActiveSubscription && (
+              <>
+                <Separator className="my-3" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CreditCard className="h-4 w-4" />
+                    <span>Manage billing & payment methods</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBillingPortal}
+                    disabled={isLoadingPortal}
+                  >
+                    {isLoadingPortal ? (
+                      "Loading..."
+                    ) : (
+                      <>
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Billing Portal
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Upgrade Options */}
