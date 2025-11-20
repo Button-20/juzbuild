@@ -49,6 +49,23 @@ export async function PATCH(
       );
     }
 
+    // Send updated unread count via SSE
+    if (isRead !== false) {
+      try {
+        const unreadCount = await notificationsCollection.countDocuments({
+          userId: decoded.userId,
+          isRead: false,
+        });
+
+        const { sendUnreadCountUpdate } = await import(
+          "@/app/api/notifications/ws/route"
+        );
+        sendUnreadCountUpdate(decoded.userId, unreadCount);
+      } catch (error) {
+        console.warn("Failed to send unread count update:", error);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       notification,

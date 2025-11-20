@@ -34,6 +34,16 @@ export async function PATCH(request: NextRequest) {
       }
     );
 
+    // Send updated unread count (should be 0) via SSE
+    try {
+      const { sendUnreadCountUpdate } = await import(
+        "@/app/api/notifications/ws/route"
+      );
+      sendUnreadCountUpdate(decoded.userId, 0);
+    } catch (error) {
+      console.warn("Failed to send unread count update:", error);
+    }
+
     return NextResponse.json({
       success: true,
       updatedCount: result.modifiedCount,

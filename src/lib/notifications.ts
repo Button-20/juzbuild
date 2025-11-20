@@ -39,7 +39,20 @@ export async function createNotification(params: CreateNotificationParams) {
     };
 
     const result = await notificationsCollection.insertOne(notification);
-    return { ...notification, _id: result.insertedId };
+    const createdNotification = { ...notification, _id: result.insertedId };
+
+    // Send real-time notification via SSE
+    try {
+      const { sendNotificationToUser } = await import(
+        "@/app/api/notifications/ws/route"
+      );
+      sendNotificationToUser(params.userId, createdNotification);
+    } catch (error) {
+      // SSE is optional, don't fail if it's not available
+      console.warn("Failed to send real-time notification:", error);
+    }
+
+    return createdNotification;
   } catch (error) {
     console.error("Error creating notification:", error);
     throw error;

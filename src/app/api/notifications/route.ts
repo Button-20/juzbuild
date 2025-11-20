@@ -27,10 +27,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const unreadOnly = searchParams.get("unreadOnly") === "true";
+    const type = searchParams.get("type");
 
     const query: any = { userId: decoded.userId };
     if (unreadOnly) {
       query.isRead = false;
+    }
+    if (type && type !== "all") {
+      query.type = type;
     }
 
     const notifications = await notificationsCollection

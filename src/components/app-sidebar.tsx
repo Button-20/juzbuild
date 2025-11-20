@@ -2,6 +2,7 @@
 
 import {
   ArrowUpCircleIcon,
+  Bell,
   ClipboardListIcon,
   FileTextIcon,
   FolderIcon,
@@ -46,6 +47,11 @@ const data = {
       title: "Dashboard",
       url: "/app/dashboard",
       icon: LayoutDashboardIcon,
+    },
+    {
+      title: "Notifications",
+      url: "/app/notifications",
+      icon: Bell,
     },
     {
       title: "Domain",

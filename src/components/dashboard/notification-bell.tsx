@@ -9,6 +9,8 @@ import {
   ExternalLink,
   CheckCheck,
   Loader2,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +21,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNotificationStream } from "@/hooks/useNotificationStream";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Notification {
   _id: string;
@@ -53,6 +58,7 @@ interface NotificationResponse {
 }
 
 export default function NotificationBell() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,12 +84,35 @@ export default function NotificationBell() {
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
+  // Use SSE stream for real-time notifications
+  const { isConnected, connectionError, reconnect } = useNotificationStream({
+    onNewNotification: (notification) => {
+      // Add new notification to the list
+      setNotifications((prev) => [notification, ...prev.slice(0, 9)]); // Keep only 10 most recent
+      if (!notification.isRead) {
+        setUnreadCount((prev) => prev + 1);
+      }
 
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+      // Show toast for new notifications
+      toast.success(notification.title, {
+        description:
+          notification.message.substring(0, 100) +
+          (notification.message.length > 100 ? "..." : ""),
+      });
+    },
+    onUnreadCountUpdate: (count) => {
+      setUnreadCount(count);
+    },
+    onConnectionChange: (connected) => {
+      if (!connected && connectionError) {
+        console.warn("Notification stream disconnected:", connectionError);
+      }
+    },
+  });
+
+  useEffect(() => {
+    // Initial fetch of notifications
+    fetchNotifications();
   }, []);
 
   const markAsRead = async (notificationId: string) => {
@@ -228,7 +257,28 @@ export default function NotificationBell() {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black">
-          <h3 className="font-semibold text-sm text-white">Notifications</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-white">Notifications</h3>
+            {/* Connection indicator */}
+            <div className="flex items-center gap-1">
+              {isConnected ? (
+                <Wifi
+                  className="w-3 h-3 text-green-400"
+                  title="Real-time connected"
+                />
+              ) : (
+                <WifiOff
+                  className="w-3 h-3 text-red-400 cursor-pointer"
+                  title={
+                    connectionError
+                      ? `Disconnected: ${connectionError}`
+                      : "Disconnected"
+                  }
+                  onClick={reconnect}
+                />
+              )}
+            </div>
+          </div>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -300,13 +350,13 @@ export default function NotificationBell() {
                             size="sm"
                             className="h-6 px-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-gray-800"
                             onClick={() => {
-                              window.open(notification.actionUrl!, "_blank");
                               if (!notification.isRead) {
                                 markAsRead(notification._id);
                               }
+                              setIsOpen(false);
+                              router.push(notification.actionUrl!);
                             }}
                           >
-                            <ExternalLink className="w-3 h-3 mr-1" />
                             {notification.actionText || "View"}
                           </Button>
                         )}
@@ -350,8 +400,8 @@ export default function NotificationBell() {
               variant="ghost"
               className="w-full h-8 text-xs justify-center text-gray-400 hover:text-white hover:bg-gray-800"
               onClick={() => {
-                // Navigate to full notifications page (can be implemented later)
                 setIsOpen(false);
+                router.push("/app/notifications");
               }}
             >
               View all notifications
