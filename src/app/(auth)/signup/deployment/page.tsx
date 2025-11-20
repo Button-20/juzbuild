@@ -169,8 +169,6 @@ export default function DeploymentPage() {
           aboutSection: "About our company",
           leadCaptureMethods: ["email"],
           preferredContactMethod: ["email"],
-          selectedPlan: userData.selectedPlan || "starter",
-          billingCycle: "monthly",
         };
       } catch (error) {
         console.error(
@@ -215,8 +213,6 @@ export default function DeploymentPage() {
         leadCaptureMethods: signupData.leadCaptureMethods || [],
         preferredContactMethod: signupData.preferredContactMethod || [],
         geminiApiKey: signupData.geminiApiKey,
-        selectedPlan: signupData.selectedPlan,
-        billingCycle: signupData.billingCycle,
       };
 
       const response = await fetch("/api/websites", {

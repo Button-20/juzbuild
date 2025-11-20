@@ -144,8 +144,6 @@ export async function POST(request: NextRequest) {
       tagline,
       aboutSection,
       selectedTheme,
-      selectedPlan,
-      billingCycle,
       includedPages,
       propertyTypes,
       preferredContactMethod,
@@ -166,9 +164,7 @@ export async function POST(request: NextRequest) {
       !domainName ||
       !tagline ||
       !aboutSection ||
-      !selectedTheme ||
-      !selectedPlan ||
-      !billingCycle
+      !selectedTheme
     ) {
       return NextResponse.json(
         { success: false, message: "All fields are required" },
@@ -360,18 +356,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get user's plan from user record
+    const usersCollection = await getCollection("users");
+    const user = await usersCollection.findOne({
+      _id: toObjectId(decoded.userId),
+    });
+    const userPlan = user?.selectedPlan || "starter";
+
     // Check user's website limit based on plan
     const userWebsites = await websitesCollection.countDocuments({
       userId: decoded.userId,
     });
     const websiteLimit =
-      selectedPlan === "starter" ? 1 : selectedPlan === "pro" ? 5 : 20; // agency plan
+      userPlan === "starter" ? 1 : userPlan === "pro" ? 5 : 20; // agency plan
 
     if (userWebsites >= websiteLimit) {
       return NextResponse.json(
         {
           success: false,
-          message: `You've reached your website limit for the ${selectedPlan} plan`,
+          message: `You've reached your website limit for the ${userPlan} plan`,
         },
         { status: 403 }
       );
@@ -385,8 +388,6 @@ export async function POST(request: NextRequest) {
       tagline,
       aboutSection,
       selectedTheme,
-      selectedPlan,
-      billingCycle,
       status: "creating",
       deploymentStatus: "pending",
       createdAt: new Date(),

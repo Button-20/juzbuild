@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const domain = site.customDomain || site.domain;
+    // Check if there's a custom domain, otherwise use the default domainName + .onjuzbuild.com
+    const domain = site.customDomain || `${site.domainName}.onjuzbuild.com`;
     const isCustomDomain = !!site.customDomain;
 
     return NextResponse.json({

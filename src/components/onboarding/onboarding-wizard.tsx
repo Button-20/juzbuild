@@ -424,9 +424,11 @@ export default function OnboardingWizard({
             "Select at least one preferred contact method";
         break;
 
-      case 5: // Review Details Step - No validation needed, just review
-        // This step is just for reviewing the information before payment
-        // All validation should have been done in previous steps
+      case 5: // Review Details Step - Check terms agreement
+        if (!formData.agreeToTerms) {
+          newErrors.agreeToTerms =
+            "You must agree to the terms and conditions to proceed";
+        }
         break;
     }
 

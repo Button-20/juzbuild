@@ -603,9 +603,19 @@ export default function PropertiesPage() {
                   onSort: handleSort,
                 }}
                 emptyMessage={
-                  searchTerm || statusFilter !== "all" || typeFilter !== "all"
-                    ? "No properties match your filters"
-                    : "No properties found. Add your first property to get started."
+                  searchTerm ||
+                  statusFilter !== "all" ||
+                  typeFilter !== "all" ? (
+                    "No properties match your filters"
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <HomeIcon className="h-8 w-8 text-muted-foreground/50" />
+                      <span>
+                        No properties found. Add your first property to get
+                        started.
+                      </span>
+                    </div>
+                  )
                 }
               />
             </CardContent>

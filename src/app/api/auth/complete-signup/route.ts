@@ -136,6 +136,57 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Create onboarding record if it doesn't exist (payment flow bypasses signup-onboarding API)
+    const onboardingCollection = db.collection("onboarding");
+    try {
+      const existingOnboarding = await onboardingCollection.findOne({
+        userId: finalUserId.toString(),
+      });
+
+      if (!existingOnboarding) {
+        console.log(
+          "No onboarding record found, creating one for user:",
+          finalUserId.toString()
+        );
+        const onboardingRecord = {
+          userId: finalUserId.toString(),
+          // Only onboarding-specific fields (not plan data which is in user record)
+          logoUrl: signupData.logoUrl,
+          brandColors: signupData.brandColors || [],
+          propertyTypes: signupData.propertyTypes || [],
+          includedPages: signupData.includedPages || [],
+          leadCaptureMethods: signupData.leadCaptureMethods || [],
+          geminiApiKey: signupData.geminiApiKey || null,
+          adsConnections: signupData.adsConnections || [],
+          preferredContactMethod: signupData.preferredContactMethod || [],
+          agreeToTerms: signupData.agreeToTerms || true, // Default to true since payment was completed
+          paymentMethod: signupData.paymentMethod || "stripe", // Default to stripe since payment went through Stripe
+          // Onboarding metadata
+          createdAt: new Date(),
+          ipAddress:
+            request.headers.get("x-forwarded-for") ||
+            request.headers.get("x-real-ip") ||
+            "unknown",
+          userAgent: request.headers.get("user-agent") || "unknown",
+          status: "completed",
+        };
+
+        await onboardingCollection.insertOne(onboardingRecord);
+        console.log(
+          "Onboarding record created successfully for user:",
+          finalUserId.toString()
+        );
+      } else {
+        console.log(
+          "Onboarding record already exists for user:",
+          finalUserId.toString()
+        );
+      }
+    } catch (onboardingError) {
+      console.error("Failed to handle onboarding record:", onboardingError);
+      // Don't fail the whole process, but log the error
+    }
+
     // Create JWT token
     const token = sign(
       {

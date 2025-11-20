@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { PRICING_PLANS } from "@/constants/pricing";
 import { WizardStepProps } from "@/types/onboarding";
@@ -401,8 +402,44 @@ export default function ReviewStep({
         </div>
       </div>
 
+      {/* Terms Agreement */}
+      <div className="pt-6 border-t">
+        <div className="flex items-start space-x-3">
+          <Checkbox
+            id="agreeToTerms"
+            checked={data.agreeToTerms || false}
+            onCheckedChange={(checked) => updateData({ agreeToTerms: checked })}
+          />
+          <div className="text-sm leading-relaxed">
+            <label htmlFor="agreeToTerms" className="cursor-pointer">
+              I agree to the{" "}
+              <a
+                href="/terms-of-service"
+                target="_blank"
+                className="text-primary underline hover:no-underline"
+              >
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a
+                href="/privacy-policy"
+                target="_blank"
+                className="text-primary underline hover:no-underline"
+              >
+                Privacy Policy
+              </a>
+              . I understand that by proceeding to payment, I am agreeing to
+              these terms and conditions.
+            </label>
+          </div>
+        </div>
+        {errors.agreeToTerms && (
+          <p className="text-red-500 text-sm mt-2">{errors.agreeToTerms}</p>
+        )}
+      </div>
+
       {/* Navigation */}
-      <div className="flex justify-between pt-6 border-t">
+      <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={onBack} size="lg" className="px-8">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
@@ -411,7 +448,7 @@ export default function ReviewStep({
           onClick={handleProceedToPayment}
           size="lg"
           className="px-8"
-          disabled={isProcessingPayment || !isStepValid}
+          disabled={isProcessingPayment || !isStepValid || !data.agreeToTerms}
         >
           {isProcessingPayment ? "Setting up payment..." : "Proceed to Payment"}
         </Button>
