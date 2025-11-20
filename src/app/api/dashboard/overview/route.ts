@@ -54,12 +54,12 @@ export async function GET(request: NextRequest) {
 
     // Check if user needs any reminders and create them
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     // Check for incomplete onboarding (no websites created in 24+ hours)
     if (websites.length === 0) {
       const userAge = Date.now() - new Date(user.createdAt).getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
-      
+
       if (userAge > twentyFourHours) {
         // Check if we already sent an onboarding reminder recently
         const recentOnboardingReminder = await notificationsCollection.findOne({
@@ -81,12 +81,13 @@ export async function GET(request: NextRequest) {
 
     // Check for websites needing domain setup
     for (const website of websites) {
-      if (website.status === "active" && 
-          (!website.customDomain || !website.domainSetupCompleted)) {
-        
+      if (
+        website.status === "active" &&
+        (!website.customDomain || !website.domainSetupCompleted)
+      ) {
         const websiteAge = Date.now() - new Date(website.createdAt).getTime();
         const sixHours = 6 * 60 * 60 * 1000;
-        
+
         if (websiteAge > sixHours) {
           const recentDomainReminder = await notificationsCollection.findOne({
             userId: decoded.userId,
@@ -111,8 +112,10 @@ export async function GET(request: NextRequest) {
     // Calculate dashboard statistics
     const stats = {
       totalWebsites: websites.length,
-      activeWebsites: websites.filter(w => w.status === "active").length,
-      pendingWebsites: websites.filter(w => w.status === "creating" || w.deploymentStatus === "processing").length,
+      activeWebsites: websites.filter((w) => w.status === "active").length,
+      pendingWebsites: websites.filter(
+        (w) => w.status === "creating" || w.deploymentStatus === "processing"
+      ).length,
       unreadNotifications: await notificationsCollection.countDocuments({
         userId: decoded.userId,
         isRead: false,

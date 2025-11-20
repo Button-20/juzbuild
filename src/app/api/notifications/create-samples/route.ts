@@ -6,7 +6,10 @@ export async function POST(request: NextRequest) {
   try {
     // Only allow this in development
     if (process.env.NODE_ENV === "production") {
-      return NextResponse.json({ error: "Not available in production" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Not available in production" },
+        { status: 403 }
+      );
     }
 
     const token = request.cookies.get("auth-token")?.value;
@@ -31,11 +34,13 @@ export async function POST(request: NextRequest) {
       {
         ...NotificationTemplates.WELCOME,
         userId: decoded.userId,
-        message: "Welcome to Juzbuild! Your account has been successfully created. Start by setting up your profile and creating your first website.",
+        message:
+          "Welcome to Juzbuild! Your account has been successfully created. Start by setting up your profile and creating your first website.",
       },
       {
         title: "Website Deployed Successfully! 🚀",
-        message: "Your MyCompany website has been successfully deployed and is now live at mycompany.onjuzbuild.com",
+        message:
+          "Your MyCompany website has been successfully deployed and is now live at mycompany.onjuzbuild.com",
         type: "success" as const,
         category: "system" as const,
         actionUrl: "https://mycompany.onjuzbuild.com",
@@ -44,7 +49,8 @@ export async function POST(request: NextRequest) {
       },
       {
         title: "Plan Upgrade Available",
-        message: "Upgrade to Pro plan to unlock unlimited websites and advanced features. Limited time offer - 20% off!",
+        message:
+          "Upgrade to Pro plan to unlock unlimited websites and advanced features. Limited time offer - 20% off!",
         type: "info" as const,
         category: "billing" as const,
         actionUrl: "/app/settings",
@@ -53,7 +59,8 @@ export async function POST(request: NextRequest) {
       },
       {
         title: "New Feature: Custom Domains",
-        message: "You can now connect your own custom domain to your websites. Make your site truly yours!",
+        message:
+          "You can now connect your own custom domain to your websites. Make your site truly yours!",
         type: "update" as const,
         category: "feature" as const,
         actionUrl: "/app/domain",
@@ -62,7 +69,8 @@ export async function POST(request: NextRequest) {
       },
       {
         title: "Monthly Report Ready 📊",
-        message: "Your monthly analytics report is ready. See how your website performed this month.",
+        message:
+          "Your monthly analytics report is ready. See how your website performed this month.",
         type: "info" as const,
         category: "system" as const,
         actionUrl: "/app/analytics",

@@ -105,7 +105,8 @@ export const NotificationTemplates = {
 
   PLAN_UPGRADED: {
     title: "Plan Upgraded Successfully! ⭐",
-    message: "Your subscription has been upgraded. You now have access to new features and increased limits.",
+    message:
+      "Your subscription has been upgraded. You now have access to new features and increased limits.",
     type: "success" as const,
     category: "billing" as const,
     actionUrl: "/app/settings",
@@ -114,7 +115,8 @@ export const NotificationTemplates = {
 
   PAYMENT_FAILED: {
     title: "Payment Failed ⚠️",
-    message: "Your latest payment could not be processed. Please update your payment method to avoid service interruption.",
+    message:
+      "Your latest payment could not be processed. Please update your payment method to avoid service interruption.",
     type: "error" as const,
     category: "billing" as const,
     actionUrl: "/app/settings",
@@ -123,7 +125,8 @@ export const NotificationTemplates = {
 
   SUBSCRIPTION_CANCELED: {
     title: "Subscription Canceled",
-    message: "Your subscription has been canceled. You still have access to premium features until your billing period ends.",
+    message:
+      "Your subscription has been canceled. You still have access to premium features until your billing period ends.",
     type: "warning" as const,
     category: "billing" as const,
     actionUrl: "/app/settings",
@@ -132,14 +135,16 @@ export const NotificationTemplates = {
 
   WEBSITE_CREATION_STARTED: {
     title: "Website Creation Started 🔧",
-    message: "We're building your website! This usually takes 2-3 minutes. We'll notify you when it's ready.",
+    message:
+      "We're building your website! This usually takes 2-3 minutes. We'll notify you when it's ready.",
     type: "info" as const,
     category: "system" as const,
   },
 
   DOMAIN_SETUP_REQUIRED: {
     title: "Domain Setup Required",
-    message: "Your website is ready! Complete the domain setup to make it live on the internet.",
+    message:
+      "Your website is ready! Complete the domain setup to make it live on the internet.",
     type: "reminder" as const,
     category: "system" as const,
     actionUrl: "/app/domain",
@@ -157,7 +162,8 @@ export const NotificationTemplates = {
 
   WEBSITE_LIMIT_REACHED: {
     title: "Website Limit Reached",
-    message: "You've reached your plan's website limit. Upgrade to create more websites.",
+    message:
+      "You've reached your plan's website limit. Upgrade to create more websites.",
     type: "warning" as const,
     category: "billing" as const,
     actionUrl: "/app/settings",

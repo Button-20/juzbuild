@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getDatabase } from "@/lib/mongodb";
@@ -81,7 +81,10 @@ export async function POST(request: NextRequest) {
                     message: `Your subscription has been upgraded to ${planId} plan. You now have access to new features and increased limits.`,
                   });
                 } catch (notifError) {
-                  console.error("Failed to create upgrade notification:", notifError);
+                  console.error(
+                    "Failed to create upgrade notification:",
+                    notifError
+                  );
                 }
               }
             } catch (dbError) {
@@ -203,7 +206,9 @@ export async function POST(request: NextRequest) {
           // Create notification for payment failure
           if (result.modifiedCount > 0) {
             try {
-              const user = await usersCollection.findOne({ stripeSubscriptionId: subscriptionId });
+              const user = await usersCollection.findOne({
+                stripeSubscriptionId: subscriptionId,
+              });
               if (user) {
                 await createNotification({
                   ...NotificationTemplates.PAYMENT_FAILED,
@@ -211,7 +216,10 @@ export async function POST(request: NextRequest) {
                 });
               }
             } catch (notifError) {
-              console.error("Failed to create payment failed notification:", notifError);
+              console.error(
+                "Failed to create payment failed notification:",
+                notifError
+              );
             }
           }
         }
@@ -239,8 +247,10 @@ export async function POST(request: NextRequest) {
         );
 
         // Get the user to create personalized notification
-        const user = await usersCollection.findOne({ stripeCustomerId: customerId });
-        
+        const user = await usersCollection.findOne({
+          stripeCustomerId: customerId,
+        });
+
         if (user && result.matchedCount > 0) {
           // Create notification for subscription update
           if (subscription.status === "active") {
@@ -260,10 +270,10 @@ export async function POST(request: NextRequest) {
               message: `Great news, ${user.fullName}! Your subscription to the ${planName} plan is now active. Enjoy your enhanced features!`,
               actionUrl: "/app/dashboard",
               actionText: "View Dashboard",
-              metadata: { 
+              metadata: {
                 planName,
                 subscriptionId: subscription.id,
-                customerId: customerId 
+                customerId: customerId,
               },
             });
           } else if (subscription.status === "canceled") {
@@ -353,11 +363,11 @@ export async function POST(request: NextRequest) {
         // Create notification for subscription cancellation
         if (result.modifiedCount > 0) {
           try {
-            const user = await usersCollection.findOne({ 
+            const user = await usersCollection.findOne({
               $or: [
                 { stripeSubscriptionId: subscription.id },
-                { stripeCustomerId: subscription.customer }
-              ]
+                { stripeCustomerId: subscription.customer },
+              ],
             });
             if (user) {
               await createNotification({
@@ -366,7 +376,10 @@ export async function POST(request: NextRequest) {
               });
             }
           } catch (notifError) {
-            console.error("Failed to create cancellation notification:", notifError);
+            console.error(
+              "Failed to create cancellation notification:",
+              notifError
+            );
           }
         }
         break;

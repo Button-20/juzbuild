@@ -256,9 +256,7 @@ export default function NotificationBell() {
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center bg-black">
               <Bell className="w-8 h-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-400">
-                No notifications yet
-              </p>
+              <p className="text-sm text-gray-400">No notifications yet</p>
             </div>
           ) : (
             notifications.map((notification) => (

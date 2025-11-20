@@ -377,10 +377,15 @@ export async function POST(request: NextRequest) {
         await createNotification({
           ...NotificationTemplates.WEBSITE_LIMIT_REACHED,
           userId: decoded.userId,
-          message: `You've reached your ${userPlan} plan limit of ${websiteLimit} website${websiteLimit > 1 ? 's' : ''}. Upgrade to create more websites.`,
+          message: `You've reached your ${userPlan} plan limit of ${websiteLimit} website${
+            websiteLimit > 1 ? "s" : ""
+          }. Upgrade to create more websites.`,
         });
       } catch (notifError) {
-        console.error("Failed to create website limit notification:", notifError);
+        console.error(
+          "Failed to create website limit notification:",
+          notifError
+        );
       }
 
       return NextResponse.json(
@@ -504,7 +509,10 @@ export async function POST(request: NextRequest) {
             message: `We're building your ${companyName} website! This usually takes 2-3 minutes. We'll notify you when it's ready.`,
           });
         } catch (notifError) {
-          console.error("Failed to create website creation notification:", notifError);
+          console.error(
+            "Failed to create website creation notification:",
+            notifError
+          );
         }
 
         // Update the newWebsite object to include jobId for response
