@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDatabase } from "@/lib/mongodb";
+import { getDatabase, getCollection } from "@/lib/mongodb";
 import { hash } from "bcryptjs";
 import { ObjectId } from "mongodb";
 import { sign } from "jsonwebtoken";
@@ -194,6 +194,7 @@ export async function POST(request: NextRequest) {
         ...NotificationTemplates.WELCOME,
         userId: finalUserId.toString(),
         message: `Welcome to Juzbuild, ${signupData.fullName}! 🎉 Your account has been successfully created. Start by completing your onboarding to get your website live.`,
+        preventDuplicates: true,
       });
     } catch (notifError) {
       console.error("Failed to create welcome notification:", notifError);

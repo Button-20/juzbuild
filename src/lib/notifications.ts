@@ -16,11 +16,30 @@ interface CreateNotificationParams {
   actionText?: string;
   metadata?: Record<string, any>;
   expiresAt?: Date;
+  preventDuplicates?: boolean;
 }
 
 export async function createNotification(params: CreateNotificationParams) {
   try {
     const notificationsCollection = await getCollection("notifications");
+
+    // Check for duplicates if requested
+    if (params.preventDuplicates) {
+      const existingNotification = await notificationsCollection.findOne({
+        userId: params.userId,
+        title: params.title,
+        createdAt: {
+          $gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        },
+      });
+
+      if (existingNotification) {
+        console.log(
+          `Duplicate notification prevented: ${params.title} for user ${params.userId}`
+        );
+        return existingNotification;
+      }
+    }
 
     const notification = {
       userId: params.userId,

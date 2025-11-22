@@ -73,6 +73,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if user's plan allows domain purchases (tier 2 and 3 only)
+    const userPlan = user.selectedPlan || "starter";
+    if (userPlan === "starter") {
+      return NextResponse.json(
+        { 
+          error: "Domain purchases are available for Pro and Agency plans only. Please upgrade your plan to purchase a custom domain.",
+          planRestriction: true
+        }, 
+        { status: 403 }
+      );
+    }
+
     // Prepare website URL (use domain or construct from site data)
     const websiteUrl = site.vercelUrl || site.url || `https://${site.domain}`;
 

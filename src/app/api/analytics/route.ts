@@ -37,23 +37,36 @@ export async function GET(request: NextRequest) {
 
       // Fetch theme name from themes collection
       const themesCollection = db.collection("themes");
-      const theme = await themesCollection.findOne({
-        _id: new ObjectId(website.theme),
-      });
-      const themeName = theme?.name || website.theme;
+      let themeName = website.selectedTheme;
+
+      if (website.selectedTheme) {
+        try {
+          const theme = await themesCollection.findOne({
+            _id: new ObjectId(website.selectedTheme),
+          });
+          themeName = theme?.name || theme?.title || website.selectedTheme;
+        } catch (error) {
+          console.error("Theme lookup error:", error);
+          themeName = website.selectedTheme;
+        }
+      }
 
       // Fetch GA4 metrics if property ID or measurement ID exists
       let gaMetrics: any = null;
       if (website.analytics?.googleAnalytics?.propertyId) {
         try {
-          gaMetrics = await fetchGA4Report(website.analytics.googleAnalytics.propertyId);
+          gaMetrics = await fetchGA4Report(
+            website.analytics.googleAnalytics.propertyId
+          );
         } catch (error) {
           console.error("Failed to fetch GA4 metrics:", error);
           // Continue without GA metrics
         }
       } else if (website.analytics?.googleAnalytics?.measurementId) {
         try {
-          gaMetrics = await fetchGA4Report(website.analytics.googleAnalytics.measurementId);
+          gaMetrics = await fetchGA4Report(
+            website.analytics.googleAnalytics.measurementId
+          );
         } catch (error) {
           console.error(
             "Failed to fetch GA4 metrics: Measurement ID requires Property ID. Please update your site configuration.",
@@ -111,15 +124,16 @@ export async function GET(request: NextRequest) {
       const analytics = {
         website: {
           id: website._id,
-          name: website.websiteName,
+          name: website.companyName,
           company: website.companyName,
-          domain: website.domain,
+          domain: website.domainName,
           theme: themeName,
           status: website.status,
           createdAt: website.createdAt,
         },
         googleAnalytics: {
-          measurementId: website.analytics?.googleAnalytics?.measurementId || null,
+          measurementId:
+            website.analytics?.googleAnalytics?.measurementId || null,
           propertyId: website.analytics?.googleAnalytics?.propertyId || null,
           ...(gaMetrics && {
             metrics: {

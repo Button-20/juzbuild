@@ -20,9 +20,13 @@ import {
   Loader2,
   Search,
   ShoppingCart,
+  Crown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { getPlanById } from "@/constants/pricing";
 
 interface DomainCheckResult {
   domain: string;
@@ -38,6 +42,8 @@ interface CurrentDomain {
 }
 
 export default function DomainManagementPage() {
+  const { user } = useAuth();
+  const router = useRouter();
   const [currentDomain, setCurrentDomain] = useState<CurrentDomain | null>(
     null
   );
@@ -48,6 +54,10 @@ export default function DomainManagementPage() {
     null
   );
   const [isLoadingCurrent, setIsLoadingCurrent] = useState(true);
+
+  // Check user plan
+  const userPlan = getPlanById(user?.selectedPlan || "starter");
+  const canPurchaseDomains = user?.selectedPlan !== "starter";
 
   useEffect(() => {
     fetchCurrentDomain();
@@ -103,7 +113,11 @@ export default function DomainManagementPage() {
       if (data.success) {
         setCheckResult(data.result);
         if (data.result.available) {
-          toast.success(`${searchDomain} is available!`);
+          if (canPurchaseDomains) {
+            toast.success(`${searchDomain} is available!`);
+          } else {
+            toast.success(`${searchDomain} is available! Upgrade to Pro to purchase.`);
+          }
         } else {
           toast.error(`${searchDomain} is not available`);
         }
@@ -123,6 +137,12 @@ export default function DomainManagementPage() {
   const handlePurchaseDomain = async () => {
     if (!checkResult?.available) {
       toast.error("Domain is not available for purchase");
+      return;
+    }
+
+    // Check plan restrictions
+    if (!canPurchaseDomains) {
+      toast.error("Domain purchases are available for Pro and Agency plans only");
       return;
     }
 
@@ -153,7 +173,18 @@ export default function DomainManagementPage() {
         setSearchDomain("");
         setCheckResult(null);
       } else {
-        throw new Error(data.error || "Failed to purchase domain");
+        // Handle plan restriction errors specifically
+        if (data.planRestriction) {
+          toast.error(data.error);
+          // Optionally redirect to settings for upgrade
+          setTimeout(() => {
+            if (confirm("Would you like to upgrade your plan now?")) {
+              router.push("/app/settings");
+            }
+          }, 2000);
+        } else {
+          throw new Error(data.error || "Failed to purchase domain");
+        }
       }
     } catch (error) {
       console.error("Error purchasing domain:", error);
@@ -230,8 +261,85 @@ export default function DomainManagementPage() {
             </CardContent>
           </Card>
 
+          {/* Upgrade Prompt for Starter Plan */}
+          {!canPurchaseDomains && (
+            <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:border-amber-800 dark:from-amber-950/50 dark:to-orange-950/50">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-amber-100 p-2 dark:bg-amber-800">
+                    <Crown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-amber-900 dark:text-amber-100">
+                      Custom Domains Available with Pro & Agency Plans
+                    </CardTitle>
+                    <CardDescription className="text-amber-700 dark:text-amber-300">
+                      Upgrade your plan to purchase and connect custom domains to your website
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm">Professional Branding</p>
+                        <p className="text-xs text-muted-foreground">Remove .onjuzbuild.com from your URL</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm">Better SEO</p>
+                        <p className="text-xs text-muted-foreground">Improve search engine rankings</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm">Trust & Credibility</p>
+                        <p className="text-xs text-muted-foreground">Build customer confidence</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-sm">Easy Setup</p>
+                        <p className="text-xs text-muted-foreground">Automatic DNS configuration</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <Button 
+                      onClick={() => router.push(\"/app/settings\")}
+                      className=\"bg-amber-600 hover:bg-amber-700 text-white\"
+                    >
+                      <Crown className=\"h-4 w-4 mr-2\" />
+                      Upgrade to Pro Plan
+                    </Button>
+                    <Button 
+                      variant=\"outline\" 
+                      onClick={() => router.push(\"/app/settings\")}
+                      className=\"border-amber-200 text-amber-700 hover:bg-amber-50\"
+                    >
+                      View All Plans
+                    </Button>
+                  </div>
+                  
+                  <div className=\"text-xs text-muted-foreground border-t pt-3\">
+                    <p><strong>Current Plan:</strong> {userPlan?.name} - ${userPlan?.monthlyPrice}/month</p>
+                    <p><strong>Pro Plan:</strong> Includes custom domains + {userPlan && userPlan.websiteLimit < 3 ? '2 additional websites' : 'advanced features'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Domain Search Card */}
-          {!currentDomain?.isCustomDomain && (
+          {!currentDomain?.isCustomDomain && canPurchaseDomains && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

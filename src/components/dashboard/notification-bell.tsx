@@ -252,11 +252,11 @@ export default function NotificationBell() {
 
       <DropdownMenuContent
         align="start"
-        className="w-80 p-0 max-h-96 overflow-hidden bg-black border-gray-800"
+        className="w-80 p-0 overflow-hidden bg-black border-gray-800 flex flex-col max-h-[500px]"
         sideOffset={8}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black">
+        <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black flex-shrink-0">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-sm text-white">Notifications</h3>
             {/* Connection indicator */}
@@ -298,7 +298,7 @@ export default function NotificationBell() {
         </div>
 
         {/* Notifications List */}
-        <div className="overflow-y-auto max-h-80 bg-black">
+        <div className="overflow-y-auto flex-1 bg-black min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center p-8 bg-black">
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -393,21 +393,19 @@ export default function NotificationBell() {
           )}
         </div>
 
-        {/* Footer */}
-        {notifications.length > 0 && (
-          <div className="p-3 border-t border-gray-800 bg-black">
-            <Button
-              variant="ghost"
-              className="w-full h-8 text-xs justify-center text-gray-400 hover:text-white hover:bg-gray-800"
-              onClick={() => {
-                setIsOpen(false);
-                router.push("/app/notifications");
-              }}
-            >
-              View all notifications
-            </Button>
-          </div>
-        )}
+        {/* Footer - Always Visible */}
+        <div className="p-3 border-t border-gray-800 bg-black flex-shrink-0">
+          <Button
+            variant="outline"
+            className="w-full h-8 text-xs justify-center text-blue-400 border-blue-400/20 hover:text-blue-300 hover:bg-blue-400/10 hover:border-blue-400/40"
+            onClick={() => {
+              setIsOpen(false);
+              router.push("/app/notifications");
+            }}
+          >
+            View all notifications →
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
