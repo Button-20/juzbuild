@@ -19,7 +19,7 @@ export const PLANS: PLAN[] = [
     targetAudience: "Solo Agents",
     monthlyPrice: 29,
     annuallyPrice: 290,
-    buttonText: "Start Free Trial",
+    buttonText: "Get Started",
     features: [
       "Professional real estate website",
       "Unlimited property uploads",
@@ -39,7 +39,7 @@ export const PLANS: PLAN[] = [
     monthlyPrice: 59,
     annuallyPrice: 590,
     badge: "Most Popular",
-    buttonText: "Start Free Trial",
+    buttonText: "Get Started",
     features: [
       "Everything in Starter",
       "Custom domain connection",
@@ -60,7 +60,7 @@ export const PLANS: PLAN[] = [
     targetAudience: "Growing Teams",
     monthlyPrice: 99,
     annuallyPrice: 990,
-    buttonText: "Start Free Trial",
+    buttonText: "Get Started",
     features: [
       "Everything in Pro",
       "Multiple team member logins",

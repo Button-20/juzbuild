@@ -12,11 +12,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Settings, CreditCard, User, Bell } from "lucide-react";
+import { Settings, CreditCard, Bell } from "lucide-react";
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getPlanById } from "@/constants/pricing";
+import { NotificationSettings } from "@/components/notification-settings";
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -104,24 +105,6 @@ export default function SettingsPage() {
                 <AccountUpgrade />
               </div>
 
-              {/* Profile Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Profile Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Update your personal information and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Profile settings coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-
               {/* Billing & Payments */}
               <Card>
                 <CardHeader>
@@ -171,20 +154,18 @@ export default function SettingsPage() {
               </Card>
 
               {/* Notifications */}
-              <Card>
+              <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Bell className="h-5 w-5" />
-                    Notifications
+                    Notification Preferences
                   </CardTitle>
                   <CardDescription>
-                    Configure your notification preferences
+                    Choose what notifications you want to receive and how
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Notification settings coming soon...
-                  </p>
+                  <NotificationSettings />
                 </CardContent>
               </Card>
             </div>

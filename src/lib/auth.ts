@@ -35,6 +35,12 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   isActive?: boolean;
+  // Notification preferences
+  notificationPreferences?: {
+    emailNotifications: boolean;
+    pushNotifications: boolean;
+    notificationFrequency: "real-time" | "daily" | "weekly" | "never";
+  };
 }
 
 // Hash password

@@ -1,0 +1,92 @@
+export const PROPERTY_ANALYTICS = [
+  {
+    name: "Property Views",
+    description: "Track listing traffic",
+    icon: "👁️",
+    code: "views",
+  },
+  {
+    name: "Lead Generation",
+    description: "Monitor inquiries",
+    icon: "📊",
+    code: "leads",
+  },
+  {
+    name: "Contact Forms",
+    description: "Form submissions",
+    icon: "📝",
+    code: "forms",
+  },
+  {
+    name: "Phone Calls",
+    description: "Click-to-call tracking",
+    icon: "📞",
+    code: "calls",
+  },
+  {
+    name: "Email Opens",
+    description: "Newsletter engagement",
+    icon: "📧",
+    code: "emails",
+  },
+  {
+    name: "Search Rankings",
+    description: "SEO performance",
+    icon: "🔍",
+    code: "seo",
+  },
+  {
+    name: "Page Speed",
+    description: "Site performance",
+    icon: "⚡",
+    code: "speed",
+  },
+  {
+    name: "Mobile Traffic",
+    description: "Mobile visitors",
+    icon: "📱",
+    code: "mobile",
+  },
+  {
+    name: "Conversion Rate",
+    description: "Visitor to lead ratio",
+    icon: "🎯",
+    code: "conversion",
+  },
+  {
+    name: "Bounce Rate",
+    description: "User engagement",
+    icon: "🏃",
+    code: "bounce",
+  },
+  {
+    name: "Time on Site",
+    description: "User session duration",
+    icon: "⏰",
+    code: "duration",
+  },
+  {
+    name: "Social Shares",
+    description: "Property sharing",
+    icon: "📲",
+    code: "social",
+  },
+  {
+    name: "Map Interactions",
+    description: "Location engagement",
+    icon: "🗺️",
+    code: "maps",
+  },
+  {
+    name: "Virtual Tours",
+    description: "360° view analytics",
+    icon: "🏠",
+    code: "tours",
+  },
+  {
+    name: "Favorite Saves",
+    description: "Wishlist additions",
+    icon: "💖",
+    code: "favorites",
+  },
+];

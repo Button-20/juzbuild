@@ -31,6 +31,12 @@ interface User {
   subscriptionStatus?: "active" | "past_due" | "canceled" | "incomplete";
   lastPaymentAt?: Date;
   subscriptionCanceledAt?: Date;
+  // Notification preferences
+  notificationPreferences?: {
+    emailNotifications: boolean;
+    pushNotifications: boolean;
+    notificationFrequency: "real-time" | "daily" | "weekly" | "never";
+  };
 }
 
 interface AuthContextType {

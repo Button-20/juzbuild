@@ -42,14 +42,15 @@ const CTA = () => {
             }}
           />
           <h2 className="text-3xl md:text-5xl lg:text-6xl font-heading font-medium !leading-snug">
-            Ready to boost your <br />{" "}
-            <span className="font-subheading italic">marketing</span> ?
+            Ready to grow your <br />{" "}
+            <span className="font-subheading italic">real estate business</span>{" "}
+            ?
           </h2>
           <p className="text-sm md:text-lg text-center text-accent-foreground/80 max-w-2xl mx-auto mt-4">
-            Transform your marketing with AI-powered automation. Create
-            campaigns faster, generate better content{" "}
+            Create a professional real estate website in minutes. Showcase your
+            properties, capture leads{" "}
             <span className="hidden lg:inline">
-              and make smarter decisions in minutes.
+              and grow your client base with our powerful platform.
             </span>
           </p>
           <Link href="#pricing" className="mt-8">

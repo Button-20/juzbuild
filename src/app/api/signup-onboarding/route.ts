@@ -166,6 +166,26 @@ export async function POST(req: NextRequest) {
         selectedPlan: data.selectedPlan,
         billingCycle: data.billingCycle,
         adsConnections: data.adsConnections,
+        // Default notification preferences
+        notificationPreferences: {
+          email: {
+            newLeads: true,
+            propertyInquiries: true,
+            billingUpdates: true,
+            systemAlerts: true,
+            weeklyReports: false,
+          },
+          push: {
+            newLeads: true,
+            propertyInquiries: true,
+            systemAlerts: false,
+            urgentNotifications: true,
+          },
+          frequency: {
+            emailDigest: "daily",
+            leadNotifications: "immediate",
+          },
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
         isActive: true,
