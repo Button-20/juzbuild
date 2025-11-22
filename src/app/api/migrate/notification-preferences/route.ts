@@ -5,7 +5,7 @@ import { getCollection } from "@/lib/mongodb";
 export async function POST(request: NextRequest) {
   try {
     const usersCollection = await getCollection("users");
-    
+
     const defaultPreferences = {
       email: {
         newLeads: true,
@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
 
     // Add notification preferences to users who don't have them
     const result = await usersCollection.updateMany(
-      { 
-        notificationPreferences: { $exists: false }
+      {
+        notificationPreferences: { $exists: false },
       },
       {
         $set: {
@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Migration error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: "Failed to migrate notification preferences" 
+      {
+        success: false,
+        message: "Failed to migrate notification preferences",
       },
       { status: 500 }
     );
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
 // This endpoint should be removed after running the migration once
 export async function GET() {
   return NextResponse.json({
-    message: "This is a one-time migration endpoint. Use POST to run the migration.",
+    message:
+      "This is a one-time migration endpoint. Use POST to run the migration.",
   });
 }

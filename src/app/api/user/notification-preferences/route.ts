@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     // Return existing preferences or defaults
     const preferences = user.notificationPreferences || defaultPreferences;
-    
+
     return NextResponse.json({
       success: true,
       preferences: preferences,
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     const { preferences } = await request.json();
 
-    if (!preferences || typeof preferences !== 'object') {
+    if (!preferences || typeof preferences !== "object") {
       return NextResponse.json(
         { success: false, message: "Valid preferences object is required" },
         { status: 400 }
@@ -100,56 +100,74 @@ export async function POST(request: NextRequest) {
 
     // Validate preferences structure
     const requiredStructure = {
-      email: ['newLeads', 'propertyInquiries', 'billingUpdates', 'systemAlerts', 'weeklyReports'],
-      push: ['newLeads', 'propertyInquiries', 'systemAlerts', 'urgentNotifications'],
-      frequency: ['emailDigest', 'leadNotifications']
+      email: [
+        "newLeads",
+        "propertyInquiries",
+        "billingUpdates",
+        "systemAlerts",
+        "weeklyReports",
+      ],
+      push: [
+        "newLeads",
+        "propertyInquiries",
+        "systemAlerts",
+        "urgentNotifications",
+      ],
+      frequency: ["emailDigest", "leadNotifications"],
     };
 
     // Sanitize and validate preferences
     const sanitizedPreferences = {
       email: {},
       push: {},
-      frequency: {}
+      frequency: {},
     };
 
     // Validate email preferences
-    if (preferences.email && typeof preferences.email === 'object') {
+    if (preferences.email && typeof preferences.email === "object") {
       for (const key of requiredStructure.email) {
-        if (typeof preferences.email[key] === 'boolean') {
+        if (typeof preferences.email[key] === "boolean") {
           sanitizedPreferences.email[key] = preferences.email[key];
         }
       }
     }
 
     // Validate push preferences
-    if (preferences.push && typeof preferences.push === 'object') {
+    if (preferences.push && typeof preferences.push === "object") {
       for (const key of requiredStructure.push) {
-        if (typeof preferences.push[key] === 'boolean') {
+        if (typeof preferences.push[key] === "boolean") {
           sanitizedPreferences.push[key] = preferences.push[key];
         }
       }
     }
 
     // Validate frequency preferences
-    if (preferences.frequency && typeof preferences.frequency === 'object') {
-      const validEmailDigest = ['immediate', 'daily', 'weekly', 'never'];
-      const validLeadNotifications = ['immediate', 'hourly', 'daily'];
-      
+    if (preferences.frequency && typeof preferences.frequency === "object") {
+      const validEmailDigest = ["immediate", "daily", "weekly", "never"];
+      const validLeadNotifications = ["immediate", "hourly", "daily"];
+
       if (validEmailDigest.includes(preferences.frequency.emailDigest)) {
-        sanitizedPreferences.frequency.emailDigest = preferences.frequency.emailDigest;
+        sanitizedPreferences.frequency.emailDigest =
+          preferences.frequency.emailDigest;
       }
-      if (validLeadNotifications.includes(preferences.frequency.leadNotifications)) {
-        sanitizedPreferences.frequency.leadNotifications = preferences.frequency.leadNotifications;
+      if (
+        validLeadNotifications.includes(preferences.frequency.leadNotifications)
+      ) {
+        sanitizedPreferences.frequency.leadNotifications =
+          preferences.frequency.leadNotifications;
       }
     }
 
     const usersCollection = await getCollection("users");
-    
+
     const result = await usersCollection.updateOne(
       { _id: new ObjectId(decoded.userId) },
       {
         $set: {
-          notificationPreferences: { ...defaultPreferences, ...sanitizedPreferences },
+          notificationPreferences: {
+            ...defaultPreferences,
+            ...sanitizedPreferences,
+          },
           updatedAt: new Date(),
         },
       }
@@ -165,7 +183,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Notification preferences updated successfully",
-      preferences: { ...defaultPreferences, ...sanitizedPreferences }
+      preferences: { ...defaultPreferences, ...sanitizedPreferences },
     });
   } catch (error) {
     console.error("Update notification preferences error:", error);
