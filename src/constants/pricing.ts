@@ -44,6 +44,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "Up to 3 Websites",
       "Everything in Starter",
+      "Custom domain connection",
       "Facebook & Google ads integration",
       "Marketing automation tools",
       "Advanced branding customization",
@@ -67,7 +68,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       "Everything in Pro",
       "Multiple team member logins",
       "Premium design templates",
-      "Custom domain connection",
+      "Advanced custom domain features",
       "White-label solutions",
       "Advanced SEO tools",
       "Priority phone & email support",

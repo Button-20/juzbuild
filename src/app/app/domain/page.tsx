@@ -90,7 +90,7 @@ export default function DomainManagementPage() {
 
     // Basic domain validation
     const domainRegex =
-      /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+      /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9].[a-zA-Z]{2,}$/;
     if (!domainRegex.test(searchDomain)) {
       toast.error("Please enter a valid domain name (e.g., example.com)");
       return;
@@ -116,7 +116,9 @@ export default function DomainManagementPage() {
           if (canPurchaseDomains) {
             toast.success(`${searchDomain} is available!`);
           } else {
-            toast.success(`${searchDomain} is available! Upgrade to Pro to purchase.`);
+            toast.success(
+              `${searchDomain} is available! Upgrade to Pro to purchase.`
+            );
           }
         } else {
           toast.error(`${searchDomain} is not available`);
@@ -142,7 +144,9 @@ export default function DomainManagementPage() {
 
     // Check plan restrictions
     if (!canPurchaseDomains) {
-      toast.error("Domain purchases are available for Pro and Agency plans only");
+      toast.error(
+        "Domain purchases are available for Pro and Agency plans only"
+      );
       return;
     }
 
@@ -176,12 +180,6 @@ export default function DomainManagementPage() {
         // Handle plan restriction errors specifically
         if (data.planRestriction) {
           toast.error(data.error);
-          // Optionally redirect to settings for upgrade
-          setTimeout(() => {
-            if (confirm("Would you like to upgrade your plan now?")) {
-              router.push("/app/settings");
-            }
-          }, 2000);
         } else {
           throw new Error(data.error || "Failed to purchase domain");
         }
@@ -263,18 +261,19 @@ export default function DomainManagementPage() {
 
           {/* Upgrade Prompt for Starter Plan */}
           {!canPurchaseDomains && (
-            <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:border-amber-800 dark:from-amber-950/50 dark:to-orange-950/50">
+            <Card className="border-slate-700/50 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg shadow-slate-900/20">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-amber-100 p-2 dark:bg-amber-800">
-                    <Crown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <div className="rounded-lg bg-slate-700/50 p-2">
+                    <Crown className="h-5 w-5 text-slate-300" />
                   </div>
                   <div>
-                    <CardTitle className="text-amber-900 dark:text-amber-100">
+                    <CardTitle className="text-white">
                       Custom Domains Available with Pro & Agency Plans
                     </CardTitle>
-                    <CardDescription className="text-amber-700 dark:text-amber-300">
-                      Upgrade your plan to purchase and connect custom domains to your website
+                    <CardDescription className="text-slate-400">
+                      Upgrade your plan to purchase and connect custom domains
+                      to your website
                     </CardDescription>
                   </div>
                 </div>
@@ -283,55 +282,80 @@ export default function DomainManagementPage() {
                 <div className="space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm">Professional Branding</p>
-                        <p className="text-xs text-muted-foreground">Remove .onjuzbuild.com from your URL</p>
+                        <p className="font-medium text-sm text-slate-200">
+                          Professional Branding
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Remove .onjuzbuild.com from your URL
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm">Better SEO</p>
-                        <p className="text-xs text-muted-foreground">Improve search engine rankings</p>
+                        <p className="font-medium text-sm text-slate-200">
+                          Better SEO
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Improve search engine rankings
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm">Trust & Credibility</p>
-                        <p className="text-xs text-muted-foreground">Build customer confidence</p>
+                        <p className="font-medium text-sm text-slate-200">
+                          Trust & Credibility
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Build customer confidence
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-medium text-sm">Easy Setup</p>
-                        <p className="text-xs text-muted-foreground">Automatic DNS configuration</p>
+                        <p className="font-medium text-sm text-slate-200">
+                          Easy Setup
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Automatic DNS configuration
+                        </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <Button 
-                      onClick={() => router.push(\"/app/settings\")}
-                      className=\"bg-amber-600 hover:bg-amber-700 text-white\"
+                    <Button
+                      onClick={() => router.push("/app/settings")}
+                      className="bg-slate-600 hover:bg-slate-700 text-white border-slate-600"
                     >
-                      <Crown className=\"h-4 w-4 mr-2\" />
+                      <Crown className="h-4 w-4 mr-2" />
                       Upgrade to Pro Plan
                     </Button>
-                    <Button 
-                      variant=\"outline\" 
-                      onClick={() => router.push(\"/app/settings\")}
-                      className=\"border-amber-200 text-amber-700 hover:bg-amber-50\"
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push("/app/settings")}
+                      className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
                     >
                       View All Plans
                     </Button>
                   </div>
-                  
-                  <div className=\"text-xs text-muted-foreground border-t pt-3\">
-                    <p><strong>Current Plan:</strong> {userPlan?.name} - ${userPlan?.monthlyPrice}/month</p>
-                    <p><strong>Pro Plan:</strong> Includes custom domains + {userPlan && userPlan.websiteLimit < 3 ? '2 additional websites' : 'advanced features'}</p>
+
+                  <div className="text-xs text-slate-400 border-t border-slate-700 pt-3">
+                    <p>
+                      <strong className="text-slate-300">Current Plan:</strong>{" "}
+                      {userPlan?.name} - ${userPlan?.monthlyPrice}/month
+                    </p>
+                    <p>
+                      <strong className="text-slate-300">Pro Plan:</strong>{" "}
+                      Includes custom domains +{" "}
+                      {userPlan && userPlan.websiteLimit < 3
+                        ? "2 additional websites"
+                        : "advanced features"}
+                    </p>
                   </div>
                 </div>
               </CardContent>

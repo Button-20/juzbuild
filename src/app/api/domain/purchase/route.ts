@@ -77,10 +77,11 @@ export async function POST(request: NextRequest) {
     const userPlan = user.selectedPlan || "starter";
     if (userPlan === "starter") {
       return NextResponse.json(
-        { 
-          error: "Domain purchases are available for Pro and Agency plans only. Please upgrade your plan to purchase a custom domain.",
-          planRestriction: true
-        }, 
+        {
+          error:
+            "Domain purchases are available for Pro and Agency plans only. Please upgrade your plan to purchase a custom domain.",
+          planRestriction: true,
+        },
         { status: 403 }
       );
     }

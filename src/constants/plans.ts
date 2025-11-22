@@ -42,6 +42,7 @@ export const PLANS: PLAN[] = [
     buttonText: "Start Free Trial",
     features: [
       "Everything in Starter",
+      "Custom domain connection",
       "Facebook & Google ads integration",
       "Marketing automation tools",
       "Advanced branding customization",
@@ -64,7 +65,7 @@ export const PLANS: PLAN[] = [
       "Everything in Pro",
       "Multiple team member logins",
       "Premium design templates",
-      "Custom domain connection",
+      "Advanced custom domain features",
       "White-label solutions",
       "Advanced SEO tools",
       "Priority phone & email support",

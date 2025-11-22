@@ -208,20 +208,20 @@ export function ComprehensiveAnalytics() {
 
       {/* Upgrade Prompt for Starter Users */}
       {(isStarterPlan || isNearLimit) && (
-        <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+        <Card className="border-slate-700/50 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg shadow-slate-900/20">
           <CardHeader className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-amber-100 p-2">
-                  <Crown className="h-5 w-5 text-amber-600" />
+                <div className="rounded-lg bg-slate-700/50 p-2">
+                  <Crown className="h-5 w-5 text-slate-300" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-semibold text-amber-900">
+                  <CardTitle className="text-base font-semibold text-white">
                     {isStarterPlan
                       ? "Unlock More Websites"
                       : "Approaching Plan Limit"}
                   </CardTitle>
-                  <p className="text-sm text-amber-700">
+                  <p className="text-sm text-slate-400">
                     {isStarterPlan
                       ? "You're on the Starter plan (1 website). Upgrade to create multiple websites and unlock premium features."
                       : `You have ${websites.length}/${websiteLimit} websites. Consider upgrading for more capacity.`}
@@ -231,7 +231,7 @@ export function ComprehensiveAnalytics() {
               <Button
                 onClick={() => router.push("/app/settings")}
                 size="sm"
-                className="bg-amber-600 hover:bg-amber-700"
+                className="bg-slate-600 hover:bg-slate-700 text-white border-slate-600"
               >
                 <ArrowRight className="h-4 w-4 mr-1" />
                 Upgrade Plan
