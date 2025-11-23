@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { toObjectId, verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
-import { verifyToken, toObjectId } from "@/lib/auth";
-import { ObjectId } from "mongodb";
-import { Website, CreateWebsiteParams } from "@/types/website";
 import { createNotification, NotificationTemplates } from "@/lib/notifications";
+import { CreateWebsiteParams, Website } from "@/types/website";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {

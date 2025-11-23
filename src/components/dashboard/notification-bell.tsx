@@ -1,29 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Bell,
-  BellRing,
-  Check,
-  Trash2,
-  ExternalLink,
-  CheckCheck,
-  Loader2,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { useNotificationStream } from "@/hooks/useNotificationStream";
+import { cn } from "@/lib/utils";
+import {
+  Bell,
+  BellRing,
+  Check,
+  CheckCheck,
+  Loader2,
+  Trash2,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Notification {
   _id: string;
@@ -263,16 +261,16 @@ export default function NotificationBell() {
             <div className="flex items-center gap-1">
               {isConnected ? (
                 <div title="Real-time connected">
-                  <Wifi
-                    className="w-3 h-3 text-green-400"
-                  />
+                  <Wifi className="w-3 h-3 text-green-400" />
                 </div>
               ) : (
-                <div title={
-                  connectionError
-                    ? `Disconnected: ${connectionError}`
-                    : "Disconnected"
-                }>
+                <div
+                  title={
+                    connectionError
+                      ? `Disconnected: ${connectionError}`
+                      : "Disconnected"
+                  }
+                >
                   <WifiOff
                     className="w-3 h-3 text-red-400 cursor-pointer"
                     onClick={reconnect}

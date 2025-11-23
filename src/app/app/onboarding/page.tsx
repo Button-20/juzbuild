@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useAuth } from "@/contexts/AuthContext";
 import { SiteHeader } from "@/components/site-header";
-import { SidebarInset } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,45 +11,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  ArrowLeft,
-  Loader2,
-  CheckCircle,
-  Globe,
-  Palette,
-  Upload,
-  Check,
-  Home,
-  Layout,
-  FileText,
-  MessageCircle,
-  Key,
-  Building,
-  Settings,
-  Users,
-  Rocket,
-} from "lucide-react";
-import { useWebsite } from "@/contexts/website-context";
-import { toast } from "sonner";
-import { CreateWebsiteParams, Website } from "@/types/website";
-import { WebsiteTheme } from "@/types/onboarding";
-import { DeploymentTracker } from "@/components/deployment-tracker";
+import { SidebarInset } from "@/components/ui/sidebar";
+import { Textarea } from "@/components/ui/textarea";
 import { COLOR_PALETTES } from "@/constants/color-palettes";
 import { PRICING_PLANS } from "@/constants/pricing";
+import { useAuth } from "@/contexts/AuthContext";
+import { useWebsite } from "@/contexts/website-context";
+import { WebsiteTheme } from "@/types/onboarding";
+import { CreateWebsiteParams, Website } from "@/types/website";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Check,
+  FileText,
+  Home,
+  Key,
+  Layout,
+  Loader2,
+  MessageCircle,
+  Palette,
+  Upload,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const PROPERTY_TYPES = [
   "Houses",
@@ -227,11 +213,16 @@ export default function OnboardingPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [userBillingCycle, setUserBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [userBillingCycle, setUserBillingCycle] = useState<
+    "monthly" | "yearly"
+  >("monthly");
 
   // Update billing cycle when user is loaded
   useEffect(() => {
-    if (user?.billingCycle && (user.billingCycle === "monthly" || user.billingCycle === "yearly")) {
+    if (
+      user?.billingCycle &&
+      (user.billingCycle === "monthly" || user.billingCycle === "yearly")
+    ) {
       setUserBillingCycle(user.billingCycle);
     }
   }, [user?.billingCycle]);
@@ -1342,10 +1333,7 @@ export default function OnboardingPage() {
                                   (userBillingCycle === "monthly"
                                     ? selectedPlan.monthlyPrice
                                     : selectedPlan.yearlyPrice)}
-                                /
-                                {userBillingCycle === "monthly"
-                                  ? "mo"
-                                  : "yr"}
+                                /{userBillingCycle === "monthly" ? "mo" : "yr"}
                               </span>
                             </div>
                           </div>

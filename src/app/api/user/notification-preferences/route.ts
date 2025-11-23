@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongodb";
 import { verifyToken } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 const defaultPreferences = {
   email: {
@@ -127,7 +127,8 @@ export async function POST(request: NextRequest) {
     if (preferences.email && typeof preferences.email === "object") {
       for (const key of requiredStructure.email) {
         if (typeof preferences.email[key] === "boolean") {
-          (sanitizedPreferences.email as Record<string, boolean>)[key] = preferences.email[key];
+          (sanitizedPreferences.email as Record<string, boolean>)[key] =
+            preferences.email[key];
         }
       }
     }
@@ -136,7 +137,8 @@ export async function POST(request: NextRequest) {
     if (preferences.push && typeof preferences.push === "object") {
       for (const key of requiredStructure.push) {
         if (typeof preferences.push[key] === "boolean") {
-          (sanitizedPreferences.push as Record<string, boolean>)[key] = preferences.push[key];
+          (sanitizedPreferences.push as Record<string, boolean>)[key] =
+            preferences.push[key];
         }
       }
     }
@@ -153,8 +155,9 @@ export async function POST(request: NextRequest) {
       if (
         validLeadNotifications.includes(preferences.frequency.leadNotifications)
       ) {
-        (sanitizedPreferences.frequency as Record<string, string>).leadNotifications =
-          preferences.frequency.leadNotifications;
+        (
+          sanitizedPreferences.frequency as Record<string, string>
+        ).leadNotifications = preferences.frequency.leadNotifications;
       }
     }
 

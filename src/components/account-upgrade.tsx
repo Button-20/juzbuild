@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -18,20 +18,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/contexts/AuthContext";
 import { PRICING_PLANS, getPlanById } from "@/constants/pricing";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowUp,
   Check,
-  Crown,
-  Zap,
   CreditCard,
+  Crown,
   ExternalLink,
-  AlertCircle,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import getStripe from "@/lib/stripe";
 
 export function AccountUpgrade() {
   const { user, refreshAuth } = useAuth();

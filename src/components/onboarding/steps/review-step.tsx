@@ -2,29 +2,20 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { PRICING_PLANS } from "@/constants/pricing";
 import { WizardStepProps } from "@/types/onboarding";
 import {
   ArrowLeft,
+  Building2,
   Check,
   CreditCard,
-  Building2,
   Globe,
-  Palette,
-  FileText,
-  Users,
   Target,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Theme {
   id: string;
@@ -408,7 +399,9 @@ export default function ReviewStep({
           <Checkbox
             id="agreeToTerms"
             checked={data.agreeToTerms || false}
-            onCheckedChange={(checked) => updateData({ agreeToTerms: checked === true })}
+            onCheckedChange={(checked) =>
+              updateData({ agreeToTerms: checked === true })
+            }
           />
           <div className="text-sm leading-relaxed">
             <label htmlFor="agreeToTerms" className="cursor-pointer">
