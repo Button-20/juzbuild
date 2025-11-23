@@ -196,7 +196,7 @@ export function AccountUpgrade() {
                 <p className="text-2xl font-bold">
                   {formatPrice(
                     currentPlan || PRICING_PLANS[0],
-                    user?.billingCycle || billingCycle
+                    (user?.billingCycle as "monthly" | "yearly") || billingCycle
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">

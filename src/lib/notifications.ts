@@ -200,8 +200,6 @@ export const NotificationTemplates = {
     category: "billing" as const,
     actionUrl: "/app/settings",
     actionText: "Upgrade Plan",
-    type: "success" as const,
-    category: "system" as const,
   },
 
   SECURITY_ALERT: {

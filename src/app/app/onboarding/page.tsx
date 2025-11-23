@@ -204,8 +204,6 @@ export default function OnboardingPage() {
     tagline: "",
     aboutSection: "",
     selectedTheme: "",
-    selectedPlan: "pro", // Will be updated from user data
-    billingCycle: "monthly", // Will be updated from user data
     includedPages: ["home", "listings", "contact"],
     propertyTypes: ["Houses"],
     preferredContactMethod: ["email"],
@@ -229,17 +227,14 @@ export default function OnboardingPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [userBillingCycle, setUserBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
-  // Update form data with user's plan when user is loaded
+  // Update billing cycle when user is loaded
   useEffect(() => {
-    if (user?.selectedPlan && user?.billingCycle) {
-      setFormData((prev) => ({
-        ...prev,
-        selectedPlan: user.selectedPlan,
-        billingCycle: user.billingCycle,
-      }));
+    if (user?.billingCycle && (user.billingCycle === "monthly" || user.billingCycle === "yearly")) {
+      setUserBillingCycle(user.billingCycle);
     }
-  }, [user?.selectedPlan, user?.billingCycle]);
+  }, [user?.billingCycle]);
 
   useEffect(() => {
     const fetchThemes = async () => {
@@ -1344,11 +1339,11 @@ export default function OnboardingPage() {
                               <span>
                                 $
                                 {selectedPlan &&
-                                  (formData.billingCycle === "monthly"
+                                  (userBillingCycle === "monthly"
                                     ? selectedPlan.monthlyPrice
                                     : selectedPlan.yearlyPrice)}
                                 /
-                                {formData.billingCycle === "monthly"
+                                {userBillingCycle === "monthly"
                                   ? "mo"
                                   : "yr"}
                               </span>

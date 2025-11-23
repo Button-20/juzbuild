@@ -112,9 +112,9 @@ export async function GET(request: NextRequest) {
     // Calculate dashboard statistics
     const stats = {
       totalWebsites: websites.length,
-      activeWebsites: websites.filter((w) => w.status === "active").length,
+      activeWebsites: websites.filter((w: any) => w.status === "active").length,
       pendingWebsites: websites.filter(
-        (w) => w.status === "creating" || w.deploymentStatus === "processing"
+        (w: any) => w.status === "creating" || w.deploymentStatus === "processing"
       ).length,
       unreadNotifications: await notificationsCollection.countDocuments({
         userId: decoded.userId,

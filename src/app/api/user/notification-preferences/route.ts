@@ -117,17 +117,17 @@ export async function POST(request: NextRequest) {
     };
 
     // Sanitize and validate preferences
-    const sanitizedPreferences = {
-      email: {},
-      push: {},
-      frequency: {},
+    const sanitizedPreferences: any = {
+      email: {} as Record<string, boolean>,
+      push: {} as Record<string, boolean>,
+      frequency: {} as Record<string, string>,
     };
 
     // Validate email preferences
     if (preferences.email && typeof preferences.email === "object") {
       for (const key of requiredStructure.email) {
         if (typeof preferences.email[key] === "boolean") {
-          sanitizedPreferences.email[key] = preferences.email[key];
+          (sanitizedPreferences.email as Record<string, boolean>)[key] = preferences.email[key];
         }
       }
     }
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
     if (preferences.push && typeof preferences.push === "object") {
       for (const key of requiredStructure.push) {
         if (typeof preferences.push[key] === "boolean") {
-          sanitizedPreferences.push[key] = preferences.push[key];
+          (sanitizedPreferences.push as Record<string, boolean>)[key] = preferences.push[key];
         }
       }
     }
@@ -147,13 +147,13 @@ export async function POST(request: NextRequest) {
       const validLeadNotifications = ["immediate", "hourly", "daily"];
 
       if (validEmailDigest.includes(preferences.frequency.emailDigest)) {
-        sanitizedPreferences.frequency.emailDigest =
+        (sanitizedPreferences.frequency as Record<string, string>).emailDigest =
           preferences.frequency.emailDigest;
       }
       if (
         validLeadNotifications.includes(preferences.frequency.leadNotifications)
       ) {
-        sanitizedPreferences.frequency.leadNotifications =
+        (sanitizedPreferences.frequency as Record<string, string>).leadNotifications =
           preferences.frequency.leadNotifications;
       }
     }

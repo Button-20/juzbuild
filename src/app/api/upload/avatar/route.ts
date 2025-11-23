@@ -2,6 +2,7 @@ import { getUserFromRequest } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     const usersCollection = await getCollection("users");
 
     await usersCollection.updateOne(
-      { _id: toObjectId(tokenPayload.userId) },
+      { _id: new ObjectId(tokenPayload.userId) },
       {
         $set: {
           avatar: result.secure_url,
@@ -124,7 +125,7 @@ export async function DELETE(request: NextRequest) {
     // Get user from database
     const usersCollection = await getCollection("users");
     const user = await usersCollection.findOne({
-      _id: toObjectId(tokenPayload.userId),
+      _id: new ObjectId(tokenPayload.userId),
     });
 
     if (!user) {
@@ -138,7 +139,7 @@ export async function DELETE(request: NextRequest) {
 
     // Remove avatar from database
     await usersCollection.updateOne(
-      { _id: toObjectId(tokenPayload.userId) },
+      { _id: new ObjectId(tokenPayload.userId) },
       {
         $unset: {
           avatar: "",

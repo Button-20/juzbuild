@@ -1,12 +1,12 @@
+import { getDatabase } from "@/lib/mongodb";
+import { createNotification, NotificationTemplates } from "@/lib/notifications";
+import { ObjectId } from "mongodb";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getDatabase } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
-import { createNotification, NotificationTemplates } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2025-10-29.clover",
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.id as string;
         const customerId = invoice.customer as string;
 
         if (subscriptionId) {
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
             const invoice = await stripe.invoices.retrieve(
               invoicePayment.invoice as string
             );
-            const subscriptionId = invoice.subscription as string;
+            const subscriptionId = invoice.id as string;
             const customerId = invoice.customer as string;
 
             if (subscriptionId) {
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.id as string;
 
         if (subscriptionId) {
           // Update subscription status to past_due
@@ -322,7 +322,7 @@ export async function POST(request: NextRequest) {
 
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.subscription as string;
+        const subscriptionId = invoice.id as string;
 
         if (subscriptionId) {
           // Update subscription status

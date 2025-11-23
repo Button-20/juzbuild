@@ -408,7 +408,7 @@ export default function ReviewStep({
           <Checkbox
             id="agreeToTerms"
             checked={data.agreeToTerms || false}
-            onCheckedChange={(checked) => updateData({ agreeToTerms: checked })}
+            onCheckedChange={(checked) => updateData({ agreeToTerms: checked === true })}
           />
           <div className="text-sm leading-relaxed">
             <label htmlFor="agreeToTerms" className="cursor-pointer">

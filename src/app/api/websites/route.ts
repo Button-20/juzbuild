@@ -417,7 +417,6 @@ export async function POST(request: NextRequest) {
           isEnabled: false,
         },
       },
-      seo: {},
     };
 
     const result = await websitesCollection.insertOne(website);

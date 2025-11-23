@@ -1,5 +1,6 @@
 import { isLive } from "@/constants";
 import { createSession, hashPassword } from "@/lib/auth";
+import { sendUserWelcomeEmail } from "@/lib/email";
 import { getCollection } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -193,6 +194,22 @@ export async function POST(req: NextRequest) {
 
       const userResult = await usersCollection.insertOne(userData);
       const userId = userResult.insertedId.toString();
+
+      // Send welcome email to the new user
+      try {
+        await sendUserWelcomeEmail({
+          fullName: data.fullName,
+          email: data.email,
+          companyName: data.companyName,
+          domainName: data.domainName,
+          selectedPlan: data.selectedPlan,
+          selectedTheme: data.selectedTheme,
+        });
+        console.log(`Welcome email sent successfully to ${data.email}`);
+      } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
+        // Don't fail the signup if email fails - user can still use the platform
+      }
 
       // Save onboarding-specific data to database (not user profile data which is already in users collection)
       const onboardingCollection = await getCollection("onboarding");

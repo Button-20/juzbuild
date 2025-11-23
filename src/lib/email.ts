@@ -28,6 +28,18 @@ let sendContactEmail: ({
   subject: string;
   message: string;
 }) => Promise<void>;
+let sendUserWelcomeEmail: (userData: {
+  fullName: string;
+  email: string;
+  companyName: string;
+  domainName: string;
+  selectedPlan: string;
+  selectedTheme: string;
+}) => Promise<void>;
+let sendPasswordResetEmail: (resetData: {
+  email: string;
+  resetUrl: string;
+}) => Promise<void>;
 
 if (typeof window === "undefined") {
   // Server-side: initialize email service
@@ -49,7 +61,15 @@ if (typeof window === "undefined") {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-    });
+      connectionTimeout: 10000, // 10 seconds
+      socketTimeout: 10000, // 10 seconds
+      pool: {
+        maxConnections: 5,
+        maxMessages: 100,
+        rateDelta: 1000, // 1 second
+        rateLimit: 5, // 5 emails per second
+      },
+    } as any);
 
     // Cache for compiled templates
     const templateCache: { [key: string]: any } = {};
@@ -100,7 +120,7 @@ if (typeof window === "undefined") {
     }
 
     /**
-     * Send email using HBS template
+     * Send email using HBS template with retry logic
      */
     async function sendTemplateEmail(
       to: string,
@@ -121,7 +141,41 @@ if (typeof window === "undefined") {
         html,
       };
 
-      await transporter.sendMail(mailOptions);
+      // Retry logic with exponential backoff
+      let lastError: Error | null = null;
+      const maxRetries = 3;
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          await transporter.sendMail(mailOptions);
+          return; // Success
+        } catch (error) {
+          lastError = error as Error;
+          console.error(
+            `Email send attempt ${attempt + 1}/${maxRetries} failed for ${to}:`,
+            error
+          );
+
+          // Don't retry on specific errors
+          if (
+            lastError.message.includes("Invalid email") ||
+            lastError.message.includes("Authentication failed")
+          ) {
+            throw lastError;
+          }
+
+          // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+          if (attempt < maxRetries - 1) {
+            const delayMs = Math.pow(2, attempt) * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+          }
+        }
+      }
+
+      // All retries failed
+      throw new Error(
+        `Failed to send email to ${to} after ${maxRetries} attempts: ${lastError?.message}`
+      );
     }
 
     async function sendContactEmailsInternal({
@@ -274,6 +328,58 @@ if (typeof window === "undefined") {
         );
       },
       sendContactEmails: sendContactEmailsInternal,
+      sendUserWelcomeEmail: async (userData: {
+        fullName: string;
+        email: string;
+        companyName: string;
+        domainName: string;
+        selectedPlan: string;
+        selectedTheme: string;
+      }): Promise<void> => {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const dashboardUrl = `${baseUrl}/app/dashboard`;
+        const settingsUrl = `${baseUrl}/app/settings`;
+        const helpUrl = `${baseUrl}/app/help`;
+        const currentYear = new Date().getFullYear();
+
+        await sendTemplateEmail(
+          userData.email,
+          "user-welcome",
+          {
+            ...userData,
+            baseUrl,
+            dashboardUrl,
+            settingsUrl,
+            helpUrl,
+            currentYear: currentYear.toString(),
+          },
+          {
+            subject: `🎉 Welcome to Juzbuild, ${userData.fullName}!`,
+          }
+        );
+      },
+      sendPasswordResetEmail: async (resetData: {
+        email: string;
+        resetUrl: string;
+      }): Promise<void> => {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const currentYear = new Date().getFullYear();
+
+        await sendTemplateEmail(
+          resetData.email,
+          "password-reset",
+          {
+            ...resetData,
+            baseUrl,
+            currentYear: currentYear.toString(),
+          },
+          {
+            subject: "Reset Your Juzbuild Password",
+          }
+        );
+      },
     };
   });
 
@@ -312,6 +418,26 @@ if (typeof window === "undefined") {
     const emailService = await emailServicePromise;
     return emailService.sendContactEmails(contactData);
   };
+
+  sendUserWelcomeEmail = async (userData: {
+    fullName: string;
+    email: string;
+    companyName: string;
+    domainName: string;
+    selectedPlan: string;
+    selectedTheme: string;
+  }): Promise<void> => {
+    const emailService = await emailServicePromise;
+    return emailService.sendUserWelcomeEmail(userData);
+  };
+
+  sendPasswordResetEmail = async (resetData: {
+    email: string;
+    resetUrl: string;
+  }): Promise<void> => {
+    const emailService = await emailServicePromise;
+    return emailService.sendPasswordResetEmail(resetData);
+  };
 } else {
   // Client-side: provide error stub
   sendWaitlistWelcomeEmail = () =>
@@ -333,10 +459,22 @@ if (typeof window === "undefined") {
     Promise.reject(
       new Error("Email operations are not available on the client side")
     );
+
+  sendUserWelcomeEmail = () =>
+    Promise.reject(
+      new Error("Email operations are not available on the client side")
+    );
+
+  sendPasswordResetEmail = () =>
+    Promise.reject(
+      new Error("Email operations are not available on the client side")
+    );
 }
 
 export {
   sendContactEmail,
+  sendPasswordResetEmail,
+  sendUserWelcomeEmail,
   sendWaitlistNotificationEmail,
   sendWaitlistWelcomeEmail,
   sendWebsiteCreationEmail,

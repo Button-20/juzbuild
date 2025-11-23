@@ -188,7 +188,7 @@ export default function DeploymentPage() {
       setCreationAttempted(true);
       sessionStorage.setItem("website-creation-lock", Date.now().toString());
 
-      const signupData = JSON.parse(websiteCreationData);
+      const signupData = JSON.parse(websiteCreationData || "{}");
 
       setDeploymentStatus((prev) => ({
         ...prev,
