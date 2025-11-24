@@ -74,7 +74,7 @@ export const waitlistWelcomeTemplate = `<html lang="en">
             <img
               src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png"
               alt="Juzbuild Logo"
-              style="height: 40px; width: auto; margin-right: 12px;"
+              style="height: 35px; width: auto; margin-right: 12px;"
             />
             <div>
               <h1 class="logo" style="margin: 0; font-size: 22px;">Juzbuild</h1>

@@ -169,6 +169,11 @@ export const websiteCreationTemplate = `
 <body>
     <div class="container">
         <div class="header">
+            <img 
+              src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png" 
+              alt="Juzbuild Logo" 
+              style="height: 35px; width: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;" 
+            />
             <h1>🎉 Your Website is Live!</h1>
             <p style="margin: 10px 0 0 0; opacity: 0.9;">Your professional real estate website has been created successfully</p>
         </div>

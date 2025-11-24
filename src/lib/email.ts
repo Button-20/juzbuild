@@ -45,31 +45,15 @@ if (typeof window === "undefined") {
   // Server-side: initialize email service
   // Use Promise.all to load all dependencies dynamically
   const emailServicePromise = Promise.all([
-    import("nodemailer"),
+    import("resend"),
     import("handlebars"),
     import("./templates"),
-  ]).then(([nodemailerModule, handlebarsModule, templatesModule]) => {
-    const nodemailer = nodemailerModule.default;
+  ]).then(([resendModule, handlebarsModule, templatesModule]) => {
+    const { Resend } = resendModule;
     const handlebars = handlebarsModule.default;
     const { emailTemplates } = templatesModule;
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT || "587"),
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 10000, // 10 seconds
-      socketTimeout: 10000, // 10 seconds
-      pool: {
-        maxConnections: 5,
-        maxMessages: 100,
-        rateDelta: 1000, // 1 second
-        rateLimit: 5, // 5 emails per second
-      },
-    } as any);
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Cache for compiled templates
     const templateCache: { [key: string]: any } = {};
@@ -120,7 +104,7 @@ if (typeof window === "undefined") {
     }
 
     /**
-     * Send email using HBS template with retry logic
+     * Send email using HBS template with Resend
      */
     async function sendTemplateEmail(
       to: string,
@@ -134,48 +118,26 @@ if (typeof window === "undefined") {
       const template = getTemplate(templateName);
       const html = template(templateData);
 
-      const mailOptions = {
-        from: options.from || `Juzbuild <${process.env.EMAIL_USER}>`,
-        to,
-        subject: options.subject,
-        html,
-      };
+      const fromEmail = options.from || process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-      // Retry logic with exponential backoff
-      let lastError: Error | null = null;
-      const maxRetries = 3;
+      try {
+        const response = await resend.emails.send({
+          from: fromEmail,
+          to,
+          subject: options.subject,
+          html,
+        });
 
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          await transporter.sendMail(mailOptions);
-          return; // Success
-        } catch (error) {
-          lastError = error as Error;
-          console.error(
-            `Email send attempt ${attempt + 1}/${maxRetries} failed for ${to}:`,
-            error
-          );
-
-          // Don't retry on specific errors
-          if (
-            lastError.message.includes("Invalid email") ||
-            lastError.message.includes("Authentication failed")
-          ) {
-            throw lastError;
-          }
-
-          // Wait before retrying (exponential backoff: 1s, 2s, 4s)
-          if (attempt < maxRetries - 1) {
-            const delayMs = Math.pow(2, attempt) * 1000;
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-          }
+        if (response.error) {
+          throw new Error(`Resend error: ${response.error.message}`);
         }
-      }
 
-      // All retries failed
-      throw new Error(
-        `Failed to send email to ${to} after ${maxRetries} attempts: ${lastError?.message}`
-      );
+        console.log(`Email sent successfully to ${to}`, response.data?.id);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Email send failed for ${to}:`, errorMessage);
+        throw new Error(`Failed to send email to ${to}: ${errorMessage}`);
+      }
     }
 
     async function sendContactEmailsInternal({

@@ -1,4 +1,5 @@
 import { getCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user still exists
     const user = await usersCollection.findOne({
-      _id: decoded.userId,
+      _id: new ObjectId(decoded.userId),
       email: decoded.email,
     });
     if (!user) {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Update user password
     await usersCollection.updateOne(
-      { _id: decoded.userId },
+      { _id: new ObjectId(decoded.userId) },
       {
         $set: {
           password: hashedPassword,

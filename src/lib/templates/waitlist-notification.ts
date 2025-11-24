@@ -132,6 +132,11 @@ export const waitlistNotificationTemplate = `
 <body>
     <div class="container">
         <div class="header">
+            <img 
+              src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png" 
+              alt="Juzbuild Logo" 
+              style="height: 35px; width: auto; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;" 
+            />
             <span class="emoji">🎉</span>
             <h1>New Waitlist Signup!</h1>
         </div>

@@ -42,6 +42,7 @@ export default function ForgotPasswordPage() {
 
       if (response.ok) {
         setMessage(data.message);
+        setEmail(""); // Clear the input field after success
       } else {
         setError(data.error || "An error occurred");
       }

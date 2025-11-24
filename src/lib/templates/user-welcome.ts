@@ -246,6 +246,11 @@ export const userWelcomeTemplate = `<html lang="en">
     <div class="email-container">
       <!-- Header -->
       <div class="email-header">
+        <img 
+          src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png" 
+          alt="Juzbuild Logo" 
+          style="height: 35px; width: auto; margin-bottom: 10px;" 
+        />
         <h1 class="logo">Juzbuild</h1>
         <p class="tagline">AI-Powered Real Estate Websites</p>
       </div>

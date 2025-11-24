@@ -6,7 +6,8 @@ export const passwordResetTemplate = `<html lang="en">
       body { margin: 0; padding: 0; background-color: #0f0f0f; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
       .email-container { max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 12px; overflow: hidden; }
       .email-header { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 40px 30px; text-align: center; }
-      .logo { font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; }
+      .logo-img { max-width: 150px; height: auto; margin: 0 auto 16px; display: block; }
+      .logo-text { font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; }
       .email-content { padding: 40px 30px; color: #ffffff; }
       .reset-title { font-size: 24px; font-weight: 700; color: #ffffff; margin: 0 0 16px 0; }
       .reset-message { font-size: 15px; line-height: 1.6; color: #e5e7eb; margin: 0 0 30px 0; }
@@ -18,7 +19,8 @@ export const passwordResetTemplate = `<html lang="en">
     <div style="padding: 40px 20px;">
       <div class="email-container">
         <div class="email-header">
-          <h1 class="logo">Juzbuild</h1>
+          <img src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png" alt="Juzbuild Logo" style="height: 35px; width: auto; margin: 0 auto 12px; display: block;" />
+          <h1 class="logo-text">Juzbuild</h1>
         </div>
         <div class="email-content">
           <h2 class="reset-title">Reset Your Password</h2>

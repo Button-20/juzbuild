@@ -158,7 +158,7 @@ export const contactConfirmationTemplate = `<html lang="en">
           <img
             src="https://res.cloudinary.com/dho8jec7k/image/upload/v1759285901/icon_hdlovp.png"
             alt="Juzbuild Logo"
-            style="height: 40px; width: auto; margin-bottom: 10px;"
+            style="height: 35px; width: auto; margin-bottom: 10px;"
           />
           <h1 class="logo">Juzbuild</h1>
         </div>

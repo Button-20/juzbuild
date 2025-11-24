@@ -44,18 +44,14 @@ export async function POST(request: NextRequest) {
 
     // Create reset URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
-    const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     // Send password reset email
     try {
-      // Check if email configuration is available
-      if (
-        !process.env.EMAIL_HOST ||
-        !process.env.EMAIL_USER ||
-        !process.env.EMAIL_PASS
-      ) {
+      // Check if Resend configuration is available
+      if (!process.env.RESEND_API_KEY) {
         console.error(
-          "Email configuration missing - EMAIL_HOST, EMAIL_USER, and EMAIL_PASS must be set"
+          "Email configuration missing - RESEND_API_KEY must be set"
         );
         // Still return success for security, but log the error
       } else {
