@@ -3,9 +3,9 @@
  * Update user profile information
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongodb";
 import { getUserFromRequest, toObjectId } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   try {
