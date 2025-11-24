@@ -89,6 +89,7 @@ export default function WebsiteSetupStep({
   onNext,
   onBack,
   isStepValid,
+  isFeatureAvailable,
 }: WizardStepProps) {
   const [themes, setThemes] = React.useState<WebsiteTheme[]>([]);
   const [loadingThemes, setLoadingThemes] = React.useState(true);
@@ -475,29 +476,56 @@ export default function WebsiteSetupStep({
             {LEAD_CAPTURE_OPTIONS.map((option) => {
               const isSelected =
                 data.leadCaptureMethods?.includes(option.value as any) || false;
+              const isAvailable = isFeatureAvailable
+                ? isFeatureAvailable(option.name)
+                : true;
+
               return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleLeadCaptureToggle(option.value)}
-                  className={`p-6 border-2 rounded-lg text-left transition-all hover:border-primary/50 ${
-                    isSelected ? "border-primary bg-primary/5" : "border-border"
-                  }`}
-                >
-                  <div className="text-3xl mb-2 flex items-center justify-start">
-                    {option.icon}
-                  </div>
-                  <h4 className="font-semibold mb-1">{option.name}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {option.description}
-                  </p>
-                  {isSelected && (
-                    <div className="mt-2 flex items-center gap-2 text-primary">
-                      <Check className="w-4 h-4" />
-                      <span className="text-sm font-medium">Selected</span>
+                <div key={option.value} className="relative group">
+                  <button
+                    type="button"
+                    disabled={!isAvailable}
+                    onClick={() =>
+                      isAvailable && handleLeadCaptureToggle(option.value)
+                    }
+                    className={`w-full p-6 border-2 rounded-lg text-left transition-all ${
+                      !isAvailable
+                        ? "opacity-60 border-border/50 bg-muted/30 cursor-not-allowed"
+                        : isSelected
+                        ? "border-primary bg-primary/5 hover:border-primary/70"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-2 flex items-center justify-start">
+                      {option.icon}
+                    </div>
+                    <h4 className="font-semibold mb-1">{option.name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {option.description}
+                    </p>
+                    {isSelected && (
+                      <div className="mt-2 flex items-center gap-2 text-primary">
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm font-medium">Selected</span>
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Premium badge for unavailable features */}
+                  {!isAvailable && (
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                      Pro+
                     </div>
                   )}
-                </button>
+
+                  {/* Tooltip on hover for unavailable features */}
+                  {!isAvailable && (
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10 bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap">
+                      Available on Pro plan and above
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

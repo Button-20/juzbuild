@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
     const signature = headersList.get("stripe-signature");
 
     if (!signature) {
-      console.error("Missing stripe-signature header");
+      console.error("Webhook error: Missing stripe-signature header");
       return NextResponse.json({ error: "Missing signature" }, { status: 400 });
     }
 
     if (!webhookSecret) {
-      console.error("Missing STRIPE_WEBHOOK_SECRET environment variable");
+      console.error("Webhook error: Missing STRIPE_WEBHOOK_SECRET environment variable");
       return NextResponse.json(
         { error: "Missing webhook secret" },
         { status: 500 }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error("Webhook signature verification failed:", err);
+      console.error("Webhook error: Signature verification failed:", err);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
@@ -49,9 +49,60 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         if (session.mode === "subscription") {
-          const { userId, planId, billingCycle } = session.metadata || {};
+          const { userId, planId, billingCycle, isSignup } = session.metadata || {};
 
-          if (userId && planId) {
+          // For signup flow (new users)
+          if (isSignup === "true" && !userId && session.customer_email) {
+            try {
+              // Update user by email to add Stripe subscription details
+              const result = await usersCollection.updateOne(
+                { email: session.customer_email.toLowerCase() },
+                {
+                  $set: {
+                    stripeCustomerId: session.customer,
+                    stripeSubscriptionId: session.subscription,
+                    subscriptionStatus: "active",
+                    selectedPlan: planId || "starter",
+                    billingCycle: billingCycle || "monthly",
+                    updatedAt: new Date(),
+                  },
+                }
+              );
+
+              if (result.modifiedCount === 0) {
+                console.error(
+                  `Webhook error: No user found with email ${session.customer_email}`
+                );
+              } else {
+                // Create notification for successful signup
+                try {
+                  const user = await usersCollection.findOne({
+                    email: session.customer_email.toLowerCase(),
+                  });
+                  if (user) {
+                    await createNotification({
+                      ...NotificationTemplates.WELCOME,
+                      userId: user._id.toString(),
+                      message: `Welcome to Juzbuild! Your ${planId || "starter"} plan subscription has been activated. Start building your website now!`,
+                      preventDuplicates: true,
+                    });
+                  }
+                } catch (notifError) {
+                  console.error(
+                    "Webhook error: Failed to create welcome notification:",
+                    notifError
+                  );
+                }
+              }
+            } catch (dbError) {
+              console.error(
+                `❌ [WEBHOOK] Database update error for email ${session.customer_email}:`,
+                dbError
+              );
+            }
+          }
+          // For existing user upgrades
+          else if (userId && planId) {
             try {
               // Update user's plan in database - convert string ID to ObjectId
               const result = await usersCollection.updateOne(
@@ -70,7 +121,7 @@ export async function POST(request: NextRequest) {
 
               if (result.modifiedCount === 0) {
                 console.error(
-                  `Failed to update user ${userId} - user not found`
+                  `Webhook error: Failed to update user ${userId}`
                 );
               } else {
                 // Create notification for successful plan upgrade
@@ -82,14 +133,14 @@ export async function POST(request: NextRequest) {
                   });
                 } catch (notifError) {
                   console.error(
-                    "Failed to create upgrade notification:",
+                    "Webhook error: Failed to create upgrade notification:",
                     notifError
                   );
                 }
               }
             } catch (dbError) {
               console.error(
-                `Database update error for user ${userId}:`,
+                `Webhook error: Database update for user ${userId}:`,
                 dbError
               );
             }
@@ -390,9 +441,10 @@ export async function POST(request: NextRequest) {
         break;
     }
 
+    console.log(`✅ [WEBHOOK] Event ${event.type} processed successfully`);
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("❌ [WEBHOOK] Webhook handler error:", error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }

@@ -63,6 +63,8 @@ export default function PaymentStep({
         body: JSON.stringify({
           planId: data.selectedPlan,
           billingCycle: data.billingCycle || "monthly",
+          isSignup: true, // This is a signup flow
+          customerEmail: data.email, // Pass customer email for new users
         }),
       });
 

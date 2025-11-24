@@ -60,6 +60,7 @@ export default function MarketingSetupStep({
   onNext,
   onBack,
   isStepValid,
+  isFeatureAvailable,
 }: WizardStepProps) {
   const handleAdsToggle = (platformId: string) => {
     const currentConnections = (data.adsConnections || []) as string[];
@@ -118,18 +119,29 @@ export default function MarketingSetupStep({
               const isSelected = (data.adsConnections || []).includes(
                 platform.id as any
               );
+              const isAvailable = isFeatureAvailable
+                ? isFeatureAvailable("Advanced Marketing")
+                : true;
+
               return (
                 <div
                   key={platform.id}
-                  className={`flex items-start space-x-3 p-4 border-2 rounded-lg transition-all cursor-pointer hover:border-primary/50 ${
-                    isSelected ? "border-primary bg-primary/5" : "border-border"
+                  className={`relative group flex items-start space-x-3 p-4 border-2 rounded-lg transition-all ${
+                    !isAvailable
+                      ? "opacity-60 border-border/50 bg-muted/30 cursor-not-allowed"
+                      : isSelected
+                      ? "border-primary bg-primary/5 cursor-pointer hover:border-primary/50"
+                      : "border-border cursor-pointer hover:border-primary/50"
                   }`}
-                  onClick={() => handleAdsToggle(platform.id)}
+                  onClick={() => isAvailable && handleAdsToggle(platform.id)}
                 >
                   <Checkbox
                     id={platform.id}
                     checked={isSelected}
-                    onCheckedChange={() => handleAdsToggle(platform.id)}
+                    disabled={!isAvailable}
+                    onCheckedChange={() =>
+                      isAvailable && handleAdsToggle(platform.id)
+                    }
                     className="mt-1"
                   />
                   <div className="flex-1">
@@ -139,7 +151,9 @@ export default function MarketingSetupStep({
                       </div>
                       <Label
                         htmlFor={platform.id}
-                        className="font-medium cursor-pointer"
+                        className={`font-medium ${
+                          !isAvailable ? "text-muted-foreground" : ""
+                        } cursor-pointer`}
                       >
                         {platform.name}
                       </Label>
@@ -148,6 +162,21 @@ export default function MarketingSetupStep({
                       {platform.description}
                     </p>
                   </div>
+
+                  {/* Premium badge for unavailable features */}
+                  {!isAvailable && (
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                      Agency
+                    </div>
+                  )}
+
+                  {/* Tooltip on hover for unavailable features */}
+                  {!isAvailable && (
+                    <div className="absolute bottom-full right-0 transform mb-2 hidden group-hover:block z-10 bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap">
+                      Available on Agency plan only
+                      <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  )}
                 </div>
               );
             })}
