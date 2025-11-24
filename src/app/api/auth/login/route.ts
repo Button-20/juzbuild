@@ -6,12 +6,13 @@ import { z } from "zod";
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = loginSchema.parse(body);
+    const { email, password, rememberMe } = loginSchema.parse(body);
 
     // Get users collection
     const usersCollection = await getCollection("users");
@@ -46,11 +47,16 @@ export async function POST(request: NextRequest) {
       user: session.user,
     });
 
+    // Set cookie expiration based on rememberMe flag
+    const maxAge = rememberMe
+      ? 30 * 24 * 60 * 60 * 1000 // 30 days
+      : 7 * 24 * 60 * 60 * 1000; // 7 days (default)
+
     response.cookies.set("auth-token", session.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: maxAge,
       path: "/",
     });
 

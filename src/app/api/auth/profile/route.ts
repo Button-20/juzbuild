@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
-import { getUserFromRequest } from "@/lib/auth";
+import { getUserFromRequest, toObjectId } from "@/lib/auth";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -24,6 +24,8 @@ export async function PUT(request: NextRequest) {
       address,
       tagline,
       aboutSection,
+      country,
+      city,
       facebookUrl,
       twitterUrl,
       instagramUrl,
@@ -45,6 +47,8 @@ export async function PUT(request: NextRequest) {
     if (address !== undefined) updateFields.address = address;
     if (tagline !== undefined) updateFields.tagline = tagline;
     if (aboutSection !== undefined) updateFields.aboutSection = aboutSection;
+    if (country !== undefined) updateFields.country = country;
+    if (city !== undefined) updateFields.city = city;
     if (facebookUrl !== undefined) updateFields.facebookUrl = facebookUrl;
     if (twitterUrl !== undefined) updateFields.twitterUrl = twitterUrl;
     if (instagramUrl !== undefined) updateFields.instagramUrl = instagramUrl;
@@ -53,7 +57,7 @@ export async function PUT(request: NextRequest) {
 
     // Update user in database
     const result = await usersCollection.findOneAndUpdate(
-      { _id: userPayload.userId },
+      { _id: toObjectId(userPayload.userId) },
       {
         $set: {
           ...updateFields,

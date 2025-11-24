@@ -42,7 +42,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
   isAuthenticated: boolean;
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "Content-Type": "application/json",
         },
         credentials: "include", // Include cookies in request
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       if (!response.ok) {

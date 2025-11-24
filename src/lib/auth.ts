@@ -19,6 +19,7 @@ export interface JWTPayload {
 export interface User {
   _id: string;
   fullName: string;
+  avatar?: string;
   email: string;
   password: string;
   companyName: string;
@@ -35,6 +36,11 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   isActive?: boolean;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  subscriptionStatus?: "active" | "past_due" | "canceled" | "incomplete";
+  lastPaymentAt?: Date;
+  subscriptionCanceledAt?: Date;
   // Notification preferences
   notificationPreferences?: {
     emailNotifications: boolean;
@@ -123,9 +129,24 @@ export function createSession(user: User) {
     user: {
       id: user._id,
       fullName: user.fullName,
+      avatar: user.avatar || null,
       email: user.email,
       companyName: user.companyName,
+      domainName: user.domainName,
+      country: user.country,
+      city: user.city,
+      phoneNumber: user.phoneNumber,
+      tagline: user.tagline,
+      aboutSection: user.aboutSection,
+      selectedTheme: user.selectedTheme,
       selectedPlan: user.selectedPlan,
+      billingCycle: user.billingCycle,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
+      subscriptionStatus: user.subscriptionStatus,
+      lastPaymentAt: user.lastPaymentAt,
+      subscriptionCanceledAt: user.subscriptionCanceledAt,
+      notificationPreferences: user.notificationPreferences,
     },
   };
 }

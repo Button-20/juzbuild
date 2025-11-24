@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!webhookSecret) {
-      console.error("Webhook error: Missing STRIPE_WEBHOOK_SECRET environment variable");
+      console.error(
+        "Webhook error: Missing STRIPE_WEBHOOK_SECRET environment variable"
+      );
       return NextResponse.json(
         { error: "Missing webhook secret" },
         { status: 500 }
@@ -49,7 +51,8 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         if (session.mode === "subscription") {
-          const { userId, planId, billingCycle, isSignup } = session.metadata || {};
+          const { userId, planId, billingCycle, isSignup } =
+            session.metadata || {};
 
           // For signup flow (new users)
           if (isSignup === "true" && !userId && session.customer_email) {
@@ -83,7 +86,9 @@ export async function POST(request: NextRequest) {
                     await createNotification({
                       ...NotificationTemplates.WELCOME,
                       userId: user._id.toString(),
-                      message: `Welcome to Juzbuild! Your ${planId || "starter"} plan subscription has been activated. Start building your website now!`,
+                      message: `Welcome to Juzbuild! Your ${
+                        planId || "starter"
+                      } plan subscription has been activated. Start building your website now!`,
                       preventDuplicates: true,
                     });
                   }
@@ -120,9 +125,7 @@ export async function POST(request: NextRequest) {
               );
 
               if (result.modifiedCount === 0) {
-                console.error(
-                  `Webhook error: Failed to update user ${userId}`
-                );
+                console.error(`Webhook error: Failed to update user ${userId}`);
               } else {
                 // Create notification for successful plan upgrade
                 try {
