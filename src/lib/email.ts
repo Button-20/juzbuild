@@ -118,7 +118,10 @@ if (typeof window === "undefined") {
       const template = getTemplate(templateName);
       const html = template(templateData);
 
-      const fromEmail = options.from || process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+      const fromEmail =
+        options.from ||
+        process.env.RESEND_FROM_EMAIL ||
+        "onboarding@resend.dev";
 
       try {
         const response = await resend.emails.send({
@@ -134,7 +137,8 @@ if (typeof window === "undefined") {
 
         console.log(`Email sent successfully to ${to}`, response.data?.id);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error(`Email send failed for ${to}:`, errorMessage);
         throw new Error(`Failed to send email to ${to}: ${errorMessage}`);
       }

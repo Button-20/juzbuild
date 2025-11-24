@@ -1,7 +1,7 @@
 import { getCollection } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

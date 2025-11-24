@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
       if (response.ok) {
         setMessage("Password reset successfully! Redirecting to login...");
         setTimeout(() => {
-          router.push("/auth/login");
+          router.push("/login");
         }, 2000);
       } else {
         setError(data.error || "An error occurred");
@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
 
           <div className="text-center">
             <Link
-              href="/auth/login"
+              href="/login"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Back to Login
