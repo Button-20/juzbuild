@@ -30,17 +30,27 @@ export async function POST(request: NextRequest) {
     // Insert email
     await collection.insertOne({ email, createdAt: new Date() });
 
-    // Send welcome email to user
-    await sendWaitlistWelcomeEmail(email);
+    // Send emails - continue even if one fails
+    try {
+      await sendWaitlistWelcomeEmail(email);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the request if welcome email fails
+    }
 
-    // Send notification email to admin
-    await sendWaitlistNotificationEmail(email);
+    try {
+      await sendWaitlistNotificationEmail(email);
+    } catch (emailError) {
+      console.error("Failed to send notification email:", emailError);
+      // Don't fail the request if notification email fails
+    }
 
     return NextResponse.json({ message: "Successfully joined waitlist" });
   } catch (error) {
     console.error("Waitlist signup error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: errorMessage },
       { status: 500 }
     );
   }

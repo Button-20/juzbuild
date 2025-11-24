@@ -198,7 +198,7 @@ if (typeof window === "undefined") {
       );
 
       // Send notification email to the admin/team
-      const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@juzbuild.com";
       if (adminEmail) {
         await sendTemplateEmail(
           adminEmail,
@@ -217,7 +217,7 @@ if (typeof window === "undefined") {
             subject: `${
               isPriority ? "🚨 [HIGH PRIORITY] " : ""
             }New Contact: ${subject}`,
-            from: `Juzbuild Notifications <${process.env.EMAIL_USER}>`,
+            from: process.env.RESEND_FROM_EMAIL || "info@juzbuild.com",
           }
         );
       }
@@ -247,7 +247,7 @@ if (typeof window === "undefined") {
         );
       },
       sendWaitlistNotification: async (userEmail: string): Promise<void> => {
-        const adminEmail = "jasonaddy51@gmail.com";
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@juzbuild.com";
         const signupTime = new Date().toLocaleString();
 
         await sendTemplateEmail(
@@ -260,7 +260,7 @@ if (typeof window === "undefined") {
           },
           {
             subject: "🎉 New Waitlist Signup - Juzbuild",
-            from: `Juzbuild Notifications <${process.env.EMAIL_USER}>`,
+            from: process.env.RESEND_FROM_EMAIL || "info@juzbuild.com",
           }
         );
       },
