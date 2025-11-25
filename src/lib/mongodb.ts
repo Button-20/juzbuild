@@ -189,8 +189,9 @@ export async function getUserDatabaseName(
   userId: string
 ): Promise<string | null> {
   try {
+    const { toObjectId } = require("@/lib/auth");
     const usersCollection = await getCollection("users");
-    const user = await usersCollection.findOne({ _id: userId });
+    const user = await usersCollection.findOne({ _id: toObjectId(userId) });
 
     if (user && user.domainName) {
       // Convert domain to database name format

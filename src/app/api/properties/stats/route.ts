@@ -1,4 +1,4 @@
-import { verifyToken } from "@/lib/auth";
+import { toObjectId, verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { PropertyService } from "@/lib/services";
 import { NextRequest, NextResponse } from "next/server";
@@ -31,39 +31,69 @@ export async function GET(request: NextRequest) {
       const { ObjectId } = require("mongodb");
       const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
-        userId: userId,
+        userId: toObjectId(userId),
       });
 
-      if (!website) {
-        return NextResponse.json(
-          { error: "Website not found" },
-          { status: 404 }
-        );
+      if (website) {
+        websiteDatabaseName = website.dbName;
+      } else {
+        // Fallback to generating database name from user's domain
+        let domain = searchParams.get("domain");
+        if (!domain) {
+          const usersCollection = await getCollection("users");
+          const user = await usersCollection.findOne({
+            _id: toObjectId(userId),
+          });
+          if (user && user.domainName) {
+            domain = user.domainName + ".juzbuild.com";
+            const websiteName = user.domainName
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "");
+            websiteDatabaseName = `juzbuild_${websiteName}`;
+          } else {
+            // Fallback to email-based domain
+            domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+            const emailPrefix = decoded.email
+              ?.split("@")[0]
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "");
+            websiteDatabaseName = `juzbuild_${emailPrefix}`;
+          }
+        } else {
+          websiteDatabaseName = domain;
+        }
       }
-
-      websiteDatabaseName = website.dbName;
     } else {
       // Fallback to user's domain
       let domain = searchParams.get("domain");
       if (!domain) {
         const usersCollection = await getCollection("users");
-        const user = await usersCollection.findOne({ _id: userId });
+        const user = await usersCollection.findOne({ _id: toObjectId(userId) });
         if (user && user.domainName) {
           domain = user.domainName + ".juzbuild.com";
+          const websiteName = user.domainName
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          websiteDatabaseName = `juzbuild_${websiteName}`;
         } else {
           // Fallback to email-based domain
           domain = decoded.email?.split("@")[0] + ".juzbuild.com";
+          const emailPrefix = decoded.email
+            ?.split("@")[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          websiteDatabaseName = `juzbuild_${emailPrefix}`;
         }
+      } else {
+        websiteDatabaseName = domain;
       }
 
-      if (!domain) {
+      if (!websiteDatabaseName) {
         return NextResponse.json(
           { error: "Domain is required" },
           { status: 400 }
         );
       }
-
-      websiteDatabaseName = domain;
     }
 
     // Get property statistics

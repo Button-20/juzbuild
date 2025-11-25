@@ -1,4 +1,4 @@
-import { verifyToken } from "@/lib/auth";
+import { toObjectId, verifyToken } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { PropertyTypeService } from "@/lib/services";
 import { propertyTypeSchema } from "@/types/properties";
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       const { ObjectId } = require("mongodb");
       const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
-        userId: userId,
+        userId: toObjectId(userId),
       });
 
       if (website) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Fallback to user's profile domain if no specific website selected
     if (!userDomain) {
       const usersCollection = await getCollection("users");
-      const user = await usersCollection.findOne({ _id: userId });
+      const user = await usersCollection.findOne({ _id: toObjectId(userId) });
       if (user && user.domainName) {
         userDomain = user.domainName + ".juzbuild.com";
         // Generate database name from user's domain
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       const { ObjectId } = require("mongodb");
       const website = await websitesCollection.findOne({
         _id: new ObjectId(websiteId),
-        userId: userId,
+        userId: toObjectId(userId),
       });
 
       if (website) {
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
     // Fallback to user's profile domain if no specific website selected
     if (!userDomain) {
       const usersCollection = await getCollection("users");
-      const user = await usersCollection.findOne({ _id: userId });
+      const user = await usersCollection.findOne({ _id: toObjectId(userId) });
       if (user && user.domainName) {
         userDomain = user.domainName + ".juzbuild.com";
         // Generate database name from user's domain

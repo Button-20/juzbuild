@@ -10,6 +10,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { OnboardingData, WizardStep } from "@/types/onboarding";
 import { debounce } from "@/utils/helpers";
+import { validatePhoneNumber } from "@/lib/phone-validation";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useState } from "react";
 
@@ -127,7 +128,7 @@ export default function OnboardingWizard({
       setTimeout(() => validateCurrentStepAndUpdateButton(updated), 0);
       return updated;
     });
-    // Clear errors for updated fields
+    // Clear errors for updated fields and validate if needed
     const updatedFields = Object.keys(newData);
     setErrors((prev) => {
       const newErrors = { ...prev };
@@ -136,6 +137,36 @@ export default function OnboardingWizard({
           delete newErrors[field];
         }
       });
+
+      // Real-time validation for phone number
+      if (updatedFields.includes("phoneNumber")) {
+        const currentFormData = { ...formData, ...newData };
+        const phoneValidation = validatePhoneNumber(
+          currentFormData.phoneNumber || "",
+          currentFormData.country || "United States"
+        );
+        if (
+          currentFormData.phoneNumber?.trim() &&
+          !phoneValidation.isValid
+        ) {
+          newErrors.phoneNumber =
+            phoneValidation.error || "Invalid phone number";
+        }
+      }
+
+      // Real-time validation for country change affecting phone number
+      if (updatedFields.includes("country") && formData.phoneNumber?.trim()) {
+        const currentFormData = { ...formData, ...newData };
+        const phoneValidation = validatePhoneNumber(
+          currentFormData.phoneNumber || "",
+          currentFormData.country || "United States"
+        );
+        if (!phoneValidation.isValid) {
+          newErrors.phoneNumber =
+            phoneValidation.error || "Invalid phone number";
+        }
+      }
+
       return newErrors;
     });
   }, []);
@@ -300,8 +331,16 @@ export default function OnboardingWizard({
 
         if (!formData.phoneNumber?.trim())
           newErrors.phoneNumber = "Phone number is required";
-        else if (formData.phoneNumber.trim().length < 10)
-          newErrors.phoneNumber = "Phone number must be at least 10 characters";
+        else {
+          const phoneValidation = validatePhoneNumber(
+            formData.phoneNumber,
+            formData.country || "United States"
+          );
+          if (!phoneValidation.isValid) {
+            newErrors.phoneNumber =
+              phoneValidation.error || "Invalid phone number";
+          }
+        }
 
         if (!formData.password?.trim())
           newErrors.password = "Password is required";

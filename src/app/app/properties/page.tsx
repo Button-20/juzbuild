@@ -51,12 +51,14 @@ import {
   SearchIcon,
   TrashIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -82,12 +84,41 @@ export default function PropertiesPage() {
   const { toast } = useToast();
   const { selectedWebsiteId, selectedWebsite } = useWebsite();
 
-  // Fetch properties and property types
-  const fetchData = async () => {
+  // Fetch property types and stats (only once per website)
+  const fetchPropertyTypesAndStats = async () => {
     if (!selectedWebsiteId) return;
 
     try {
-      setLoading(true);
+      const [typesRes, statsRes] = await Promise.all([
+        fetch(`/api/property-types?websiteId=${selectedWebsiteId}`),
+        fetch(`/api/properties/stats?websiteId=${selectedWebsiteId}`),
+      ]);
+
+      if (typesRes.ok) {
+        const typesData = await typesRes.json();
+        setPropertyTypes(typesData.propertyTypes || []);
+      }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
+    } catch (error) {
+      console.error("Error fetching property types and stats:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch property types and stats",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Fetch only properties (called when filters/search changes)
+  const fetchProperties = async () => {
+    if (!selectedWebsiteId) return;
+
+    try {
+      setIsSearching(true);
 
       // Build query parameters for properties
       const propertiesParams = new URLSearchParams({
@@ -106,41 +137,36 @@ export default function PropertiesPage() {
         propertiesParams.append("sortDirection", sortDirection);
       }
 
-      const [propertiesRes, typesRes, statsRes] = await Promise.all([
-        fetch(`/api/properties?${propertiesParams.toString()}`),
-        fetch(`/api/property-types?websiteId=${selectedWebsiteId}`),
-        fetch(`/api/properties/stats?websiteId=${selectedWebsiteId}`),
-      ]);
+      const propertiesRes = await fetch(
+        `/api/properties?${propertiesParams.toString()}`
+      );
 
       if (propertiesRes.ok) {
         const propertiesData = await propertiesRes.json();
         setProperties(propertiesData.properties || []);
         setTotalProperties(propertiesData.total || 0);
       }
-
-      if (typesRes.ok) {
-        const typesData = await typesRes.json();
-        setPropertyTypes(typesData.propertyTypes || []);
-      }
-
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching properties:", error);
       toast({
         title: "Error",
         description: "Failed to fetch properties data",
         variant: "destructive",
       });
     } finally {
+      setIsSearching(false);
       setLoading(false);
     }
   };
 
+  // Fetch property types and stats once when website changes
   useEffect(() => {
-    fetchData();
+    fetchPropertyTypesAndStats();
+  }, [selectedWebsiteId]);
+
+  // Fetch properties when filters, search, or pagination changes
+  useEffect(() => {
+    fetchProperties();
   }, [
     selectedWebsiteId,
     currentPage,
@@ -212,7 +238,7 @@ export default function PropertiesPage() {
           title: "Success",
           description: "Property deleted successfully",
         });
-        fetchData(); // Refresh the list
+        fetchProperties(); // Refresh the list
       } else {
         throw new Error("Failed to delete property");
       }
@@ -231,7 +257,8 @@ export default function PropertiesPage() {
     setIsCreateDialogOpen(false);
     setIsEditDialogOpen(false);
     setEditingProperty(null);
-    fetchData(); // Refresh the list
+    fetchProperties(); // Refresh the list
+    fetchPropertyTypesAndStats(); // Refresh stats
     toast({
       title: "Success",
       description: editingProperty
@@ -263,20 +290,47 @@ export default function PropertiesPage() {
       key: "name",
       header: "Property",
       sortable: true,
-      render: (value, row) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-            <HomeIcon className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div>
-            <div className="font-medium">{value}</div>
-            <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <MapPinIcon className="h-3 w-3" />
-              {row.location}
+      render: (value, row) => {
+        // Get the main image or first image from the property
+        const mainImage = row.images?.find((img) => img.isMain);
+        const firstImage = row.images?.[0];
+        const imageUrl = mainImage?.src || firstImage?.src;
+
+        return (
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-muted flex-shrink-0">
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={value || "Property image"}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                  onError={(e) => {
+                    // Fallback to icon if image fails to load
+                    const container = e.currentTarget.parentElement;
+                    if (container) {
+                      container.innerHTML =
+                        '<div class="flex items-center justify-center w-full h-full"><svg class="h-6 w-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2.832-2.832a2 2 0 012.828 0L15 16m-6-6l2.832-2.832a2 2 0 012.828 0L20 16m-8-8H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2z"></path></svg></div>';
+                    }
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full">
+                  <HomeIcon className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="font-medium">{value}</div>
+              <div className="text-sm text-muted-foreground flex items-center gap-1">
+                <MapPinIcon className="h-3 w-3" />
+                {row.location}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "propertyType",
@@ -464,7 +518,7 @@ export default function PropertiesPage() {
             <div className="flex items-center gap-2">
               <BulkPropertyUpload
                 websiteId={selectedWebsiteId || ""}
-                onUploadComplete={fetchData}
+                onUploadComplete={fetchProperties}
               />
               <Dialog
                 open={isCreateDialogOpen}
