@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDatabase, getCollection } from "@/lib/mongodb";
-import { hash } from "bcryptjs";
-import { ObjectId } from "mongodb";
-import { sign } from "jsonwebtoken";
+import { getDatabase } from "@/lib/mongodb";
 import { createNotification, NotificationTemplates } from "@/lib/notifications";
+import { hash } from "bcryptjs";
+import { sign } from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
