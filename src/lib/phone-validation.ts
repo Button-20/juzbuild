@@ -1,4 +1,8 @@
-import { parsePhoneNumber, isValidPhoneNumber, CountryCode } from "libphonenumber-js";
+import {
+  CountryCode,
+  isValidPhoneNumber,
+  parsePhoneNumber,
+} from "libphonenumber-js";
 
 // Country code mapping for phone validation
 export const COUNTRY_TO_CODE: Record<string, CountryCode> = {

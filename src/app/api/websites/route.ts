@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
       propertyTypes,
       preferredContactMethod,
       brandColors,
+      logoUrl,
       phoneNumber,
       supportEmail,
       whatsappNumber,
@@ -262,6 +263,15 @@ export async function POST(request: NextRequest) {
                 propertyTypes: propertyTypes || ["house"],
                 includedPages: includedPages || ["home", "about", "contact"],
                 preferredContactMethod: preferredContactMethod || ["email"],
+                phoneNumber: phoneNumber || "",
+                supportEmail: supportEmail || decoded.email,
+                whatsappNumber: whatsappNumber || "",
+                address: address || "",
+                facebookUrl: facebookUrl || "",
+                twitterUrl: twitterUrl || "",
+                instagramUrl: instagramUrl || "",
+                linkedinUrl: linkedinUrl || "",
+                youtubeUrl: youtubeUrl || "",
               }),
             }
           );
@@ -269,7 +279,7 @@ export async function POST(request: NextRequest) {
           if (workflowResponse.ok) {
             const workflowResult = await workflowResponse.json();
 
-            // Update the existing website with the new jobId
+            // Update the existing website with the new jobId and contact info
             await websitesCollection.updateOne(
               { _id: existingUserWebsite._id },
               {
@@ -277,6 +287,15 @@ export async function POST(request: NextRequest) {
                   jobId: workflowResult.jobId,
                   deploymentStatus: "processing",
                   status: "creating",
+                  phoneNumber: phoneNumber || "",
+                  whatsappNumber: whatsappNumber || "",
+                  supportEmail: supportEmail || "",
+                  address: address || "",
+                  facebookUrl: facebookUrl || "",
+                  twitterUrl: twitterUrl || "",
+                  instagramUrl: instagramUrl || "",
+                  linkedinUrl: linkedinUrl || "",
+                  youtubeUrl: youtubeUrl || "",
                   updatedAt: new Date(),
                 },
               }
@@ -410,6 +429,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date(),
       isActive: true,
+      logoUrl: logoUrl || "",
       analytics: {
         googleAnalytics: {
           measurementId: null,
@@ -417,6 +437,17 @@ export async function POST(request: NextRequest) {
           isEnabled: false,
         },
       },
+      // Store contact information
+      phoneNumber: phoneNumber || "",
+      whatsappNumber: whatsappNumber || "",
+      supportEmail: supportEmail || "",
+      address: address || "",
+      // Store social media links
+      facebookUrl: facebookUrl || "",
+      twitterUrl: twitterUrl || "",
+      instagramUrl: instagramUrl || "",
+      linkedinUrl: linkedinUrl || "",
+      youtubeUrl: youtubeUrl || "",
     };
 
     const result = await websitesCollection.insertOne(website);
@@ -461,6 +492,7 @@ export async function POST(request: NextRequest) {
         propertyTypes: propertyTypes || ["house"],
         includedPages: includedPages || ["home", "about", "contact"],
         preferredContactMethod: preferredContactMethod || ["email"],
+        logoUrl: logoUrl || "",
         phoneNumber: phoneNumber || "",
         supportEmail: supportEmail || decoded.email,
         whatsappNumber: whatsappNumber || "",
