@@ -24,7 +24,6 @@ import {
   Settings,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -213,6 +212,19 @@ export default function DeploymentPage() {
         leadCaptureMethods: signupData.leadCaptureMethods || [],
         preferredContactMethod: signupData.preferredContactMethod || [],
         geminiApiKey: signupData.geminiApiKey,
+        // Logo
+        logoUrl: signupData.logoUrl || "",
+        // Contact Information
+        phoneNumber: signupData.phoneNumber || "",
+        whatsappNumber: signupData.whatsappNumber || "",
+        supportEmail: signupData.supportEmail || "",
+        address: signupData.address || "",
+        // Social Media Links
+        facebookUrl: signupData.facebookUrl || "",
+        twitterUrl: signupData.twitterUrl || "",
+        instagramUrl: signupData.instagramUrl || "",
+        linkedinUrl: signupData.linkedinUrl || "",
+        youtubeUrl: signupData.youtubeUrl || "",
       };
 
       const response = await fetch("/api/websites", {

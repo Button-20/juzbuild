@@ -8,9 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { validatePhoneNumber } from "@/lib/phone-validation";
 import { OnboardingData, WizardStep } from "@/types/onboarding";
 import { debounce } from "@/utils/helpers";
-import { validatePhoneNumber } from "@/lib/phone-validation";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useState } from "react";
 
@@ -145,10 +145,7 @@ export default function OnboardingWizard({
           currentFormData.phoneNumber || "",
           currentFormData.country || "United States"
         );
-        if (
-          currentFormData.phoneNumber?.trim() &&
-          !phoneValidation.isValid
-        ) {
+        if (currentFormData.phoneNumber?.trim() && !phoneValidation.isValid) {
           newErrors.phoneNumber =
             phoneValidation.error || "Invalid phone number";
         }
