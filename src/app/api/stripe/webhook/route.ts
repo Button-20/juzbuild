@@ -352,51 +352,6 @@ export async function POST(request: NextRequest) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
-
-        // Mark subscription as canceled and revert to starter plan
-        await usersCollection.updateOne(
-          { stripeCustomerId: customerId },
-          {
-            $set: {
-              selectedPlan: "starter",
-              subscriptionStatus: "canceled",
-              subscriptionCanceledAt: new Date(),
-              updatedAt: new Date(),
-            },
-            $unset: {
-              stripeSubscriptionId: "",
-            },
-          }
-        );
-
-        console.log(`Subscription deleted for customer ${customerId}`);
-        break;
-      }
-
-      case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = invoice.id as string;
-
-        if (subscriptionId) {
-          // Update subscription status
-          await usersCollection.updateOne(
-            { stripeSubscriptionId: subscriptionId },
-            {
-              $set: {
-                subscriptionStatus: "past_due",
-                updatedAt: new Date(),
-              },
-            }
-          );
-
-          console.log(`Payment failed for subscription ${subscriptionId}`);
-        }
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
 
         // Update user's subscription status
         const result = await usersCollection.updateOne(
