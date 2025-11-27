@@ -110,6 +110,14 @@ export function ComprehensiveAnalytics() {
         setLoading(true);
         setError(null);
 
+        // Check if demo mode is enabled via URL parameter
+        const params = new URLSearchParams(window.location.search);
+        const isDemoMode = params.get("demo") === "true";
+
+        if (isDemoMode) {
+          throw new Error("Demo mode enabled - showing dummy data");
+        }
+
         const response = await fetch(
           `/api/analytics?websiteId=${currentWebsite._id}`
         );
@@ -126,10 +134,10 @@ export function ComprehensiveAnalytics() {
         const dummyData: AnalyticsData = {
           website: {
             id: currentWebsite._id,
-            name: currentWebsite.websiteName || "My Property Website",
+            name: currentWebsite.companyName || "My Property Website",
             company: currentWebsite.companyName || "My Company",
             domain: currentWebsite.domainName || "example.com",
-            theme: currentWebsite.templateId || "homely",
+            theme: currentWebsite.selectedTheme || "homely",
             status: "Active",
             createdAt: new Date().toISOString(),
           },
