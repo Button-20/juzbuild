@@ -112,8 +112,8 @@ export const websiteCreationTemplate = `
             border-radius: 8px;
         }
         .feature-icon {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: flex;
@@ -122,6 +122,8 @@ export const websiteCreationTemplate = `
             margin-right: 15px;
             color: white;
             font-weight: bold;
+            font-size: 24px;
+            flex-shrink: 0;
         }
         .footer { 
             background: #f8fafc; 
