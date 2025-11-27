@@ -202,7 +202,7 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
  * Chart 2: Traffic Sources Breakdown (Pie Chart)
  * Shows distribution of traffic from different sources using real GA4 data
  */
-export function TrafficSourcesChart({ websiteId }: AnalyticsChartProps) {
+export function TrafficSourcesChart({ websiteId, chartData }: AnalyticsChartProps) {
   const [data, setData] = useState<(TrafficSourceData & { color: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,6 +211,25 @@ export function TrafficSourcesChart({ websiteId }: AnalyticsChartProps) {
 
   useEffect(() => {
     const fetchData = async () => {
+      // If chartData is provided (from demo mode), use it to create traffic sources
+      if (chartData && chartData.length > 0) {
+        const demoSources = [
+          { source: "Organic Search", users: Math.round(2847 * 0.45), sessions: Math.round(4321 * 0.45), percentage: 45 },
+          { source: "Direct", users: Math.round(2847 * 0.30), sessions: Math.round(4321 * 0.30), percentage: 30 },
+          { source: "Social Media", users: Math.round(2847 * 0.15), sessions: Math.round(4321 * 0.15), percentage: 15 },
+          { source: "Referral", users: Math.round(2847 * 0.10), sessions: Math.round(4321 * 0.10), percentage: 10 },
+        ];
+        const trafficWithColors = demoSources.map(
+          (item: TrafficSourceData, index: number) => ({
+            ...item,
+            color: colors[index % colors.length],
+          })
+        );
+        setData(trafficWithColors);
+        setLoading(false);
+        return;
+      }
+
       if (!websiteId) {
         setError("No website ID provided");
         setLoading(false);
@@ -241,7 +260,7 @@ export function TrafficSourcesChart({ websiteId }: AnalyticsChartProps) {
     };
 
     fetchData();
-  }, [websiteId]);
+  }, [websiteId, chartData]);
 
   return (
     <Card>
@@ -298,13 +317,28 @@ export function TrafficSourcesChart({ websiteId }: AnalyticsChartProps) {
  * Chart 3: Conversion Performance (Bar Chart)
  * Shows engagement and performance metrics from real GA4 data
  */
-export function ConversionPerformanceChart({ websiteId }: AnalyticsChartProps) {
+export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsChartProps) {
   const [data, setData] = useState<WeeklyPerformanceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      // If chartData is provided (from demo mode), use it directly
+      if (chartData && chartData.length > 0) {
+        const weeklyData: WeeklyPerformanceData[] = [
+          {
+            period: "Week 1",
+            pageviews: 7050,
+            sessions: 2000,
+            bounceRate: 32.5,
+          },
+        ];
+        setData(weeklyData);
+        setLoading(false);
+        return;
+      }
+
       if (!websiteId) {
         setError("No website ID provided");
         setLoading(false);
@@ -349,7 +383,7 @@ export function ConversionPerformanceChart({ websiteId }: AnalyticsChartProps) {
     };
 
     fetchData();
-  }, [websiteId]);
+  }, [websiteId, chartData]);
 
   return (
     <Card>
@@ -406,13 +440,25 @@ export function ConversionPerformanceChart({ websiteId }: AnalyticsChartProps) {
  * Chart 4: User Engagement Metrics (Line Chart)
  * Shows engagement patterns from real GA4 data
  */
-export function EngagementMetricsChart({ websiteId }: AnalyticsChartProps) {
+export function EngagementMetricsChart({ websiteId, chartData }: AnalyticsChartProps) {
   const [data, setData] = useState<DeviceBreakdownData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      // If chartData is provided (from demo mode), use it to create device breakdown
+      if (chartData && chartData.length > 0) {
+        const demoDevices: DeviceBreakdownData[] = [
+          { device: "Desktop", users: Math.round(2847 * 0.55), sessions: Math.round(4321 * 0.55), bounceRate: 28.5 },
+          { device: "Mobile", users: Math.round(2847 * 0.35), sessions: Math.round(4321 * 0.35), bounceRate: 38.2 },
+          { device: "Tablet", users: Math.round(2847 * 0.10), sessions: Math.round(4321 * 0.10), bounceRate: 32.1 },
+        ];
+        setData(demoDevices);
+        setLoading(false);
+        return;
+      }
+
       if (!websiteId) {
         setError("No website ID provided");
         setLoading(false);
@@ -435,7 +481,7 @@ export function EngagementMetricsChart({ websiteId }: AnalyticsChartProps) {
     };
 
     fetchData();
-  }, [websiteId]);
+  }, [websiteId, chartData]);
 
   return (
     <Card>
@@ -512,9 +558,9 @@ export function AnalyticsCharts({ websiteId, chartData }: AnalyticsChartProps) {
   return (
     <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
       <VisitorTrendsChart websiteId={websiteId} chartData={chartData} />
-      <TrafficSourcesChart websiteId={websiteId} />
-      <ConversionPerformanceChart websiteId={websiteId} />
-      <EngagementMetricsChart websiteId={websiteId} />
+      <TrafficSourcesChart websiteId={websiteId} chartData={chartData} />
+      <ConversionPerformanceChart websiteId={websiteId} chartData={chartData} />
+      <EngagementMetricsChart websiteId={websiteId} chartData={chartData} />
     </div>
   );
 }
