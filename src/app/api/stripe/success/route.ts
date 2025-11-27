@@ -1,6 +1,6 @@
+import { getDatabase } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getDatabase } from "@/lib/mongodb";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-10-29.clover",
@@ -47,9 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Default redirect with processing status
-    return NextResponse.redirect(
-      `${origin}/app/settings?status=processing`
-    );
+    return NextResponse.redirect(`${origin}/app/settings?status=processing`);
   } catch (error) {
     const origin = request.headers.get("origin") || "https://juzbuild.com";
     console.error("Payment success handler error:", error);

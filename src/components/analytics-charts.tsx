@@ -1,23 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import {
   Card,
   CardContent,
@@ -25,7 +7,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Database } from "lucide-react";
+import {
+  BarChart3,
+  Database,
+  PieChart as PieChartIcon,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface AnalyticsChartProps {
   websiteId?: string;
@@ -80,7 +86,10 @@ interface WeeklyPerformanceData {
  * Chart 1: Visitor Trends Over Time (Area Chart)
  * Shows daily visitor and session trends from real GA4 data
  */
-export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps) {
+export function VisitorTrendsChart({
+  websiteId,
+  chartData,
+}: AnalyticsChartProps) {
   const [data, setData] = useState<DailyTrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +99,10 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
       // If chartData is provided (from demo mode), use it directly
       if (chartData && chartData.length > 0) {
         const formattedData = chartData.map((item) => ({
-          date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          date: new Date(item.date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
           visitors: item.visitors,
           sessions: Math.round(item.visitors * 1.5), // Estimate sessions
           pageviews: item.pageviews,
@@ -108,16 +120,23 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
       }
 
       try {
-        const response = await fetch(`/api/analytics/charts?websiteId=${websiteId}`);
+        const response = await fetch(
+          `/api/analytics/charts?websiteId=${websiteId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch chart data");
         const result = await response.json();
-        
+
         // Format dates to "Mon D" format and prepare data
-        const formattedData = (result.dailyTrends || []).map((item: DailyTrendData) => ({
-          ...item,
-          date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        }));
-        
+        const formattedData = (result.dailyTrends || []).map(
+          (item: DailyTrendData) => ({
+            ...item,
+            date: new Date(item.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+          })
+        );
+
         setData(formattedData);
         setError(null);
       } catch (err) {
@@ -138,7 +157,9 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
           <TrendingUp className="h-5 w-5 text-blue-500" />
           <div>
             <CardTitle>Visitor Trends</CardTitle>
-            <CardDescription>Daily visitors and sessions over the last 30 days</CardDescription>
+            <CardDescription>
+              Daily visitors and sessions over the last 30 days
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -158,7 +179,10 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
@@ -202,22 +226,55 @@ export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps
  * Chart 2: Traffic Sources Breakdown (Pie Chart)
  * Shows distribution of traffic from different sources using real GA4 data
  */
-export function TrafficSourcesChart({ websiteId, chartData }: AnalyticsChartProps) {
-  const [data, setData] = useState<(TrafficSourceData & { color: string })[]>([]);
+export function TrafficSourcesChart({
+  websiteId,
+  chartData,
+}: AnalyticsChartProps) {
+  const [data, setData] = useState<(TrafficSourceData & { color: string })[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899"];
+  const colors = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#06b6d4",
+    "#ec4899",
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
       // If chartData is provided (from demo mode), use it to create traffic sources
       if (chartData && chartData.length > 0) {
         const demoSources = [
-          { source: "Organic Search", users: Math.round(2847 * 0.45), sessions: Math.round(4321 * 0.45), percentage: 45 },
-          { source: "Direct", users: Math.round(2847 * 0.30), sessions: Math.round(4321 * 0.30), percentage: 30 },
-          { source: "Social Media", users: Math.round(2847 * 0.15), sessions: Math.round(4321 * 0.15), percentage: 15 },
-          { source: "Referral", users: Math.round(2847 * 0.10), sessions: Math.round(4321 * 0.10), percentage: 10 },
+          {
+            source: "Organic Search",
+            users: Math.round(2847 * 0.45),
+            sessions: Math.round(4321 * 0.45),
+            percentage: 45,
+          },
+          {
+            source: "Direct",
+            users: Math.round(2847 * 0.3),
+            sessions: Math.round(4321 * 0.3),
+            percentage: 30,
+          },
+          {
+            source: "Social Media",
+            users: Math.round(2847 * 0.15),
+            sessions: Math.round(4321 * 0.15),
+            percentage: 15,
+          },
+          {
+            source: "Referral",
+            users: Math.round(2847 * 0.1),
+            sessions: Math.round(4321 * 0.1),
+            percentage: 10,
+          },
         ];
         const trafficWithColors = demoSources.map(
           (item: TrafficSourceData, index: number) => ({
@@ -237,10 +294,12 @@ export function TrafficSourcesChart({ websiteId, chartData }: AnalyticsChartProp
       }
 
       try {
-        const response = await fetch(`/api/analytics/charts?websiteId=${websiteId}`);
+        const response = await fetch(
+          `/api/analytics/charts?websiteId=${websiteId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch chart data");
         const result = await response.json();
-        
+
         // Add colors to traffic sources data
         const trafficWithColors = (result.trafficSources || []).map(
           (item: TrafficSourceData, index: number) => ({
@@ -248,7 +307,7 @@ export function TrafficSourcesChart({ websiteId, chartData }: AnalyticsChartProp
             color: colors[index % colors.length],
           })
         );
-        
+
         setData(trafficWithColors);
         setError(null);
       } catch (err) {
@@ -317,7 +376,10 @@ export function TrafficSourcesChart({ websiteId, chartData }: AnalyticsChartProp
  * Chart 3: Conversion Performance (Bar Chart)
  * Shows engagement and performance metrics from real GA4 data
  */
-export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsChartProps) {
+export function ConversionPerformanceChart({
+  websiteId,
+  chartData,
+}: AnalyticsChartProps) {
   const [data, setData] = useState<WeeklyPerformanceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -346,32 +408,43 @@ export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsCh
       }
 
       try {
-        const response = await fetch(`/api/analytics/charts?websiteId=${websiteId}`);
+        const response = await fetch(
+          `/api/analytics/charts?websiteId=${websiteId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch chart data");
         const result = await response.json();
-        
+
         // Use daily trends data grouped by week for chart display
         const dailyData = result.dailyTrends || [];
         const weeklyData: WeeklyPerformanceData[] = [];
-        
+
         for (let i = 0; i < dailyData.length; i += 7) {
           const weekChunk = dailyData.slice(i, i + 7);
           const weekNum = Math.floor(i / 7) + 1;
           const avgPageviews = Math.round(
-            weekChunk.reduce((sum: number, d: DailyTrendData) => sum + d.pageviews, 0) / weekChunk.length
+            weekChunk.reduce(
+              (sum: number, d: DailyTrendData) => sum + d.pageviews,
+              0
+            ) / weekChunk.length
           );
           const avgBounceRate = (
-            weekChunk.reduce((sum: number, d: DailyTrendData) => sum + d.bounceRate, 0) / weekChunk.length
+            weekChunk.reduce(
+              (sum: number, d: DailyTrendData) => sum + d.bounceRate,
+              0
+            ) / weekChunk.length
           ).toFixed(2);
-          
+
           weeklyData.push({
             period: `Week ${weekNum}`,
             pageviews: avgPageviews,
-            sessions: weekChunk.reduce((sum: number, d: DailyTrendData) => sum + d.sessions, 0),
+            sessions: weekChunk.reduce(
+              (sum: number, d: DailyTrendData) => sum + d.sessions,
+              0
+            ),
             bounceRate: parseFloat(avgBounceRate),
           });
         }
-        
+
         setData(weeklyData);
         setError(null);
       } catch (err) {
@@ -392,7 +465,9 @@ export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsCh
           <BarChart3 className="h-5 w-5 text-green-500" />
           <div>
             <CardTitle>Performance Metrics</CardTitle>
-            <CardDescription>Weekly pageviews, sessions, and bounce rates</CardDescription>
+            <CardDescription>
+              Weekly pageviews, sessions, and bounce rates
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -412,15 +487,28 @@ export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsCh
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+            <BarChart
+              data={data}
+              margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="period" />
               <YAxis yAxisId="left" />
               <YAxis yAxisId="right" orientation="right" />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="pageviews" fill="#10b981" name="Pageviews" />
-              <Bar yAxisId="left" dataKey="sessions" fill="#3b82f6" name="Sessions" />
+              <Bar
+                yAxisId="left"
+                dataKey="pageviews"
+                fill="#10b981"
+                name="Pageviews"
+              />
+              <Bar
+                yAxisId="left"
+                dataKey="sessions"
+                fill="#3b82f6"
+                name="Sessions"
+              />
               <Line
                 yAxisId="right"
                 type="monotone"
@@ -440,7 +528,10 @@ export function ConversionPerformanceChart({ websiteId, chartData }: AnalyticsCh
  * Chart 4: User Engagement Metrics (Line Chart)
  * Shows engagement patterns from real GA4 data
  */
-export function EngagementMetricsChart({ websiteId, chartData }: AnalyticsChartProps) {
+export function EngagementMetricsChart({
+  websiteId,
+  chartData,
+}: AnalyticsChartProps) {
   const [data, setData] = useState<DeviceBreakdownData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -450,9 +541,24 @@ export function EngagementMetricsChart({ websiteId, chartData }: AnalyticsChartP
       // If chartData is provided (from demo mode), use it to create device breakdown
       if (chartData && chartData.length > 0) {
         const demoDevices: DeviceBreakdownData[] = [
-          { device: "Desktop", users: Math.round(2847 * 0.55), sessions: Math.round(4321 * 0.55), bounceRate: 28.5 },
-          { device: "Mobile", users: Math.round(2847 * 0.35), sessions: Math.round(4321 * 0.35), bounceRate: 38.2 },
-          { device: "Tablet", users: Math.round(2847 * 0.10), sessions: Math.round(4321 * 0.10), bounceRate: 32.1 },
+          {
+            device: "Desktop",
+            users: Math.round(2847 * 0.55),
+            sessions: Math.round(4321 * 0.55),
+            bounceRate: 28.5,
+          },
+          {
+            device: "Mobile",
+            users: Math.round(2847 * 0.35),
+            sessions: Math.round(4321 * 0.35),
+            bounceRate: 38.2,
+          },
+          {
+            device: "Tablet",
+            users: Math.round(2847 * 0.1),
+            sessions: Math.round(4321 * 0.1),
+            bounceRate: 32.1,
+          },
         ];
         setData(demoDevices);
         setLoading(false);
@@ -466,10 +572,12 @@ export function EngagementMetricsChart({ websiteId, chartData }: AnalyticsChartP
       }
 
       try {
-        const response = await fetch(`/api/analytics/charts?websiteId=${websiteId}`);
+        const response = await fetch(
+          `/api/analytics/charts?websiteId=${websiteId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch chart data");
         const result = await response.json();
-        
+
         setData(result.deviceBreakdown || []);
         setError(null);
       } catch (err) {
@@ -510,7 +618,10 @@ export function EngagementMetricsChart({ websiteId, chartData }: AnalyticsChartP
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <LineChart
+              data={data}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="device" />
               <YAxis yAxisId="left" />

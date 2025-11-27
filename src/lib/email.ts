@@ -1,45 +1,60 @@
 // Client-safe email utilities for Next.js
 // Prevents email services from being bundled in client-side code
 
-let sendWaitlistWelcomeEmail: (email: string, baseUrl?: string) => Promise<void>;
+let sendWaitlistWelcomeEmail: (
+  email: string,
+  baseUrl?: string
+) => Promise<void>;
 let sendWaitlistNotificationEmail: (email: string) => Promise<void>;
-let sendWebsiteCreationEmail: (websiteData: {
-  userEmail: string;
-  companyName: string;
-  websiteName: string;
-  domain: string;
-  theme: string;
-  layoutStyle: string;
-  websiteUrl: string;
-  createdAt: string;
-}, baseUrl?: string) => Promise<void>;
-let sendContactEmail: ({
-  name,
-  email,
-  phone,
-  company,
-  subject,
-  message,
-}: {
-  name: string;
-  email: string;
-  phone?: string;
-  company?: string;
-  subject: string;
-  message: string;
-}, baseUrl?: string) => Promise<void>;
-let sendUserWelcomeEmail: (userData: {
-  fullName: string;
-  email: string;
-  companyName: string;
-  domainName: string;
-  selectedPlan: string;
-  selectedTheme: string;
-}, baseUrl?: string) => Promise<void>;
-let sendPasswordResetEmail: (resetData: {
-  email: string;
-  resetUrl: string;
-}, baseUrl?: string) => Promise<void>;
+let sendWebsiteCreationEmail: (
+  websiteData: {
+    userEmail: string;
+    companyName: string;
+    websiteName: string;
+    domain: string;
+    theme: string;
+    layoutStyle: string;
+    websiteUrl: string;
+    createdAt: string;
+  },
+  baseUrl?: string
+) => Promise<void>;
+let sendContactEmail: (
+  {
+    name,
+    email,
+    phone,
+    company,
+    subject,
+    message,
+  }: {
+    name: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    subject: string;
+    message: string;
+  },
+  baseUrl?: string
+) => Promise<void>;
+let sendUserWelcomeEmail: (
+  userData: {
+    fullName: string;
+    email: string;
+    companyName: string;
+    domainName: string;
+    selectedPlan: string;
+    selectedTheme: string;
+  },
+  baseUrl?: string
+) => Promise<void>;
+let sendPasswordResetEmail: (
+  resetData: {
+    email: string;
+    resetUrl: string;
+  },
+  baseUrl?: string
+) => Promise<void>;
 
 if (typeof window === "undefined") {
   // Server-side: initialize email service
@@ -162,7 +177,8 @@ if (typeof window === "undefined") {
       },
       baseUrl?: string
     ) {
-      const finalBaseUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+      const finalBaseUrl =
+        baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
       const currentYear = new Date().getFullYear();
       const submittedAt = new Date().toLocaleString();
 
@@ -227,7 +243,10 @@ if (typeof window === "undefined") {
     }
 
     return {
-      sendWaitlistEmail: async (email: string, baseUrl?: string): Promise<void> => {
+      sendWaitlistEmail: async (
+        email: string,
+        baseUrl?: string
+      ): Promise<void> => {
         const appUrl =
           baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
@@ -267,16 +286,19 @@ if (typeof window === "undefined") {
           }
         );
       },
-      sendWebsiteCreationEmail: async (websiteData: {
-        userEmail: string;
-        companyName: string;
-        websiteName: string;
-        domain: string;
-        theme: string;
-        layoutStyle: string;
-        websiteUrl: string;
-        createdAt: string;
-      }, baseUrl?: string): Promise<void> => {
+      sendWebsiteCreationEmail: async (
+        websiteData: {
+          userEmail: string;
+          companyName: string;
+          websiteName: string;
+          domain: string;
+          theme: string;
+          layoutStyle: string;
+          websiteUrl: string;
+          createdAt: string;
+        },
+        baseUrl?: string
+      ): Promise<void> => {
         const finalBaseUrl =
           baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const dashboardUrl = `${finalBaseUrl}/dashboard`;
@@ -297,14 +319,17 @@ if (typeof window === "undefined") {
         );
       },
       sendContactEmails: sendContactEmailsInternal,
-      sendUserWelcomeEmail: async (userData: {
-        fullName: string;
-        email: string;
-        companyName: string;
-        domainName: string;
-        selectedPlan: string;
-        selectedTheme: string;
-      }, baseUrl?: string): Promise<void> => {
+      sendUserWelcomeEmail: async (
+        userData: {
+          fullName: string;
+          email: string;
+          companyName: string;
+          domainName: string;
+          selectedPlan: string;
+          selectedTheme: string;
+        },
+        baseUrl?: string
+      ): Promise<void> => {
         const finalBaseUrl =
           baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const dashboardUrl = `${finalBaseUrl}/app/dashboard`;
@@ -328,10 +353,13 @@ if (typeof window === "undefined") {
           }
         );
       },
-      sendPasswordResetEmail: async (resetData: {
-        email: string;
-        resetUrl: string;
-      }, baseUrl?: string): Promise<void> => {
+      sendPasswordResetEmail: async (
+        resetData: {
+          email: string;
+          resetUrl: string;
+        },
+        baseUrl?: string
+      ): Promise<void> => {
         const finalBaseUrl =
           baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const currentYear = new Date().getFullYear();
@@ -352,7 +380,10 @@ if (typeof window === "undefined") {
     };
   });
 
-  sendWaitlistWelcomeEmail = async (email: string, baseUrl?: string): Promise<void> => {
+  sendWaitlistWelcomeEmail = async (
+    email: string,
+    baseUrl?: string
+  ): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendWaitlistEmail(email, baseUrl);
   };
@@ -362,48 +393,60 @@ if (typeof window === "undefined") {
     return emailService.sendWaitlistNotification(email);
   };
 
-  sendWebsiteCreationEmail = async (websiteData: {
-    userEmail: string;
-    companyName: string;
-    websiteName: string;
-    domain: string;
-    theme: string;
-    layoutStyle: string;
-    websiteUrl: string;
-    createdAt: string;
-  }, baseUrl?: string): Promise<void> => {
+  sendWebsiteCreationEmail = async (
+    websiteData: {
+      userEmail: string;
+      companyName: string;
+      websiteName: string;
+      domain: string;
+      theme: string;
+      layoutStyle: string;
+      websiteUrl: string;
+      createdAt: string;
+    },
+    baseUrl?: string
+  ): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendWebsiteCreationEmail(websiteData, baseUrl);
   };
 
-  sendContactEmail = async (contactData: {
-    name: string;
-    email: string;
-    phone?: string;
-    company?: string;
-    subject: string;
-    message: string;
-  }, baseUrl?: string): Promise<void> => {
+  sendContactEmail = async (
+    contactData: {
+      name: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      subject: string;
+      message: string;
+    },
+    baseUrl?: string
+  ): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendContactEmails(contactData, baseUrl);
   };
 
-  sendUserWelcomeEmail = async (userData: {
-    fullName: string;
-    email: string;
-    companyName: string;
-    domainName: string;
-    selectedPlan: string;
-    selectedTheme: string;
-  }, baseUrl?: string): Promise<void> => {
+  sendUserWelcomeEmail = async (
+    userData: {
+      fullName: string;
+      email: string;
+      companyName: string;
+      domainName: string;
+      selectedPlan: string;
+      selectedTheme: string;
+    },
+    baseUrl?: string
+  ): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendUserWelcomeEmail(userData, baseUrl);
   };
 
-  sendPasswordResetEmail = async (resetData: {
-    email: string;
-    resetUrl: string;
-  }, baseUrl?: string): Promise<void> => {
+  sendPasswordResetEmail = async (
+    resetData: {
+      email: string;
+      resetUrl: string;
+    },
+    baseUrl?: string
+  ): Promise<void> => {
     const emailService = await emailServicePromise;
     return emailService.sendPasswordResetEmail(resetData, baseUrl);
   };
