@@ -33,6 +33,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnalyticsCharts } from "./analytics-charts";
 
+// Helper function to format numbers with commas
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+interface ChartDataPoint {
+  date: string;
+  visitors: number;
+  conversions: number;
+  pageviews: number;
+}
+
 interface AnalyticsData {
   website: {
     id: string;
@@ -79,6 +91,7 @@ interface AnalyticsData {
     lastUpdated: string;
     healthScore: number;
   };
+  chartData?: ChartDataPoint[];
 }
 
 export function ComprehensiveAnalytics() {
@@ -202,6 +215,15 @@ export function ComprehensiveAnalytics() {
             lastUpdated: new Date().toISOString(),
             healthScore: 87,
           },
+          chartData: [
+            { date: "Nov 20", visitors: 1820, conversions: 156, pageviews: 5420 },
+            { date: "Nov 21", visitors: 2100, conversions: 178, pageviews: 6210 },
+            { date: "Nov 22", visitors: 2340, conversions: 195, pageviews: 7100 },
+            { date: "Nov 23", visitors: 1950, conversions: 162, pageviews: 5890 },
+            { date: "Nov 24", visitors: 2580, conversions: 210, pageviews: 7650 },
+            { date: "Nov 25", visitors: 2850, conversions: 235, pageviews: 8450 },
+            { date: "Nov 26", visitors: 2760, conversions: 228, pageviews: 8200 },
+          ],
         };
         setAnalytics(dummyData);
         setIsDummyData(true);
@@ -403,12 +425,12 @@ export function ComprehensiveAnalytics() {
               Total Visitors
             </CardDescription>
             <CardTitle className="text-3xl font-bold">
-              {analytics.performance.totalVisitors}
+              {formatNumber(analytics.performance.totalVisitors)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {analytics.googleAnalytics.metrics?.newUsers || 0} new visitors
+              {formatNumber(analytics.googleAnalytics.metrics?.newUsers || 0)} new visitors
               this period
             </p>
           </CardContent>
@@ -422,7 +444,7 @@ export function ComprehensiveAnalytics() {
               Total Pageviews
             </CardDescription>
             <CardTitle className="text-3xl font-bold">
-              {analytics.performance.totalPageviews}
+              {formatNumber(analytics.performance.totalPageviews)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -448,7 +470,7 @@ export function ComprehensiveAnalytics() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {analytics.googleAnalytics.metrics?.conversions || 0} total
+              {formatNumber(analytics.googleAnalytics.metrics?.conversions || 0)} total
               conversions
             </p>
           </CardContent>
@@ -470,7 +492,7 @@ export function ComprehensiveAnalytics() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {analytics.googleAnalytics.metrics?.sessions || 0} sessions
+              {formatNumber(analytics.googleAnalytics.metrics?.sessions || 0)} sessions
               tracked
             </p>
           </CardContent>
@@ -488,7 +510,7 @@ export function ComprehensiveAnalytics() {
               </p>
             </div>
           </div>
-          <AnalyticsCharts websiteId={analytics.website.id} />
+          <AnalyticsCharts websiteId={analytics.website.id} chartData={analytics.chartData} />
         </>
       )}
 
@@ -506,25 +528,25 @@ export function ComprehensiveAnalytics() {
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Pages</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.content.pages}
+                {formatNumber(analytics.content.pages)}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Blog Posts</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.content.blogPosts}
+                {formatNumber(analytics.content.blogPosts)}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Properties</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.content.properties}
+                {formatNumber(analytics.content.properties)}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Testimonials</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.content.testimonials}
+                {formatNumber(analytics.content.testimonials)}
               </Badge>
             </div>
           </CardContent>
@@ -542,13 +564,13 @@ export function ComprehensiveAnalytics() {
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Total Leads</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.leads.total}
+                {formatNumber(analytics.leads.total)}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Inquiries</span>
               <Badge variant="secondary" className="text-xs">
-                {analytics.leads.propertiesWithInquiries}
+                {formatNumber(analytics.leads.propertiesWithInquiries)}
               </Badge>
             </div>
             <div className="text-xs text-muted-foreground">

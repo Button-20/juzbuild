@@ -29,6 +29,12 @@ import { TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Database } from
 
 interface AnalyticsChartProps {
   websiteId?: string;
+  chartData?: Array<{
+    date: string;
+    visitors: number;
+    conversions: number;
+    pageviews: number;
+  }>;
   metrics?: {
     users: number;
     newUsers: number;
@@ -74,13 +80,27 @@ interface WeeklyPerformanceData {
  * Chart 1: Visitor Trends Over Time (Area Chart)
  * Shows daily visitor and session trends from real GA4 data
  */
-export function VisitorTrendsChart({ websiteId }: AnalyticsChartProps) {
+export function VisitorTrendsChart({ websiteId, chartData }: AnalyticsChartProps) {
   const [data, setData] = useState<DailyTrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      // If chartData is provided (from demo mode), use it directly
+      if (chartData && chartData.length > 0) {
+        const formattedData = chartData.map((item) => ({
+          date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          visitors: item.visitors,
+          sessions: Math.round(item.visitors * 1.5), // Estimate sessions
+          pageviews: item.pageviews,
+          bounceRate: parseFloat((Math.random() * 50 + 25).toFixed(1)),
+        }));
+        setData(formattedData);
+        setLoading(false);
+        return;
+      }
+
       if (!websiteId) {
         setError("No website ID provided");
         setLoading(false);
@@ -109,7 +129,7 @@ export function VisitorTrendsChart({ websiteId }: AnalyticsChartProps) {
     };
 
     fetchData();
-  }, [websiteId]);
+  }, [websiteId, chartData]);
 
   return (
     <Card>
