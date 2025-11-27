@@ -10,27 +10,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useWebsite } from "@/contexts/website-context";
+import { getPlanById } from "@/constants/pricing";
 import { useAuth } from "@/contexts/AuthContext";
-import { PRICING_PLANS, getPlanById } from "@/constants/pricing";
+import { useWebsite } from "@/contexts/website-context";
 import {
+  Activity,
   AlertCircle,
+  ArrowRight,
   CheckCircle,
+  Crown,
   Eye,
   FileText,
   Heart,
+  Info,
   MessageSquare,
+  Trash2,
   TrendingUp,
   Users,
-  Info,
   Zap,
-  Activity,
-  Trash2,
-  Crown,
-  ArrowRight,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AnalyticsCharts } from "./analytics-charts";
 
 // Helper function to format numbers with commas
@@ -184,7 +184,9 @@ export function ComprehensiveAnalytics() {
                 email: "john@example.com",
                 phone: "(555) 123-4567",
                 message: "Interested in the downtown condo",
-                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date(
+                  Date.now() - 2 * 60 * 60 * 1000
+                ).toISOString(),
               },
               {
                 _id: "2",
@@ -192,7 +194,9 @@ export function ComprehensiveAnalytics() {
                 email: "sarah@example.com",
                 phone: "(555) 234-5678",
                 message: "Can I schedule a viewing?",
-                createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date(
+                  Date.now() - 4 * 60 * 60 * 1000
+                ).toISOString(),
               },
               {
                 _id: "3",
@@ -200,7 +204,9 @@ export function ComprehensiveAnalytics() {
                 email: "michael@example.com",
                 phone: "(555) 345-6789",
                 message: "Tell me more about the beachfront property",
-                createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date(
+                  Date.now() - 6 * 60 * 60 * 1000
+                ).toISOString(),
               },
             ],
           },
@@ -216,24 +222,59 @@ export function ComprehensiveAnalytics() {
             healthScore: 87,
           },
           chartData: [
-            { date: "Nov 20", visitors: 1820, conversions: 156, pageviews: 5420 },
-            { date: "Nov 21", visitors: 2100, conversions: 178, pageviews: 6210 },
-            { date: "Nov 22", visitors: 2340, conversions: 195, pageviews: 7100 },
-            { date: "Nov 23", visitors: 1950, conversions: 162, pageviews: 5890 },
-            { date: "Nov 24", visitors: 2580, conversions: 210, pageviews: 7650 },
-            { date: "Nov 25", visitors: 2850, conversions: 235, pageviews: 8450 },
-            { date: "Nov 26", visitors: 2760, conversions: 228, pageviews: 8200 },
+            {
+              date: "Nov 20",
+              visitors: 1820,
+              conversions: 156,
+              pageviews: 5420,
+            },
+            {
+              date: "Nov 21",
+              visitors: 2100,
+              conversions: 178,
+              pageviews: 6210,
+            },
+            {
+              date: "Nov 22",
+              visitors: 2340,
+              conversions: 195,
+              pageviews: 7100,
+            },
+            {
+              date: "Nov 23",
+              visitors: 1950,
+              conversions: 162,
+              pageviews: 5890,
+            },
+            {
+              date: "Nov 24",
+              visitors: 2580,
+              conversions: 210,
+              pageviews: 7650,
+            },
+            {
+              date: "Nov 25",
+              visitors: 2850,
+              conversions: 235,
+              pageviews: 8450,
+            },
+            {
+              date: "Nov 26",
+              visitors: 2760,
+              conversions: 228,
+              pageviews: 8200,
+            },
           ],
         };
         setAnalytics(dummyData);
         setIsDummyData(true);
-        
+
         // Auto-clear dummy data after 5 minutes
         const timer = setTimeout(() => {
           setAnalytics(null);
           setIsDummyData(false);
         }, 5 * 60 * 1000); // 5 minutes
-        
+
         return () => clearTimeout(timer);
       } finally {
         setLoading(false);
@@ -329,7 +370,8 @@ export function ComprehensiveAnalytics() {
                     📸 Preview Mode: Sample Data Displayed
                   </p>
                   <p className="text-xs text-blue-700 dark:text-blue-300">
-                    This is demo data to showcase the dashboard. It will be cleared in 5 minutes or when you refresh the page.
+                    This is demo data to showcase the dashboard. It will be
+                    cleared in 5 minutes or when you refresh the page.
                   </p>
                 </div>
               </div>
@@ -430,8 +472,8 @@ export function ComprehensiveAnalytics() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {formatNumber(analytics.googleAnalytics.metrics?.newUsers || 0)} new visitors
-              this period
+              {formatNumber(analytics.googleAnalytics.metrics?.newUsers || 0)}{" "}
+              new visitors this period
             </p>
           </CardContent>
         </Card>
@@ -470,8 +512,10 @@ export function ComprehensiveAnalytics() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {formatNumber(analytics.googleAnalytics.metrics?.conversions || 0)} total
-              conversions
+              {formatNumber(
+                analytics.googleAnalytics.metrics?.conversions || 0
+              )}{" "}
+              total conversions
             </p>
           </CardContent>
         </Card>
@@ -492,8 +536,8 @@ export function ComprehensiveAnalytics() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {formatNumber(analytics.googleAnalytics.metrics?.sessions || 0)} sessions
-              tracked
+              {formatNumber(analytics.googleAnalytics.metrics?.sessions || 0)}{" "}
+              sessions tracked
             </p>
           </CardContent>
         </Card>
@@ -510,7 +554,10 @@ export function ComprehensiveAnalytics() {
               </p>
             </div>
           </div>
-          <AnalyticsCharts websiteId={analytics.website.id} chartData={analytics.chartData} />
+          <AnalyticsCharts
+            websiteId={analytics.website.id}
+            chartData={analytics.chartData}
+          />
         </>
       )}
 
