@@ -9,6 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     const body = await request.json();
     const { planId, billingCycle, isSignup = false, customerEmail } = body;
 
@@ -66,11 +67,11 @@ export async function POST(request: NextRequest) {
       ],
       mode: "subscription",
       success_url: isSignup
-        ? `${process.env.NEXT_PUBLIC_APP_URL}/signup/payment-status?session_id={CHECKOUT_SESSION_ID}`
-        : `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+        ? `${origin}/signup/payment-status?session_id={CHECKOUT_SESSION_ID}`
+        : `${origin}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: isSignup
-        ? `${process.env.NEXT_PUBLIC_APP_URL}/signup`
-        : `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?canceled=true`,
+        ? `${origin}/signup`
+        : `${origin}/app/settings?canceled=true`,
       metadata: {
         planId: planId,
         billingCycle: billingCycle,

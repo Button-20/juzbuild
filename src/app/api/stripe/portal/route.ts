@@ -9,6 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     // Verify authentication
     const userInfo = getUserFromRequest(request);
     if (!userInfo) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Create billing portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/app/settings`,
+      return_url: `${origin}/app/settings`,
     });
 
     return NextResponse.json({

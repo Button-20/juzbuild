@@ -8,12 +8,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("session_id");
 
     if (!sessionId) {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?error=missing_session`
+        `${origin}/app/settings?error=missing_session`
       );
     }
 
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     if (!session) {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?error=invalid_session`
+        `${origin}/app/settings?error=invalid_session`
       );
     }
 
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
         if (user && user.selectedPlan === planId) {
           // Successfully upgraded
           return NextResponse.redirect(
-            `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?success=upgrade&plan=${planId}`
+            `${origin}/app/settings?success=upgrade&plan=${planId}`
           );
         }
       }
@@ -47,12 +48,13 @@ export async function GET(request: NextRequest) {
 
     // Default redirect with processing status
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?status=processing`
+      `${origin}/app/settings?status=processing`
     );
   } catch (error) {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     console.error("Payment success handler error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/app/settings?error=processing_failed`
+      `${origin}/app/settings?error=processing_failed`
     );
   }
 }
