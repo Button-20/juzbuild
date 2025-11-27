@@ -80,6 +80,8 @@ export const websiteCreationTemplate = `
             font-weight: 600; 
             margin: 20px 10px 20px 0; 
             transition: transform 0.2s;
+            font-size: 16px;
+            font-weight: 600;
         }
         .cta-button:hover { 
             transform: translateY(-2px); 
@@ -214,7 +216,7 @@ export const websiteCreationTemplate = `
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-                <a href="{{websiteUrl}}" class="cta-button">🌐 View Your Website</a>
+                <a href="{{websiteUrl}}" class="cta-button" style="color: white !important;">🌐 View Your Website</a>
                 <a href="{{dashboardUrl}}" class="secondary-button">📊 Manage Website</a>
             </div>
 
