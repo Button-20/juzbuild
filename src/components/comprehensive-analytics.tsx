@@ -318,7 +318,7 @@ export function ComprehensiveAnalytics() {
       </div>
 
       {/* Dummy Data Notice Banner */}
-      {isDummyData && (
+      {!isDummyData && (
         <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
