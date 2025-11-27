@@ -1,7 +1,17 @@
 import { Metadata } from "next";
 
+/**
+ * Get the base URL from environment variable
+ * Uses environment variable as headers() is not reliable at build time
+ */
+function getBaseUrl(): string {
+  // For server-side metadata generation, use environment variable
+  // The environment should be configured for each deployment environment
+  return process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+}
+
 export const generateWaitlistMetadata = (): Metadata => {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+  const baseUrl = getBaseUrl();
 
   return {
     title:

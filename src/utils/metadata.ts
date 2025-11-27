@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { headers } from "next/headers";
 
 interface MetadataProps {
   title?: string;
@@ -13,6 +14,16 @@ interface MetadataProps {
   alternates?: Record<string, string>;
   publishedTime?: string;
   modifiedTime?: string;
+}
+
+/**
+ * Get the base URL from request headers or environment variable
+ * Uses environment variable as headers() is not reliable at build time
+ */
+function getBaseUrl(): string {
+  // For server-side metadata generation, use environment variable
+  // The environment should be configured for each deployment environment
+  return process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
 }
 
 export const generateMetadata = ({
@@ -48,9 +59,7 @@ export const generateMetadata = ({
   author = process.env.NEXT_PUBLIC_AUTHOR_NAME,
   type = "website",
 }: MetadataProps = {}): Metadata => {
-  const metadataBase = new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com"
-  );
+  const metadataBase = new URL(getBaseUrl());
 
   return {
     metadataBase,
