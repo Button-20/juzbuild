@@ -508,10 +508,10 @@ export function EngagementMetricsChart({ websiteId }: AnalyticsChartProps) {
  * Displays all 4 charts in a responsive grid layout
  * Fetches real data from Google Analytics via the charts API
  */
-export function AnalyticsCharts({ websiteId }: AnalyticsChartProps) {
+export function AnalyticsCharts({ websiteId, chartData }: AnalyticsChartProps) {
   return (
     <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-      <VisitorTrendsChart websiteId={websiteId} />
+      <VisitorTrendsChart websiteId={websiteId} chartData={chartData} />
       <TrafficSourcesChart websiteId={websiteId} />
       <ConversionPerformanceChart websiteId={websiteId} />
       <EngagementMetricsChart websiteId={websiteId} />
