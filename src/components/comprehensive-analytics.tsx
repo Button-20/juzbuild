@@ -91,6 +91,7 @@ export function ComprehensiveAnalytics() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDummyData, setIsDummyData] = useState(false);
 
   // Get user plan info
   const userPlan = getPlanById(user?.selectedPlan || "starter");
@@ -121,9 +122,89 @@ export function ComprehensiveAnalytics() {
         setAnalytics(data);
       } catch (err) {
         console.error("Analytics fetch error:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load analytics"
-        );
+        // Use dummy data for demo/screenshot purposes
+        const dummyData: AnalyticsData = {
+          website: {
+            id: currentWebsite._id,
+            name: currentWebsite.websiteName || "My Property Website",
+            company: currentWebsite.companyName || "My Company",
+            domain: currentWebsite.domainName || "example.com",
+            theme: currentWebsite.templateId || "homely",
+            status: "Active",
+            createdAt: new Date().toISOString(),
+          },
+          googleAnalytics: {
+            measurementId: "G-XXXXXXXXXX",
+            propertyId: "123456789",
+            metrics: {
+              users: 2847,
+              newUsers: 1256,
+              sessions: 4321,
+              bounceRate: "32.5%",
+              pageviews: 8956,
+              avgSessionDuration: "4m 23s",
+              conversions: 284,
+              conversionRate: 6.58,
+            },
+          },
+          content: {
+            pages: 12,
+            blogPosts: 8,
+            properties: 45,
+            testimonials: 18,
+          },
+          leads: {
+            total: 142,
+            propertiesWithInquiries: 31,
+            recentContacts: [
+              {
+                _id: "1",
+                name: "John Smith",
+                email: "john@example.com",
+                phone: "(555) 123-4567",
+                message: "Interested in the downtown condo",
+                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+              },
+              {
+                _id: "2",
+                name: "Sarah Johnson",
+                email: "sarah@example.com",
+                phone: "(555) 234-5678",
+                message: "Can I schedule a viewing?",
+                createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+              },
+              {
+                _id: "3",
+                name: "Michael Chen",
+                email: "michael@example.com",
+                phone: "(555) 345-6789",
+                message: "Tell me more about the beachfront property",
+                createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+              },
+            ],
+          },
+          performance: {
+            totalVisitors: 2847,
+            totalPageviews: 8956,
+            averageSessionDuration: "4m 23s",
+            bounceRate: "32.5%",
+            conversionRate: 6.58,
+          },
+          summary: {
+            lastUpdated: new Date().toISOString(),
+            healthScore: 87,
+          },
+        };
+        setAnalytics(dummyData);
+        setIsDummyData(true);
+        
+        // Auto-clear dummy data after 5 minutes
+        const timer = setTimeout(() => {
+          setAnalytics(null);
+          setIsDummyData(false);
+        }, 5 * 60 * 1000); // 5 minutes
+        
+        return () => clearTimeout(timer);
       } finally {
         setLoading(false);
       }
@@ -205,6 +286,38 @@ export function ComprehensiveAnalytics() {
           </p>
         </div>
       </div>
+
+      {/* Dummy Data Notice Banner */}
+      {isDummyData && (
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">
+                    📸 Preview Mode: Sample Data Displayed
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    This is demo data to showcase the dashboard. It will be cleared in 5 minutes or when you refresh the page.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setAnalytics(null);
+                  setIsDummyData(false);
+                }}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
+              >
+                Clear Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Upgrade Prompt for Starter Users */}
       {(isStarterPlan || isNearLimit) && (
