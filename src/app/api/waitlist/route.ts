@@ -12,6 +12,7 @@ const emailSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     const body = await request.json();
     const { email } = emailSchema.parse(body);
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Send emails - continue even if one fails
     try {
-      await sendWaitlistWelcomeEmail(email);
+      await sendWaitlistWelcomeEmail(email, origin);
     } catch (emailError) {
       console.error("Failed to send welcome email:", emailError);
       // Don't fail the request if welcome email fails

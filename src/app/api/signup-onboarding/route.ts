@@ -197,14 +197,17 @@ export async function POST(req: NextRequest) {
 
       // Send welcome email to the new user
       try {
-        await sendUserWelcomeEmail({
-          fullName: data.fullName,
-          email: data.email,
-          companyName: data.companyName,
-          domainName: data.domainName,
-          selectedPlan: data.selectedPlan,
-          selectedTheme: data.selectedTheme,
-        });
+        await sendUserWelcomeEmail(
+          {
+            fullName: data.fullName,
+            email: data.email,
+            companyName: data.companyName,
+            domainName: data.domainName,
+            selectedPlan: data.selectedPlan,
+            selectedTheme: data.selectedTheme,
+          },
+          origin
+        );
         console.log(`Welcome email sent successfully to ${data.email}`);
       } catch (emailError) {
         console.error("Failed to send welcome email:", emailError);

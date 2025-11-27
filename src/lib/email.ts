@@ -1,7 +1,7 @@
 // Client-safe email utilities for Next.js
 // Prevents email services from being bundled in client-side code
 
-let sendWaitlistWelcomeEmail: (email: string) => Promise<void>;
+let sendWaitlistWelcomeEmail: (email: string, baseUrl?: string) => Promise<void>;
 let sendWaitlistNotificationEmail: (email: string) => Promise<void>;
 let sendWebsiteCreationEmail: (websiteData: {
   userEmail: string;
@@ -12,7 +12,7 @@ let sendWebsiteCreationEmail: (websiteData: {
   layoutStyle: string;
   websiteUrl: string;
   createdAt: string;
-}) => Promise<void>;
+}, baseUrl?: string) => Promise<void>;
 let sendContactEmail: ({
   name,
   email,
@@ -27,7 +27,7 @@ let sendContactEmail: ({
   company?: string;
   subject: string;
   message: string;
-}) => Promise<void>;
+}, baseUrl?: string) => Promise<void>;
 let sendUserWelcomeEmail: (userData: {
   fullName: string;
   email: string;
@@ -35,11 +35,11 @@ let sendUserWelcomeEmail: (userData: {
   domainName: string;
   selectedPlan: string;
   selectedTheme: string;
-}) => Promise<void>;
+}, baseUrl?: string) => Promise<void>;
 let sendPasswordResetEmail: (resetData: {
   email: string;
   resetUrl: string;
-}) => Promise<void>;
+}, baseUrl?: string) => Promise<void>;
 
 if (typeof window === "undefined") {
   // Server-side: initialize email service
@@ -144,22 +144,25 @@ if (typeof window === "undefined") {
       }
     }
 
-    async function sendContactEmailsInternal({
-      name,
-      email,
-      phone,
-      company,
-      subject,
-      message,
-    }: {
-      name: string;
-      email: string;
-      phone?: string;
-      company?: string;
-      subject: string;
-      message: string;
-    }) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+    async function sendContactEmailsInternal(
+      {
+        name,
+        email,
+        phone,
+        company,
+        subject,
+        message,
+      }: {
+        name: string;
+        email: string;
+        phone?: string;
+        company?: string;
+        subject: string;
+        message: string;
+      },
+      baseUrl?: string
+    ) {
+      const finalBaseUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
       const currentYear = new Date().getFullYear();
       const submittedAt = new Date().toLocaleString();
 
@@ -189,7 +192,7 @@ if (typeof window === "undefined") {
           company: company || "",
           subject,
           message,
-          baseUrl,
+          baseUrl: finalBaseUrl,
           currentYear: currentYear.toString(),
         },
         {
@@ -224,9 +227,9 @@ if (typeof window === "undefined") {
     }
 
     return {
-      sendWaitlistEmail: async (email: string): Promise<void> => {
+      sendWaitlistEmail: async (email: string, baseUrl?: string): Promise<void> => {
         const appUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+          baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(
           email
         )}`;
@@ -273,10 +276,10 @@ if (typeof window === "undefined") {
         layoutStyle: string;
         websiteUrl: string;
         createdAt: string;
-      }): Promise<void> => {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
-        const dashboardUrl = `${baseUrl}/dashboard`;
+      }, baseUrl?: string): Promise<void> => {
+        const finalBaseUrl =
+          baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const dashboardUrl = `${finalBaseUrl}/dashboard`;
         const currentYear = new Date().getFullYear();
 
         await sendTemplateEmail(
@@ -284,7 +287,7 @@ if (typeof window === "undefined") {
           "website-creation",
           {
             ...websiteData,
-            baseUrl,
+            baseUrl: finalBaseUrl,
             dashboardUrl,
             currentYear: currentYear.toString(),
           },
@@ -301,12 +304,12 @@ if (typeof window === "undefined") {
         domainName: string;
         selectedPlan: string;
         selectedTheme: string;
-      }): Promise<void> => {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
-        const dashboardUrl = `${baseUrl}/app/dashboard`;
-        const settingsUrl = `${baseUrl}/app/settings`;
-        const helpUrl = `${baseUrl}/app/help`;
+      }, baseUrl?: string): Promise<void> => {
+        const finalBaseUrl =
+          baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+        const dashboardUrl = `${finalBaseUrl}/app/dashboard`;
+        const settingsUrl = `${finalBaseUrl}/app/settings`;
+        const helpUrl = `${finalBaseUrl}/app/help`;
         const currentYear = new Date().getFullYear();
 
         await sendTemplateEmail(
@@ -314,7 +317,7 @@ if (typeof window === "undefined") {
           "user-welcome",
           {
             ...userData,
-            baseUrl,
+            baseUrl: finalBaseUrl,
             dashboardUrl,
             settingsUrl,
             helpUrl,
@@ -328,9 +331,9 @@ if (typeof window === "undefined") {
       sendPasswordResetEmail: async (resetData: {
         email: string;
         resetUrl: string;
-      }): Promise<void> => {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
+      }, baseUrl?: string): Promise<void> => {
+        const finalBaseUrl =
+          baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
         const currentYear = new Date().getFullYear();
 
         await sendTemplateEmail(
@@ -338,7 +341,7 @@ if (typeof window === "undefined") {
           "password-reset",
           {
             ...resetData,
-            baseUrl,
+            baseUrl: finalBaseUrl,
             currentYear: currentYear.toString(),
           },
           {
@@ -349,9 +352,9 @@ if (typeof window === "undefined") {
     };
   });
 
-  sendWaitlistWelcomeEmail = async (email: string): Promise<void> => {
+  sendWaitlistWelcomeEmail = async (email: string, baseUrl?: string): Promise<void> => {
     const emailService = await emailServicePromise;
-    return emailService.sendWaitlistEmail(email);
+    return emailService.sendWaitlistEmail(email, baseUrl);
   };
 
   sendWaitlistNotificationEmail = async (email: string): Promise<void> => {
@@ -368,9 +371,9 @@ if (typeof window === "undefined") {
     layoutStyle: string;
     websiteUrl: string;
     createdAt: string;
-  }): Promise<void> => {
+  }, baseUrl?: string): Promise<void> => {
     const emailService = await emailServicePromise;
-    return emailService.sendWebsiteCreationEmail(websiteData);
+    return emailService.sendWebsiteCreationEmail(websiteData, baseUrl);
   };
 
   sendContactEmail = async (contactData: {
@@ -380,9 +383,9 @@ if (typeof window === "undefined") {
     company?: string;
     subject: string;
     message: string;
-  }): Promise<void> => {
+  }, baseUrl?: string): Promise<void> => {
     const emailService = await emailServicePromise;
-    return emailService.sendContactEmails(contactData);
+    return emailService.sendContactEmails(contactData, baseUrl);
   };
 
   sendUserWelcomeEmail = async (userData: {
@@ -392,17 +395,17 @@ if (typeof window === "undefined") {
     domainName: string;
     selectedPlan: string;
     selectedTheme: string;
-  }): Promise<void> => {
+  }, baseUrl?: string): Promise<void> => {
     const emailService = await emailServicePromise;
-    return emailService.sendUserWelcomeEmail(userData);
+    return emailService.sendUserWelcomeEmail(userData, baseUrl);
   };
 
   sendPasswordResetEmail = async (resetData: {
     email: string;
     resetUrl: string;
-  }): Promise<void> => {
+  }, baseUrl?: string): Promise<void> => {
     const emailService = await emailServicePromise;
-    return emailService.sendPasswordResetEmail(resetData);
+    return emailService.sendPasswordResetEmail(resetData, baseUrl);
   };
 } else {
   // Client-side: provide error stub

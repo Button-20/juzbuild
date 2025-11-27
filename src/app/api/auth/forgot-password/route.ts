@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     const { email } = await request.json();
 
     if (!email) {
@@ -43,8 +44,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Create reset URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://juzbuild.com";
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+    const resetUrl = `${origin}/reset-password?token=${resetToken}`;
 
     // Send password reset email
     try {
@@ -55,10 +55,13 @@ export async function POST(request: NextRequest) {
         );
         // Still return success for security, but log the error
       } else {
-        await sendPasswordResetEmail({
-          email: user.email,
-          resetUrl,
-        });
+        await sendPasswordResetEmail(
+          {
+            email: user.email,
+            resetUrl,
+          },
+          origin
+        );
       }
     } catch (emailError) {
       console.error("Email sending failed:", emailError);

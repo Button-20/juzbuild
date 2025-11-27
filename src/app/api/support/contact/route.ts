@@ -4,6 +4,7 @@ import { sendContactEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get("origin") || "https://juzbuild.com";
     const token = request.cookies.get("auth-token")?.value;
 
     if (!token) {
@@ -40,12 +41,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Send support email using existing email service
-    await sendContactEmail({
-      name,
-      email,
-      subject: `[Support] ${subject} (User ID: ${decoded.userId})`,
-      message: `Support request from ${name} (${email})\n\nUser ID: ${decoded.userId}\n\nMessage:\n${message}`,
-    });
+    await sendContactEmail(
+      {
+        name,
+        email,
+        subject: `[Support] ${subject} (User ID: ${decoded.userId})`,
+        message: `Support request from ${name} (${email})\n\nUser ID: ${decoded.userId}\n\nMessage:\n${message}`,
+      },
+      origin
+    );
 
     return NextResponse.json({
       success: true,
