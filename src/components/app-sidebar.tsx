@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { NavBlog } from "@/components/nav-documents";
 import { NavAds } from "@/components/nav-ads";
@@ -135,6 +136,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
   const [adsItems, setAdsItems] = useState<
     Array<{ name: string; url: string; icon: any }>
   >([]);
@@ -143,45 +145,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   useEffect(() => {
     const fetchSelectedAds = async () => {
       try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const { user } = await response.json();
-          console.log("User from /api/auth/me:", user);
-          console.log("adsConnections:", user?.adsConnections);
+        // Get adsConnections from user context
+        const selectedAds = user?.adsConnections || [];
+        console.log("Selected ads:", selectedAds);
 
-          // Get adsConnections from user profile
-          const selectedAds = user?.adsConnections || [];
-          console.log("Selected ads:", selectedAds);
+        // Map selected ads to sidebar items with icons
+        const items = selectedAds.map((platformId: string) => {
+          let platformName = "";
+          let icon: any = null;
 
-          // Map selected ads to sidebar items with icons
-          const items = selectedAds.map((platformId: string) => {
-            let platformName = "";
-            let icon: any = null;
+          if (platformId === "facebook") {
+            platformName = "Facebook Ads";
+            const { Facebook } = require("lucide-react");
+            icon = Facebook;
+          } else if (platformId === "google") {
+            platformName = "Google Ads";
+            const { Search } = require("lucide-react");
+            icon = Search;
+          } else if (platformId === "instagram") {
+            platformName = "Instagram Ads";
+            const { Camera } = require("lucide-react");
+            icon = Camera;
+          }
 
-            if (platformId === "facebook") {
-              platformName = "Facebook Ads";
-              const { Facebook } = require("lucide-react");
-              icon = Facebook;
-            } else if (platformId === "google") {
-              platformName = "Google Ads";
-              const { Search } = require("lucide-react");
-              icon = Search;
-            } else if (platformId === "instagram") {
-              platformName = "Instagram Ads";
-              const { Camera } = require("lucide-react");
-              icon = Camera;
-            }
+          return {
+            name: platformName,
+            url: `/app/ads/${platformId}`,
+            icon,
+          };
+        });
 
-            return {
-              name: platformName,
-              url: `/app/ads/${platformId}`,
-              icon,
-            };
-          });
-
-          console.log("Mapped ads items:", items);
-          setAdsItems(items);
-        }
+        console.log("Mapped ads items:", items);
+        setAdsItems(items);
       } catch (error) {
         console.error("Failed to fetch selected ads:", error);
       } finally {
@@ -190,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     };
 
     fetchSelectedAds();
-  }, []);
+  }, [user?.adsConnections]);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
