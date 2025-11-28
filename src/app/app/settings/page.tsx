@@ -2,6 +2,7 @@
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { AccountUpgrade } from "@/components/account-upgrade";
+import { MarketingSetupModal } from "@/components/marketing-setup-modal";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset } from "@/components/ui/sidebar";
 import {
@@ -166,6 +167,28 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <NotificationSettings />
+                </CardContent>
+              </Card>
+
+              {/* Marketing Setup */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    🎯 Marketing Automation Tools
+                  </CardTitle>
+                  <CardDescription>
+                    Connect advertising platforms to automate your marketing
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Connect Google Ads, Facebook, and Instagram to your
+                      account for seamless marketing automation. Available on
+                      Pro and Agency plans.
+                    </p>
+                    <MarketingSetupModal />
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -166,14 +166,14 @@ export default function MarketingSetupStep({
                   {/* Premium badge for unavailable features */}
                   {!isAvailable && (
                     <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                      Agency
+                      Pro+
                     </div>
                   )}
 
                   {/* Tooltip on hover for unavailable features */}
                   {!isAvailable && (
                     <div className="absolute bottom-full right-0 transform mb-2 hidden group-hover:block z-10 bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap">
-                      Available on Agency plan only
+                      Available on Pro and Agency plans
                       <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-900"></div>
                     </div>
                   )}

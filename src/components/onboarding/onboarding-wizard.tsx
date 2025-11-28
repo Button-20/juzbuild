@@ -32,9 +32,9 @@ const isFeatureAvailable = (feature: string, selectedPlan: string): boolean => {
     return currentPlanIndex >= 1; // Pro (index 1) and above
   }
 
-  // Advanced marketing features for Agency plans
+  // Marketing automation tools (Google, Instagram, Facebook) for Pro and Agency plans
   if (feature === "Advanced Marketing") {
-    return currentPlanIndex >= 2; // Agency (index 2) only
+    return currentPlanIndex >= 1; // Pro (index 1) and above
   }
 
   // Default: feature is available for all plans
