@@ -1,10 +1,10 @@
 "use client";
 
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { AccountUpgrade } from "@/components/account-upgrade";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { MarketingSetupModal } from "@/components/marketing-setup-modal";
+import { NotificationSettings } from "@/components/notification-settings";
 import { SiteHeader } from "@/components/site-header";
-import { SidebarInset } from "@/components/ui/sidebar";
 import {
   Card,
   CardContent,
@@ -13,12 +13,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Settings, CreditCard, Bell } from "lucide-react";
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { getPlanById } from "@/constants/pricing";
-import { NotificationSettings } from "@/components/notification-settings";
+import { Bell, CreditCard, Settings } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
@@ -154,24 +154,8 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              {/* Notifications */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5" />
-                    Notification Preferences
-                  </CardTitle>
-                  <CardDescription>
-                    Choose what notifications you want to receive and how
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <NotificationSettings />
-                </CardContent>
-              </Card>
-
               {/* Marketing Setup */}
-              <Card className="lg:col-span-2">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     🎯 Marketing Automation Tools
@@ -189,6 +173,22 @@ export default function SettingsPage() {
                     </p>
                     <MarketingSetupModal />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Notifications */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription>
+                    Choose what notifications you want to receive and how
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <NotificationSettings />
                 </CardContent>
               </Card>
             </div>

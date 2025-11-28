@@ -1,12 +1,12 @@
+import { getUserFromRequest } from "@/lib/auth";
+import { MongoClient, ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
-import { MongoClient } from "mongodb";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = getAuth(req);
+    const user = getUserFromRequest(req);
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,9 +30,15 @@ export async function POST(req: NextRequest) {
       const db = client.db("Juzbuild");
       const usersCollection = db.collection("users");
 
+      // Convert userId to ObjectId
+      let userId: ObjectId | string = user.userId;
+      if (ObjectId.isValid(user.userId)) {
+        userId = new ObjectId(user.userId);
+      }
+
       // Update user's marketing platforms
       const result = await usersCollection.updateOne(
-        { clerkId: userId },
+        { _id: userId as any },
         {
           $set: {
             marketingPlatforms: platforms,
@@ -42,10 +48,7 @@ export async function POST(req: NextRequest) {
       );
 
       if (result.matchedCount === 0) {
-        return NextResponse.json(
-          { error: "User not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
       return NextResponse.json({
@@ -70,9 +73,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = getAuth(req);
+    const user = getUserFromRequest(req);
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -86,18 +89,23 @@ export async function GET(req: NextRequest) {
       const db = client.db("Juzbuild");
       const usersCollection = db.collection("users");
 
-      // Get user's marketing platforms
-      const user = await usersCollection.findOne({ clerkId: userId });
+      // Convert userId to ObjectId
+      let userId: ObjectId | string = user.userId;
+      if (ObjectId.isValid(user.userId)) {
+        userId = new ObjectId(user.userId);
+      }
 
-      if (!user) {
-        return NextResponse.json(
-          { error: "User not found" },
-          { status: 404 }
-        );
+      // Get user's marketing platforms
+      const userData = await usersCollection.findOne({
+        _id: userId as any,
+      });
+
+      if (!userData) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
       return NextResponse.json({
-        platforms: user.marketingPlatforms || [],
+        platforms: userData.marketingPlatforms || [],
       });
     } finally {
       await client.close();
@@ -107,9 +115,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch platforms",
+          error instanceof Error ? error.message : "Failed to fetch platforms",
       },
       { status: 500 }
     );

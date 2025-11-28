@@ -3,7 +3,6 @@
 import Icons from "@/components/global/icons";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -54,7 +54,9 @@ export function MarketingSetupModal({
 
   // Check if user has access to marketing tools
   const planHierarchy = ["starter", "pro", "agency"];
-  const currentPlanIndex = planHierarchy.indexOf(user?.selectedPlan || "starter");
+  const currentPlanIndex = planHierarchy.indexOf(
+    user?.selectedPlan || "starter"
+  );
   const hasMarketingAccess = currentPlanIndex >= 1; // Pro and above
 
   const handlePlatformToggle = useCallback((platformId: string) => {
