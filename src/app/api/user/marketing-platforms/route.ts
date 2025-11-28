@@ -36,12 +36,12 @@ export async function POST(req: NextRequest) {
         userId = new ObjectId(user.userId);
       }
 
-      // Update user's marketing platforms
+      // Update user's advertising connections
       const result = await usersCollection.updateOne(
         { _id: userId as any },
         {
           $set: {
-            marketingPlatforms: platforms,
+            adsConnections: platforms,
             updatedAt: new Date(),
           },
         }
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         platforms,
-        message: "Marketing platforms updated successfully",
+        message: "Advertising platforms updated successfully",
       });
     } finally {
       await client.close();
