@@ -47,7 +47,7 @@ export function MarketingSetupModal({
   trigger,
   onComplete,
 }: MarketingSetupModalProps) {
-  const { user } = useAuth();
+  const { user, refreshAuth } = useAuth();
   const [open, setOpen] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +58,16 @@ export function MarketingSetupModal({
     user?.selectedPlan || "starter"
   );
   const hasMarketingAccess = currentPlanIndex >= 1; // Pro and above
+
+  // Initialize selected platforms from user's current connections when modal opens
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && user?.adsConnections) {
+      setSelectedPlatforms(user.adsConnections);
+    } else if (!newOpen) {
+      setSelectedPlatforms([]);
+    }
+    setOpen(newOpen);
+  };
 
   const handlePlatformToggle = useCallback((platformId: string) => {
     setSelectedPlatforms((prev) =>
@@ -93,6 +103,10 @@ export function MarketingSetupModal({
       }
 
       toast.success("Marketing platforms saved successfully!");
+      
+      // Refresh auth to update user context and trigger sidebar refresh
+      await refreshAuth();
+      
       setOpen(false);
       setSelectedPlatforms([]);
 
@@ -116,7 +130,7 @@ export function MarketingSetupModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" className="w-full sm:w-auto">
