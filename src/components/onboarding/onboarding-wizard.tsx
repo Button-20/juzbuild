@@ -16,6 +16,7 @@ import React, { useCallback, useState } from "react";
 
 // Import step components
 import BusinessInfoStep from "./steps/business-info-step";
+import FaviconSetupStep from "./steps/favicon-setup-step";
 import MarketingSetupStep from "./steps/marketing-setup-step";
 import PaymentStep from "./steps/payment-step";
 import ReviewStep from "./steps/review-step";
@@ -62,18 +63,24 @@ const WIZARD_STEPS: WizardStep[] = [
   },
   {
     id: 4,
+    title: "Brand Assets",
+    description: "Upload logo and favicon for your website",
+    component: FaviconSetupStep,
+  },
+  {
+    id: 5,
     title: "Website Setup",
     description: "Configure your website layout and features",
     component: WebsiteSetupStep,
   },
   {
-    id: 5,
+    id: 6,
     title: "Marketing Setup",
     description: "Set up your marketing preferences",
     component: MarketingSetupStep,
   },
   {
-    id: 6,
+    id: 7,
     title: "Review Details",
     description: "Review your information and proceed to payment",
     component: ReviewStep,
@@ -91,7 +98,7 @@ export default function OnboardingWizard({
 }: OnboardingWizardProps) {
   // Filter steps based on user type - skip signup step for existing users
   const activeSteps = isExistingUser
-    ? WIZARD_STEPS.filter((step) => step.id !== 2) // Remove signup step (now id 2)
+    ? WIZARD_STEPS.filter((step) => step.id !== 2) // Remove signup step (id 2)
     : WIZARD_STEPS;
 
   // If existing user, start at first step (Business Profile, formerly step 2)

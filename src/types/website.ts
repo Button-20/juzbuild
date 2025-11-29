@@ -40,6 +40,7 @@ export interface Website {
   // Branding
   brandColors?: string[];
   logoUrl?: string;
+  faviconUrl?: string;
 
   // Analytics and SEO
   analytics: {
@@ -95,6 +96,7 @@ export interface CreateWebsiteParams {
   preferredContactMethod?: string[];
   // New fields from onboarding
   logoUrl?: string;
+  faviconUrl?: string;
   brandColors?: string[];
   leadCaptureMethods?: ("AI Chatbot" | "Contact Form" | "Inquiry Form")[];
   geminiApiKey?: string;
