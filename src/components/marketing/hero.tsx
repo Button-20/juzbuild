@@ -12,7 +12,7 @@ const Hero = () => {
       <div className="absolute flex lg:hidden size-40 rounded-full bg-blue-500 blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
 
       <div className="flex flex-col items-center justify-center gap-y-8 relative">
-        <Container className="hidden lg:flex absolute inset-0 top-0 mb-auto flex-col items-center justify-center w-full min-h-screen -z-10">
+        <Container className="flex absolute inset-0 top-0 mb-auto flex-col items-center justify-center w-full min-h-screen -z-10">
           <OrbitingCircles speed={0.5} radius={300}>
             <Icons.circle1 className="size-4 text-foreground/70" />
             <Icons.circle2 className="size-1 text-foreground/80" />
