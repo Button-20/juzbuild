@@ -103,10 +103,10 @@ export function MarketingSetupModal({
       }
 
       toast.success("Marketing platforms saved successfully!");
-      
+
       // Refresh auth to update user context and trigger sidebar refresh
       await refreshAuth();
-      
+
       setOpen(false);
       setSelectedPlatforms([]);
 

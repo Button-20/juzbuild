@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowUpCircleIcon,
   Bell,
@@ -18,14 +19,13 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 
-import { NavBlog } from "@/components/nav-documents";
+import NotificationBell from "@/components/dashboard/notification-bell";
 import { NavAds } from "@/components/nav-ads";
+import { NavBlog } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
-import NotificationBell from "@/components/dashboard/notification-bell";
 import {
   Sidebar,
   SidebarContent,
