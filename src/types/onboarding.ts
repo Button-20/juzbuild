@@ -44,6 +44,7 @@ export interface UserProfileData {
 export interface OnboardingSpecificData {
   // Business branding (used for website creation)
   logoUrl?: string; // Cloudinary URL for uploaded logo
+  faviconUrl?: string; // Browser tab icon
   brandColors: string[]; // Array of 4 colors from selected palette [primary, skyblue, lightskyblue, dark]
 
   // Website setup preferences (used for website generation)

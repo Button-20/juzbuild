@@ -26,8 +26,11 @@ export default function BusinessInfoStep({
   isStepValid,
 }: WizardStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isFaviconUploading, setIsFaviconUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [faviconUploadError, setFaviconUploadError] = useState<string | null>(null);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,6 +62,36 @@ export default function BusinessInfoStep({
       setUploadError("Upload failed: " + error.message);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsFaviconUploading(true);
+    setFaviconUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("favicon", file);
+
+      const response = await fetch("/api/upload/favicon", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        updateData({ faviconUrl: result.faviconUrl });
+      } else {
+        setFaviconUploadError(result.error || "Upload failed");
+      }
+    } catch (error: any) {
+      setFaviconUploadError("Upload failed: " + error.message);
+    } finally {
+      setIsFaviconUploading(false);
     }
   };
 
@@ -103,64 +136,135 @@ export default function BusinessInfoStep({
         <div className="border-l-4 border-primary pl-4">
           <h3 className="text-lg font-semibold mb-1">Brand Assets</h3>
           <p className="text-sm text-muted-foreground">
-            Upload your logo and choose brand colors
+            Upload your logo and favicon
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            Logo Upload (Optional)
-          </Label>
-          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-            {data.logoUrl ? (
-              <div className="space-y-2">
-                <div className="w-16 h-16 mx-auto bg-muted rounded-lg overflow-hidden">
-                  <img
-                    src={data.logoUrl}
-                    alt="Brand Logo"
-                    className="w-full h-full object-contain"
-                  />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Logo Upload */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Logo (Optional)
+            </Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+              {data.logoUrl ? (
+                <div className="space-y-2">
+                  <div className="w-16 h-16 mx-auto bg-muted rounded-lg overflow-hidden">
+                    <img
+                      src={data.logoUrl}
+                      alt="Brand Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <p className="text-sm font-medium">Logo uploaded</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? "Uploading..." : "Change"}
+                  </Button>
                 </div>
-                <p className="text-sm font-medium">Logo uploaded</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? "Uploading..." : "Change Logo"}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="w-16 h-16 mx-auto bg-muted rounded-lg flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-muted-foreground" />
+              ) : (
+                <div className="space-y-2">
+                  <div className="w-16 h-16 mx-auto bg-muted rounded-lg flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload your logo
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? "Uploading..." : "Choose File"}
+                  </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Click to upload your logo
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  {isUploading ? "Uploading..." : "Choose File"}
-                </Button>
-              </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+            </div>
+            {uploadError && (
+              <p className="text-sm text-red-600 mt-2">{uploadError}</p>
             )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleLogoUpload}
-              className="hidden"
-            />
           </div>
-          {uploadError && (
-            <p className="text-sm text-red-600 mt-2">{uploadError}</p>
-          )}
+
+          {/* Favicon Upload */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Favicon (Optional)
+            </Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+              {data.faviconUrl ? (
+                <div className="space-y-2">
+                  <div
+                    className="w-12 h-12 mx-auto bg-white rounded border border-border overflow-hidden flex items-center justify-center"
+                    style={{
+                      backgroundImage: `url('${data.faviconUrl}')`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
+                  >
+                    <img
+                      src={data.faviconUrl}
+                      alt="Favicon"
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <p className="text-sm font-medium">Favicon uploaded</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => faviconInputRef.current?.click()}
+                    disabled={isFaviconUploading}
+                  >
+                    {isFaviconUploading ? "Uploading..." : "Change"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="w-12 h-12 mx-auto bg-muted rounded flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Browser tab icon
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => faviconInputRef.current?.click()}
+                    disabled={isFaviconUploading}
+                  >
+                    {isFaviconUploading ? "Uploading..." : "Choose File"}
+                  </Button>
+                </div>
+              )}
+              <input
+                ref={faviconInputRef}
+                type="file"
+                accept="image/*,.ico"
+                onChange={handleFaviconUpload}
+                className="hidden"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Appears in browser tab (192x192px or 256x256px recommended)
+            </p>
+            {faviconUploadError && (
+              <p className="text-sm text-red-600 mt-2">{faviconUploadError}</p>
+            )}
+          </div>
         </div>
 
         {/* Brand Colors - Color Palette Selection */}
