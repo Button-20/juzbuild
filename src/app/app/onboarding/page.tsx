@@ -441,6 +441,8 @@ export default function OnboardingPage() {
       !formData.selectedTheme ||
       !formData.brandColors ||
       formData.brandColors.length !== 4 ||
+      !formData.logoUrl ||
+      !formData.faviconUrl ||
       !formData.propertyTypes ||
       formData.propertyTypes.length === 0 ||
       !formData.leadCaptureMethods ||
@@ -730,7 +732,7 @@ export default function OnboardingPage() {
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <Upload className="w-4 h-4" />
-                            Logo Upload (Optional)
+                            Logo Upload *
                           </Label>
                           <div
                             className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
@@ -789,7 +791,7 @@ export default function OnboardingPage() {
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <Upload className="w-4 h-4" />
-                            Website Favicon (Optional)
+                            Website Favicon *
                           </Label>
                           <p className="text-xs text-muted-foreground">
                             A small icon that appears in browser tabs and bookmarks

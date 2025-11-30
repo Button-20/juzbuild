@@ -74,7 +74,8 @@ const userProfileSchema = z.object({
 // Onboarding-specific schema - fields that get stored in onboarding collection
 const onboardingSpecificSchema = z.object({
   // Step 2 - Business Profile
-  logoUrl: z.string().optional(), // Cloudinary URL for uploaded logo
+  logoUrl: z.string().min(1, "Logo is required"), // Cloudinary URL for uploaded logo
+  faviconUrl: z.string().min(1, "Favicon is required"), // Browser tab icon
   brandColors: z
     .array(z.string())
     .length(4, "Color palette must contain exactly 4 colors"),

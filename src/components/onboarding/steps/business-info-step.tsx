@@ -145,7 +145,7 @@ export default function BusinessInfoStep({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Logo (Optional)
+              Logo *
             </Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               {data.logoUrl ? (
@@ -196,13 +196,16 @@ export default function BusinessInfoStep({
             {uploadError && (
               <p className="text-sm text-red-600 mt-2">{uploadError}</p>
             )}
+            {errors.logoUrl && (
+              <p className="text-sm text-red-600 mt-2">{errors.logoUrl}</p>
+            )}
           </div>
 
           {/* Favicon Upload */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
-              Favicon (Optional)
+              Favicon *
             </Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               {data.faviconUrl ? (
@@ -263,6 +266,9 @@ export default function BusinessInfoStep({
             </p>
             {faviconUploadError && (
               <p className="text-sm text-red-600 mt-2">{faviconUploadError}</p>
+            )}
+            {errors.faviconUrl && (
+              <p className="text-sm text-red-600 mt-2">{errors.faviconUrl}</p>
             )}
           </div>
         </div>

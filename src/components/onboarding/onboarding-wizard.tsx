@@ -378,6 +378,13 @@ export default function OnboardingWizard({
           newErrors.aboutSection =
             "About section must be at least 10 characters";
 
+        // Logo and Favicon are required
+        if (!formData.logoUrl?.trim())
+          newErrors.logoUrl = "Logo is required";
+
+        if (!formData.faviconUrl?.trim())
+          newErrors.faviconUrl = "Favicon is required";
+
         // Optional field validation - only validate if provided
         if (
           formData.supportEmail?.trim() &&
