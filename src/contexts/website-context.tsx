@@ -77,6 +77,13 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
 
   const createWebsite = async (params: any): Promise<Website | null> => {
     try {
+      console.log("📤 Creating website with params:", {
+        companyName: params.companyName,
+        faviconUrl: params.faviconUrl || "MISSING",
+        logoUrl: params.logoUrl || "MISSING",
+      });
+      console.log("📋 Full params object:", JSON.stringify(params, null, 2).substring(0, 800));
+      
       const response = await fetch("/api/websites", {
         method: "POST",
         headers: {

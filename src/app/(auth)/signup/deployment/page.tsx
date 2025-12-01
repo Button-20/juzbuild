@@ -212,8 +212,9 @@ export default function DeploymentPage() {
         leadCaptureMethods: signupData.leadCaptureMethods || [],
         preferredContactMethod: signupData.preferredContactMethod || [],
         geminiApiKey: signupData.geminiApiKey,
-        // Logo
+        // Logo and Favicon
         logoUrl: signupData.logoUrl || "",
+        faviconUrl: signupData.faviconUrl || "",
         // Contact Information
         phoneNumber: signupData.phoneNumber || "",
         whatsappNumber: signupData.whatsappNumber || "",

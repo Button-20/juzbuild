@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
       preferredContactMethod,
       brandColors,
       logoUrl,
+      faviconUrl,
       phoneNumber,
       supportEmail,
       whatsappNumber,
@@ -263,6 +264,8 @@ export async function POST(request: NextRequest) {
                 propertyTypes: propertyTypes || ["house"],
                 includedPages: includedPages || ["home", "about", "contact"],
                 preferredContactMethod: preferredContactMethod || ["email"],
+                logoUrl: logoUrl || existingUserWebsite.logoUrl || "",
+                faviconUrl: faviconUrl || existingUserWebsite.faviconUrl || "",
                 phoneNumber: phoneNumber || "",
                 supportEmail: supportEmail || decoded.email,
                 whatsappNumber: whatsappNumber || "",
@@ -430,6 +433,7 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date(),
       isActive: true,
       logoUrl: logoUrl || "",
+      faviconUrl: faviconUrl || "",
       analytics: {
         googleAnalytics: {
           measurementId: null,
@@ -493,6 +497,7 @@ export async function POST(request: NextRequest) {
         includedPages: includedPages || ["home", "about", "contact"],
         preferredContactMethod: preferredContactMethod || ["email"],
         logoUrl: logoUrl || "",
+        faviconUrl: faviconUrl || "",
         phoneNumber: phoneNumber || "",
         supportEmail: supportEmail || decoded.email,
         whatsappNumber: whatsappNumber || "",

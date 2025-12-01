@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
           userId: finalUserId.toString(),
           // Only onboarding-specific fields (not plan data which is in user record)
           logoUrl: signupData.logoUrl,
+          faviconUrl: signupData.faviconUrl,
           brandColors: signupData.brandColors || [],
           propertyTypes: signupData.propertyTypes || [],
           includedPages: signupData.includedPages || [],

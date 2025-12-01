@@ -119,6 +119,7 @@ export default function OnboardingWizard({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidatingEmail, setIsValidatingEmail] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [isStepValid, setIsStepValid] = useState(false);
 
   const updateData = useCallback((newData: Partial<OnboardingData>) => {
@@ -379,8 +380,7 @@ export default function OnboardingWizard({
             "About section must be at least 10 characters";
 
         // Logo and Favicon are required
-        if (!formData.logoUrl?.trim())
-          newErrors.logoUrl = "Logo is required";
+        if (!formData.logoUrl?.trim()) newErrors.logoUrl = "Logo is required";
 
         if (!formData.faviconUrl?.trim())
           newErrors.faviconUrl = "Favicon is required";
@@ -482,6 +482,7 @@ export default function OnboardingWizard({
   // Email validation function
   const validateEmailAsync = useCallback(async (email: string) => {
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      setEmailAvailable(null);
       return;
     }
 
@@ -500,11 +501,13 @@ export default function OnboardingWizard({
       const data = await response.json();
 
       if (data.exists) {
+        setEmailAvailable(false);
         setErrors((prev) => ({
           ...prev,
           email: "An account with this email already exists",
         }));
       } else {
+        setEmailAvailable(true);
         setErrors((prev) => {
           const newErrors = { ...prev };
           if (newErrors.email === "An account with this email already exists") {
@@ -515,6 +518,7 @@ export default function OnboardingWizard({
       }
     } catch (error) {
       console.error("Error validating email:", error);
+      setEmailAvailable(null);
     } finally {
       setIsValidatingEmail(false);
     }
@@ -523,7 +527,7 @@ export default function OnboardingWizard({
   // Debounced email validation
   const debouncedValidateEmail = useCallback(
     debounce((email: string) => {
-      if (currentStep === 0 && email) {
+      if (currentStep === 1 && email) {
         validateEmailAsync(email);
       }
     }, 500),
@@ -778,6 +782,7 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
+                        emailAvailable={emailAvailable}
                         isFeatureAvailable={(feature: string) =>
                           isFeatureAvailable(
                             feature,
@@ -909,6 +914,7 @@ export default function OnboardingWizard({
                         isSubmitting={isSubmitting}
                         isStepValid={isStepValid}
                         isValidatingEmail={isValidatingEmail}
+                        emailAvailable={emailAvailable}
                         isFeatureAvailable={(feature: string) =>
                           isFeatureAvailable(
                             feature,

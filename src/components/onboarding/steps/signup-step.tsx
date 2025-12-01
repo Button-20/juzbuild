@@ -60,6 +60,7 @@ export default function SignupStep({
   isFirst,
   isStepValid,
   isValidatingEmail,
+  emailAvailable,
 }: WizardStepProps) {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isValidatingDomain, setIsValidatingDomain] = React.useState(false);
@@ -176,7 +177,8 @@ export default function SignupStep({
             {data.email &&
               /\S+@\S+\.\S+/.test(data.email) &&
               !errors.email &&
-              !isValidatingEmail && (
+              !isValidatingEmail &&
+              emailAvailable === true && (
                 <p className="text-green-600 text-sm">✓ Email is available</p>
               )}
           </div>

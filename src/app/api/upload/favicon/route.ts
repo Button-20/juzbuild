@@ -1,7 +1,5 @@
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +14,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const validTypes = ["image/x-icon", "image/png", "image/jpeg", "image/svg+xml"];
+    const validTypes = [
+      "image/x-icon",
+      "image/png",
+      "image/jpeg",
+      "image/svg+xml",
+    ];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
         {
@@ -38,35 +41,40 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create filename with timestamp
+    // Generate a unique public_id for the favicon
     const timestamp = Date.now();
-    const extension = file.type === "image/x-icon" ? "ico" : file.name.split(".").pop() || "png";
-    const filename = `favicon-${timestamp}.${extension}`;
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const public_id = `favicon_${timestamp}_${randomId}`;
 
-    // Define upload directory
-    const uploadDir = join(process.cwd(), "public", "uploads", "favicons");
-
-    // Create directory if it doesn't exist
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    // Save file
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Return the URL for accessing the file
-    const faviconUrl = `/uploads/favicons/${filename}`;
+    // Upload to Cloudinary with transformations for different formats
+    const result = await uploadToCloudinary(buffer, {
+      folder: "juzbuild/favicons",
+      public_id: public_id,
+      transformation: [
+        { width: 512, height: 512, crop: "limit" },
+        { quality: "auto:good" },
+        { format: "auto" },
+      ],
+    });
 
     return NextResponse.json({
       success: true,
-      faviconUrl,
-      filename,
+      faviconUrl: result.secure_url,
+      public_id: result.public_id,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      bytes: result.bytes,
+      message: "Favicon uploaded successfully",
     });
   } catch (error: any) {
-    console.error("Favicon upload error:", error);
+    console.error("❌ Favicon upload error:", error);
     return NextResponse.json(
-      { success: false, error: "Upload failed: " + error.message },
+      {
+        success: false,
+        error: "Favicon upload failed",
+        message: error.message,
+      },
       { status: 500 }
     );
   }

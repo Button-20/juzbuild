@@ -221,6 +221,7 @@ export async function POST(req: NextRequest) {
         userId: userId,
         // Only onboarding-specific fields (not duplicated in users collection)
         logoUrl: data.logoUrl,
+        faviconUrl: data.faviconUrl,
         brandColors: data.brandColors,
         propertyTypes: data.propertyTypes,
         includedPages: data.includedPages,
@@ -288,6 +289,8 @@ export async function POST(req: NextRequest) {
                   "email",
                 ],
                 // Pass user's actual onboarding data
+                logoUrl: data.logoUrl || "",
+                faviconUrl: data.faviconUrl || "",
                 brandColors: data.brandColors || [
                   "#3B82F6",
                   "#EF4444",

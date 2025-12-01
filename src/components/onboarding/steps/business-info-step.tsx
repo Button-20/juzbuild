@@ -30,7 +30,9 @@ export default function BusinessInfoStep({
   const [isUploading, setIsUploading] = useState(false);
   const [isFaviconUploading, setIsFaviconUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [faviconUploadError, setFaviconUploadError] = useState<string | null>(null);
+  const [faviconUploadError, setFaviconUploadError] = useState<string | null>(
+    null
+  );
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,7 +67,9 @@ export default function BusinessInfoStep({
     }
   };
 
-  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFaviconUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

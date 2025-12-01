@@ -98,5 +98,6 @@ export interface WizardStepProps {
   isSubmitting?: boolean;
   isStepValid?: boolean;
   isValidatingEmail?: boolean;
+  emailAvailable?: boolean | null;
   isFeatureAvailable?: (feature: string) => boolean;
 }
