@@ -455,7 +455,7 @@ export default function OnboardingPage() {
     console.log("📋 Form data before submission:", formData);
     console.log("🎨 faviconUrl value at submit:", formData.faviconUrl);
     console.log("🎨 Is faviconUrl empty?", !formData.faviconUrl);
-    
+
     // Validate required fields
     if (
       !user?.selectedPlan ||
@@ -789,7 +789,9 @@ export default function OnboardingPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() =>
+                                      fileInputRef.current?.click()
+                                    }
                                     disabled={isUploading}
                                   >
                                     {isUploading ? "Uploading..." : "Change"}
@@ -806,7 +808,9 @@ export default function OnboardingPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => fileInputRef.current?.click()}
+                                    onClick={() =>
+                                      fileInputRef.current?.click()
+                                    }
                                     disabled={isUploading}
                                   >
                                     {isUploading

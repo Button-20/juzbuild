@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { Website } from "@/types/website";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface WebsiteContextType {
   websites: Website[];
@@ -82,8 +82,11 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
         faviconUrl: params.faviconUrl || "MISSING",
         logoUrl: params.logoUrl || "MISSING",
       });
-      console.log("📋 Full params object:", JSON.stringify(params, null, 2).substring(0, 800));
-      
+      console.log(
+        "📋 Full params object:",
+        JSON.stringify(params, null, 2).substring(0, 800)
+      );
+
       const response = await fetch("/api/websites", {
         method: "POST",
         headers: {
