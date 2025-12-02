@@ -198,10 +198,11 @@ export async function POST(req: NextRequest) {
 
       // Send welcome email to the new user
       try {
-        const origin = req.headers.get("origin") || 
-                       process.env.NEXTAUTH_URL || 
-                       "http://localhost:3000";
-        
+        const origin =
+          req.headers.get("origin") ||
+          process.env.NEXTAUTH_URL ||
+          "http://localhost:3000";
+
         await sendUserWelcomeEmail(
           {
             fullName: data.fullName,
