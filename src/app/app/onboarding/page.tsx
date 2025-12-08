@@ -944,84 +944,84 @@ export default function OnboardingPage() {
 
                         {/* Favicon Upload */}
                         <div className="space-y-2">
-                            <Label className="flex items-center gap-2">
-                              <Upload className="w-4 h-4" />
-                              Favicon *
-                            </Label>
-                            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                              {formData.faviconUrl ? (
-                                <div className="space-y-2">
-                                  <div
-                                    className="w-12 h-12 mx-auto bg-white rounded border border-border overflow-hidden flex items-center justify-center"
-                                    style={{
-                                      backgroundImage: `url('${formData.faviconUrl}')`,
-                                      backgroundSize: "contain",
-                                      backgroundRepeat: "no-repeat",
-                                      backgroundPosition: "center",
-                                    }}
-                                  >
-                                    <img
-                                      src={formData.faviconUrl}
-                                      alt="Favicon"
-                                      className="w-8 h-8 object-contain"
-                                    />
-                                  </div>
-                                  <p className="text-sm font-medium">
-                                    Favicon uploaded
-                                  </p>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      faviconInputRef.current?.click()
-                                    }
-                                    disabled={isFaviconUploading}
-                                  >
-                                    {isFaviconUploading
-                                      ? "Uploading..."
-                                      : "Change"}
-                                  </Button>
+                          <Label className="flex items-center gap-2">
+                            <Upload className="w-4 h-4" />
+                            Favicon *
+                          </Label>
+                          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                            {formData.faviconUrl ? (
+                              <div className="space-y-2">
+                                <div
+                                  className="w-12 h-12 mx-auto bg-white rounded border border-border overflow-hidden flex items-center justify-center"
+                                  style={{
+                                    backgroundImage: `url('${formData.faviconUrl}')`,
+                                    backgroundSize: "contain",
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundPosition: "center",
+                                  }}
+                                >
+                                  <img
+                                    src={formData.faviconUrl}
+                                    alt="Favicon"
+                                    className="w-8 h-8 object-contain"
+                                  />
                                 </div>
-                              ) : (
-                                <div className="space-y-2">
-                                  <div className="w-12 h-12 mx-auto bg-muted rounded flex items-center justify-center">
-                                    <Upload className="w-6 h-6 text-muted-foreground" />
-                                  </div>
-                                  <p className="text-xs text-muted-foreground">
-                                    Browser tab icon
-                                  </p>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      faviconInputRef.current?.click()
-                                    }
-                                    disabled={isFaviconUploading}
-                                  >
-                                    {isFaviconUploading
-                                      ? "Uploading..."
-                                      : "Choose File"}
-                                  </Button>
+                                <p className="text-sm font-medium">
+                                  Favicon uploaded
+                                </p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    faviconInputRef.current?.click()
+                                  }
+                                  disabled={isFaviconUploading}
+                                >
+                                  {isFaviconUploading
+                                    ? "Uploading..."
+                                    : "Change"}
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="w-12 h-12 mx-auto bg-muted rounded flex items-center justify-center">
+                                  <Upload className="w-6 h-6 text-muted-foreground" />
                                 </div>
-                              )}
-                              <input
-                                ref={faviconInputRef}
-                                type="file"
-                                accept="image/*,.ico"
-                                onChange={handleFaviconUpload}
-                                className="hidden"
-                              />
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Appears in browser tab (192x192px or 256x256px
-                              recommended)
-                            </p>
-                            {faviconUploadError && (
-                              <p className="text-sm text-red-600 mt-2">
-                                {faviconUploadError}
-                              </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Browser tab icon
+                                </p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    faviconInputRef.current?.click()
+                                  }
+                                  disabled={isFaviconUploading}
+                                >
+                                  {isFaviconUploading
+                                    ? "Uploading..."
+                                    : "Choose File"}
+                                </Button>
+                              </div>
                             )}
+                            <input
+                              ref={faviconInputRef}
+                              type="file"
+                              accept="image/*,.ico"
+                              onChange={handleFaviconUpload}
+                              className="hidden"
+                            />
                           </div>
+                          <p className="text-xs text-muted-foreground">
+                            Appears in browser tab (192x192px or 256x256px
+                            recommended)
+                          </p>
+                          {faviconUploadError && (
+                            <p className="text-sm text-red-600 mt-2">
+                              {faviconUploadError}
+                            </p>
+                          )}
+                        </div>
 
                         {/* Brand Colors */}
                         <div className="space-y-3">

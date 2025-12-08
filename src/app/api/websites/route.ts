@@ -270,7 +270,8 @@ export async function POST(request: NextRequest) {
                 leadCaptureMethods: leadCaptureMethods || ["Contact Form"],
                 geminiApiKey: geminiApiKey || "",
                 logoUrl: logoUrl || existingUserWebsite.logoUrl || "",
-                darkModeLogoUrl: darkModeLogoUrl || existingUserWebsite.darkModeLogoUrl || "",
+                darkModeLogoUrl:
+                  darkModeLogoUrl || existingUserWebsite.darkModeLogoUrl || "",
                 faviconUrl: faviconUrl || existingUserWebsite.faviconUrl || "",
                 phoneNumber: phoneNumber || "",
                 supportEmail: supportEmail || decoded.email,
@@ -297,8 +298,12 @@ export async function POST(request: NextRequest) {
                   deploymentStatus: "processing",
                   status: "creating",
                   logoUrl: logoUrl || existingUserWebsite.logoUrl || "",
-                  darkModeLogoUrl: darkModeLogoUrl || existingUserWebsite.darkModeLogoUrl || "",
-                  faviconUrl: faviconUrl || existingUserWebsite.faviconUrl || "",
+                  darkModeLogoUrl:
+                    darkModeLogoUrl ||
+                    existingUserWebsite.darkModeLogoUrl ||
+                    "",
+                  faviconUrl:
+                    faviconUrl || existingUserWebsite.faviconUrl || "",
                   phoneNumber: phoneNumber || "",
                   whatsappNumber: whatsappNumber || "",
                   supportEmail: supportEmail || "",
