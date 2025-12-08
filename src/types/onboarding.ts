@@ -43,7 +43,8 @@ export interface UserProfileData {
 // Onboarding-specific data that is stored separately in onboarding collection
 export interface OnboardingSpecificData {
   // Business branding (used for website creation)
-  logoUrl?: string; // Cloudinary URL for uploaded logo
+  logoUrl?: string; // Cloudinary URL for uploaded light mode logo
+  darkModeLogoUrl?: string; // Cloudinary URL for uploaded dark mode logo
   faviconUrl?: string; // Browser tab icon
   brandColors: string[]; // Array of 4 colors from selected palette [primary, skyblue, lightskyblue, dark]
 

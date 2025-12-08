@@ -194,6 +194,7 @@ export default function OnboardingPage() {
     propertyTypes: ["Houses"],
     preferredContactMethod: ["email"],
     logoUrl: "",
+    darkModeLogoUrl: "",
     faviconUrl: "",
     brandColors: [],
     leadCaptureMethods: ["Contact Form"],
@@ -212,12 +213,17 @@ export default function OnboardingPage() {
   const [themes, setThemes] = useState<WebsiteTheme[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDarkModeLogoUploading, setIsDarkModeLogoUploading] = useState(false);
   const [isFaviconUploading, setIsFaviconUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [darkModeLogoUploadError, setDarkModeLogoUploadError] = useState<
+    string | null
+  >(null);
   const [faviconUploadError, setFaviconUploadError] = useState<string | null>(
     null
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const darkModeLogoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const [userBillingCycle, setUserBillingCycle] = useState<
     "monthly" | "yearly"
@@ -339,6 +345,38 @@ export default function OnboardingPage() {
       console.error("❌ Favicon upload error:", error);
     } finally {
       setIsFaviconUploading(false);
+    }
+  };
+
+  const handleDarkModeLogoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsDarkModeLogoUploading(true);
+    setDarkModeLogoUploadError(null);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("logo", file);
+
+      const response = await fetch("/api/upload/logo", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setFormData((prev) => ({ ...prev, darkModeLogoUrl: result.logoUrl }));
+      } else {
+        setDarkModeLogoUploadError(result.error || "Upload failed");
+      }
+    } catch (error: any) {
+      setDarkModeLogoUploadError("Upload failed: " + error.message);
+    } finally {
+      setIsDarkModeLogoUploading(false);
     }
   };
 
@@ -771,7 +809,7 @@ export default function OnboardingPage() {
                           <div className="space-y-2">
                             <Label className="flex items-center gap-2">
                               <Upload className="w-4 h-4" />
-                              Logo *
+                              Logo (Light Mode) *
                             </Label>
                             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                               {formData.logoUrl ? (
@@ -834,8 +872,78 @@ export default function OnboardingPage() {
                             )}
                           </div>
 
-                          {/* Favicon Upload */}
+                          {/* Dark Mode Logo Upload */}
                           <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              Logo (Dark Mode)
+                            </Label>
+                            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                              {formData.darkModeLogoUrl ? (
+                                <div className="space-y-2">
+                                  <div className="w-16 h-16 mx-auto bg-muted rounded-lg overflow-hidden">
+                                    <img
+                                      src={formData.darkModeLogoUrl}
+                                      alt="Dark Mode Logo"
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                  <p className="text-sm font-medium">
+                                    Logo uploaded
+                                  </p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      darkModeLogoInputRef.current?.click()
+                                    }
+                                    disabled={isDarkModeLogoUploading}
+                                  >
+                                    {isDarkModeLogoUploading
+                                      ? "Uploading..."
+                                      : "Change"}
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  <div className="w-16 h-16 mx-auto bg-muted rounded-lg flex items-center justify-center">
+                                    <Upload className="w-8 h-8 text-muted-foreground" />
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Upload your logo
+                                  </p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      darkModeLogoInputRef.current?.click()
+                                    }
+                                    disabled={isDarkModeLogoUploading}
+                                  >
+                                    {isDarkModeLogoUploading
+                                      ? "Uploading..."
+                                      : "Choose File"}
+                                  </Button>
+                                </div>
+                              )}
+                              <input
+                                ref={darkModeLogoInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleDarkModeLogoUpload}
+                                className="hidden"
+                              />
+                            </div>
+                            {darkModeLogoUploadError && (
+                              <p className="text-sm text-red-600 mt-2">
+                                {darkModeLogoUploadError}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Favicon Upload */}
+                        <div className="space-y-2">
                             <Label className="flex items-center gap-2">
                               <Upload className="w-4 h-4" />
                               Favicon *
@@ -914,7 +1022,6 @@ export default function OnboardingPage() {
                               </p>
                             )}
                           </div>
-                        </div>
 
                         {/* Brand Colors */}
                         <div className="space-y-3">

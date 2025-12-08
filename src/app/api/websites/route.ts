@@ -151,6 +151,7 @@ export async function POST(request: NextRequest) {
       brandColors,
       logoUrl,
       faviconUrl,
+      darkModeLogoUrl,
       phoneNumber,
       supportEmail,
       whatsappNumber,
@@ -160,6 +161,8 @@ export async function POST(request: NextRequest) {
       instagramUrl,
       linkedinUrl,
       youtubeUrl,
+      leadCaptureMethods,
+      geminiApiKey,
     } = params;
 
     if (
@@ -264,7 +267,10 @@ export async function POST(request: NextRequest) {
                 propertyTypes: propertyTypes || ["house"],
                 includedPages: includedPages || ["home", "about", "contact"],
                 preferredContactMethod: preferredContactMethod || ["email"],
+                leadCaptureMethods: leadCaptureMethods || ["Contact Form"],
+                geminiApiKey: geminiApiKey || "",
                 logoUrl: logoUrl || existingUserWebsite.logoUrl || "",
+                darkModeLogoUrl: darkModeLogoUrl || existingUserWebsite.darkModeLogoUrl || "",
                 faviconUrl: faviconUrl || existingUserWebsite.faviconUrl || "",
                 phoneNumber: phoneNumber || "",
                 supportEmail: supportEmail || decoded.email,
@@ -290,6 +296,9 @@ export async function POST(request: NextRequest) {
                   jobId: workflowResult.jobId,
                   deploymentStatus: "processing",
                   status: "creating",
+                  logoUrl: logoUrl || existingUserWebsite.logoUrl || "",
+                  darkModeLogoUrl: darkModeLogoUrl || existingUserWebsite.darkModeLogoUrl || "",
+                  faviconUrl: faviconUrl || existingUserWebsite.faviconUrl || "",
                   phoneNumber: phoneNumber || "",
                   whatsappNumber: whatsappNumber || "",
                   supportEmail: supportEmail || "",
@@ -434,6 +443,7 @@ export async function POST(request: NextRequest) {
       isActive: true,
       logoUrl: logoUrl || "",
       faviconUrl: faviconUrl || "",
+      darkModeLogoUrl: darkModeLogoUrl || "",
       analytics: {
         googleAnalytics: {
           measurementId: null,
@@ -496,8 +506,11 @@ export async function POST(request: NextRequest) {
         propertyTypes: propertyTypes || ["house"],
         includedPages: includedPages || ["home", "about", "contact"],
         preferredContactMethod: preferredContactMethod || ["email"],
+        leadCaptureMethods: leadCaptureMethods || ["Contact Form"],
+        geminiApiKey: geminiApiKey || "",
         logoUrl: logoUrl || "",
         faviconUrl: faviconUrl || "",
+        darkModeLogoUrl: darkModeLogoUrl || "",
         phoneNumber: phoneNumber || "",
         supportEmail: supportEmail || decoded.email,
         whatsappNumber: whatsappNumber || "",

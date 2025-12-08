@@ -214,6 +214,7 @@ export default function DeploymentPage() {
         geminiApiKey: signupData.geminiApiKey,
         // Logo and Favicon
         logoUrl: signupData.logoUrl || "",
+        darkModeLogoUrl: signupData.darkModeLogoUrl || "",
         faviconUrl: signupData.faviconUrl || "",
         // Contact Information
         phoneNumber: signupData.phoneNumber || "",
