@@ -1,3 +1,4 @@
+import { sendUserWelcomeEmail } from "@/lib/email";
 import { getDatabase } from "@/lib/mongodb";
 import { createNotification, NotificationTemplates } from "@/lib/notifications";
 import { hash } from "bcryptjs";
@@ -188,6 +189,30 @@ export async function POST(request: NextRequest) {
     } catch (onboardingError) {
       console.error("Failed to handle onboarding record:", onboardingError);
       // Don't fail the whole process, but log the error
+    }
+
+    // Send welcome email to the new user
+    try {
+      const origin =
+        request.headers.get("origin") ||
+        process.env.NEXTAUTH_URL ||
+        "http://localhost:3000";
+
+      await sendUserWelcomeEmail(
+        {
+          fullName: signupData.fullName,
+          email: signupData.email,
+          companyName: signupData.companyName,
+          domainName: signupData.domainName,
+          selectedPlan: planId || signupData.selectedPlan,
+          selectedTheme: signupData.selectedTheme,
+        },
+        origin
+      );
+      console.log(`Welcome email sent successfully to ${signupData.email}`);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the signup if email fails - user can still use the platform
     }
 
     // Create welcome notification for new user

@@ -337,11 +337,44 @@ if (typeof window === "undefined") {
         const helpUrl = `${finalBaseUrl}/app/help`;
         const currentYear = new Date().getFullYear();
 
+        // Get theme display name from database
+        let themeDisplayName = userData.selectedTheme;
+        try {
+          const { MongoClient, ObjectId } = await import("mongodb");
+          const client = new MongoClient(
+            process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Juzbuild"
+          );
+          await client.connect();
+          const db = client.db("Juzbuild");
+          const themesCollection = db.collection("themes");
+
+          let theme = null;
+          try {
+            theme = await themesCollection.findOne({
+              _id: new ObjectId(userData.selectedTheme),
+            });
+          } catch {
+            theme = await themesCollection.findOne({
+              name: userData.selectedTheme,
+            });
+          }
+
+          if (theme && theme.name) {
+            themeDisplayName = theme.name;
+          }
+
+          await client.close();
+        } catch (error) {
+          console.error("Error fetching theme name:", error);
+          // Fall back to using the theme ID
+        }
+
         await sendTemplateEmail(
           userData.email,
           "user-welcome",
           {
             ...userData,
+            selectedTheme: themeDisplayName,
             baseUrl: finalBaseUrl,
             dashboardUrl,
             settingsUrl,
