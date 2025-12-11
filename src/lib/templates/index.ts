@@ -1,15 +1,11 @@
 import { contactConfirmationTemplate } from "./contact-confirmation";
 import { contactNotificationTemplate } from "./contact-notification";
 import { passwordResetTemplate } from "./password-reset";
-import { waitlistNotificationTemplate } from "./waitlist-notification";
-import { waitlistWelcomeTemplate } from "./waitlist-welcome";
 import { websiteCreationTemplate } from "./website-creation";
 import { userWelcomeTemplate } from "./user-welcome";
 
 // Export all email templates
 export const emailTemplates = {
-  "waitlist-welcome": waitlistWelcomeTemplate,
-  "waitlist-notification": waitlistNotificationTemplate,
   "password-reset": passwordResetTemplate,
   "contact-confirmation": contactConfirmationTemplate,
   "contact-notification": contactNotificationTemplate,
