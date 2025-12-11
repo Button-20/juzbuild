@@ -7,15 +7,18 @@ import Hero from "@/components/marketing/hero";
 import Integration from "@/components/marketing/integration";
 import PropertyAnalytics from "@/components/marketing/lang-support";
 import Pricing from "@/components/marketing/pricing";
-import WaitingList from "@/components/marketing/waiting-list";
+import ComingSoon from "@/components/marketing/coming-soon";
 import ContactForm from "@/components/marketing/contact-form";
 import { isLive } from "@/constants";
-import { generateWaitlistMetadata } from "@/utils/waitlist-metadata";
 import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   if (!isLive) {
-    return generateWaitlistMetadata();
+    return {
+      title: "Juzbuild - Coming Soon",
+      description:
+        "We're building the future of AI-powered real estate platforms. Coming soon.",
+    };
   }
 
   // Return default metadata for live site
@@ -28,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const HomePage = () => {
   if (!isLive) {
-    return <WaitingList />;
+    return <ComingSoon />;
   }
 
   return (

@@ -1,15 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import Image from "next/image";
 import Container from "../global/container";
-import Icons from "../global/icons";
-import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { Label } from "../ui/label";
+import Icons from "../global/icons";
 import { OrbitingCircles } from "../ui/orbiting-circles";
 
-const WaitingList = () => {
+const ComingSoon = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -27,7 +27,7 @@ const WaitingList = () => {
       });
 
       if (res.ok) {
-        setMessage("🎉 Welcome aboard! You're now on the exclusive waitlist.");
+        setMessage("🎉 Thanks for signing up! You'll be among the first to know when we launch.");
         setEmail("");
       } else {
         const data = await res.json();
@@ -43,8 +43,8 @@ const WaitingList = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full min-h-[100dvh] md:min-h-screen py-10 md:py-20 px-4">
-      <div className="absolute flex lg:hidden size-32 md:size-40 rounded-full bg-blue-500 blur-[8rem] md:blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[100dvh] md:min-h-screen py-10 md:py-20 px-4 bg-slate-950">
+      <div className="absolute flex lg:hidden size-32 md:size-40 rounded-full bg-blue-600 blur-[8rem] md:blur-[10rem] top-0 left-1/2 -translate-x-1/2 -z-10"></div>
 
       <Container className="hidden lg:flex absolute inset-0 top-0 mb-auto flex-col items-center justify-center w-full min-h-screen -z-10">
         <OrbitingCircles speed={0.5} radius={300}>
@@ -69,24 +69,36 @@ const WaitingList = () => {
           <Container className="relative">
             <Image
               src="/images/feature-one.svg"
-              alt="Waiting List Illustration"
+              alt="Coming Soon Illustration"
               width={200}
               height={200}
               className="mx-auto mb-4 md:mb-6 opacity-80 w-32 h-32 md:w-48 md:h-48 lg:w-52 lg:h-52"
             />
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Early Access to Juzbuild
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3">
+              Coming Soon
             </h1>
-            <p className="text-sm md:text-md mb-6 md:mb-8 text-muted-foreground max-w-lg mx-auto px-4">
-              Join thousands of property professionals waiting to transform
-              their business with our AI-powered platform.
+            <p className="text-lg md:text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 md:mb-6">
+              Juzbuild is Launching Soon
             </p>
+            <p className="text-sm md:text-md mb-6 md:mb-8 text-muted-foreground max-w-lg mx-auto px-4">
+              We're building the future of AI-powered real estate platforms. Get notified when we launch and be among the first to experience the revolution.
+            </p>
+            
+            <div className="bg-blue-950/50 border border-blue-800 rounded-lg p-4 md:p-6 mb-6 md:mb-8 max-w-lg mx-auto">
+              <p className="text-sm md:text-base text-white">
+                ⏰ <strong>Launching Q1 2025</strong>
+              </p>
+              <p className="text-xs md:text-sm text-gray-300 mt-2">
+                Be the first to access our platform and transform how you do business.
+              </p>
+            </div>
+
             <form
               onSubmit={handleSubmit}
               className="flex flex-col gap-3 md:gap-4 max-w-md mx-auto w-full px-4"
             >
-              <Label htmlFor="email" className="text-left text-sm md:text-base">
-                Your Email Address
+              <Label htmlFor="email" className="text-left text-sm md:text-base font-semibold">
+                Get Early Access
               </Label>
               <Input
                 id="email"
@@ -94,22 +106,22 @@ const WaitingList = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="Enter your email to join"
+                placeholder="Enter your email"
                 className="h-11 md:h-12"
               />
               <Button
                 type="submit"
                 disabled={loading}
                 size="lg"
-                className="text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 h-11 md:h-12 text-sm md:text-base"
+                className="text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 h-11 md:h-12 text-sm md:text-base font-semibold"
               >
-                {loading ? "Joining..." : "🚀 Join the Revolution"}
+                {loading ? "Signing Up..." : "🎉 Notify Me"}
               </Button>
             </form>
             {message && (
               <p
                 className={`mt-3 md:mt-4 text-sm md:text-md px-4 ${
-                  message.includes("Welcome")
+                  message.includes("Thanks")
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
@@ -117,6 +129,30 @@ const WaitingList = () => {
                 {message}
               </p>
             )}
+
+            <div className="mt-8 md:mt-12 pt-8 md:pt-12 border-t border-border max-w-lg mx-auto">
+              <p className="text-xs text-muted-foreground mb-4">
+                What's Coming:
+              </p>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="text-left">
+                  <p className="text-xs md:text-sm font-semibold">🤖 AI Automation</p>
+                  <p className="text-xs text-muted-foreground">Smart workflows</p>
+                </div>
+                <div className="text-left">
+                  <p className="text-xs md:text-sm font-semibold">📊 Analytics</p>
+                  <p className="text-xs text-muted-foreground">Real insights</p>
+                </div>
+                <div className="text-left">
+                  <p className="text-xs md:text-sm font-semibold">🏠 Lead Gen</p>
+                  <p className="text-xs text-muted-foreground">More clients</p>
+                </div>
+                <div className="text-left">
+                  <p className="text-xs md:text-sm font-semibold">⚡ Fast Deploy</p>
+                  <p className="text-xs text-muted-foreground">Minutes, not months</p>
+                </div>
+              </div>
+            </div>
           </Container>
         </div>
       </div>
@@ -124,4 +160,4 @@ const WaitingList = () => {
   );
 };
 
-export default WaitingList;
+export default ComingSoon;
