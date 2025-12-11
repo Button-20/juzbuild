@@ -1,14 +1,14 @@
 import Wrapper from "@/components/global/wrapper";
 import Analysis from "@/components/marketing/analysis";
+import ComingSoon from "@/components/marketing/coming-soon";
 import Companies from "@/components/marketing/companies";
+import ContactForm from "@/components/marketing/contact-form";
 import CTA from "@/components/marketing/cta";
 import Features from "@/components/marketing/features";
 import Hero from "@/components/marketing/hero";
 import Integration from "@/components/marketing/integration";
 import PropertyAnalytics from "@/components/marketing/lang-support";
 import Pricing from "@/components/marketing/pricing";
-import ComingSoon from "@/components/marketing/coming-soon";
-import ContactForm from "@/components/marketing/contact-form";
 import { isLive } from "@/constants";
 import { Metadata } from "next";
 

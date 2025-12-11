@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,10 +13,10 @@ export async function POST(req: NextRequest) {
     }
 
     const db = await getDatabase();
-    
+
     // Check if email already exists
     const existingEntry = await db.collection("waitlist").findOne({ email });
-    
+
     if (existingEntry) {
       return NextResponse.json(
         { message: "This email is already on our list!" },
